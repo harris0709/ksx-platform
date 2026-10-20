@@ -1,0 +1,203 @@
+{
+ "noun": "ProductIncoming",
+ "ko": "제품입고",
+ "clause": "7.4.8.1",
+ "table": "표 72",
+ "area": "창고관리",
+ "definition": "생산된 제품을 창고에 저장하는 것을 의미한다.",
+ "layer": "core",
+ "identity": [
+  "ProductIncomingID",
+  "ProductIncomingSequence"
+ ],
+ "struct": null,
+ "physical": {
+  "ProductIncoming": {
+   "uk": [
+    "EnterpriseID",
+    "ProductIncomingID",
+    "ProductIncomingSequence"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "ProductIncomingID",
+   "ko": "제품입고식별자",
+   "type": "ID",
+   "in": "ProductIncoming",
+   "property": "ksx:productIncomingID"
+  },
+  {
+   "en": "ProductIncomingSequence",
+   "ko": "제품입고순번",
+   "type": "int",
+   "in": "ProductIncoming",
+   "property": "ksx:productIncomingSequence"
+  },
+  {
+   "en": "InventoryTransactionDocumentNumber",
+   "ko": "수불문서번호",
+   "type": "string",
+   "in": "ProductIncoming",
+   "property": "ksx:inventoryTransactionDocumentNumber"
+  },
+  {
+   "en": "InventoryTransactionDocumentSequence",
+   "ko": "수불문서순번",
+   "type": "int",
+   "in": "ProductIncoming",
+   "property": "ksx:inventoryTransactionDocumentSequence"
+  },
+  {
+   "en": "InventoryTransactionDate",
+   "ko": "수불일",
+   "type": "date",
+   "in": "ProductIncoming",
+   "property": "ksx:inventoryTransactionDate"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "ProductIncoming",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "CustomerID",
+   "ko": "고객사식별자",
+   "type": "IDREF",
+   "in": "ProductIncoming",
+   "property": "ksx:customerID"
+  },
+  {
+   "en": "WarehouseID",
+   "ko": "창고식별자",
+   "type": "IDREF",
+   "in": "ProductIncoming",
+   "property": "ksx:warehouseID"
+  },
+  {
+   "en": "InventoryTransactionTypeCode",
+   "ko": "수불유형코드",
+   "type": "enum",
+   "in": "ProductIncoming",
+   "property": "ksx:inventoryTransactionTypeCode"
+  },
+  {
+   "en": "SerialUseIndicator",
+   "ko": "시리얼사용여부",
+   "type": "boolean",
+   "in": "ProductIncoming",
+   "property": "ksx:serialUseIndicator"
+  },
+  {
+   "en": "InventoryTransferType",
+   "ko": "입출고유형",
+   "type": "enum",
+   "in": "ProductIncoming",
+   "property": "ksx:inventoryTransferType"
+  },
+  {
+   "en": "InventoryVariationType",
+   "ko": "재고증감유형",
+   "type": "enum",
+   "in": "ProductIncoming",
+   "property": "ksx:inventoryVariationType"
+  },
+  {
+   "en": "InventoryTransactionType",
+   "ko": "수불유형",
+   "type": "enum",
+   "in": "ProductIncoming",
+   "property": "ksx:inventoryTransactionType"
+  },
+  {
+   "en": "LotControlIndicator",
+   "ko": "로트사용여부",
+   "type": "boolean",
+   "in": "ProductIncoming",
+   "property": "ksx:lotControlIndicator",
+   "copyOf": "ItemMaster.LotControlIndicator"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "ProductIncoming",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "ProductIncoming",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "ItemUnitQuantity",
+   "ko": "기준단위수량",
+   "type": "float",
+   "in": "ProductIncoming",
+   "property": "ksx:itemUnitQuantity"
+  },
+  {
+   "en": "OrderUOMCode",
+   "ko": "오더단위코드",
+   "type": "enum",
+   "in": "ProductIncoming",
+   "property": "ksx:orderUOMCode"
+  },
+  {
+   "en": "OrderQuantity",
+   "ko": "오더수량",
+   "type": "float",
+   "in": "ProductIncoming",
+   "property": "ksx:orderQuantity"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "ProductIncoming"
+  },
+  {
+   "attr": "EnterpriseID, CustomerID",
+   "target": "CustomerPartyMaster",
+   "property": "ksx:refCustomer",
+   "in": "ProductIncoming"
+  },
+  {
+   "attr": "EnterpriseID, WarehouseID",
+   "target": "WarehouseLocation",
+   "property": "ksx:refWarehouse",
+   "in": "ProductIncoming"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "ProductIncoming"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "InventoryTransactionTypeCode",
+   "group": "InventoryTransactionTypeCode"
+  },
+  {
+   "attr": "InventoryTransferType",
+   "group": "InventoryTransferType"
+  },
+  {
+   "attr": "InventoryVariationType",
+   "group": "InventoryVariationType"
+  },
+  {
+   "attr": "InventoryTransactionType",
+   "group": "InventoryTransactionType"
+  }
+ ]
+}

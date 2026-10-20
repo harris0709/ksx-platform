@@ -1,0 +1,199 @@
+{
+ "noun": "AfterSalesServiceRequestResult",
+ "ko": "사후서비스결과",
+ "clause": "7.4.9.4",
+ "table": "표 79",
+ "area": "서비스관리",
+ "definition": "고객의 사후서비스 접수 이후 제조사 혹은 대리점의 처리결과를 교환하기 위해 필요한 데이터를 의미한다.",
+ "layer": "core",
+ "identity": [
+  "RequestNumber",
+  "TransferSequence",
+  "RegisterSequence",
+  "RepairSequence"
+ ],
+ "struct": null,
+ "physical": {
+  "AfterSalesServiceRequestResult": {
+   "uk": [
+    "EnterpriseID",
+    "RequestNumber",
+    "TransferSequence",
+    "RegisterSequence",
+    "RepairSequence"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemName",
+   "ko": "품목명",
+   "type": "string",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:itemName",
+   "copyOf": "ItemMaster.ItemName"
+  },
+  {
+   "en": "RequestNumber",
+   "ko": "신청번호",
+   "type": "IDREF",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:requestNumber"
+  },
+  {
+   "en": "TransferSequence",
+   "ko": "이관순번",
+   "type": "int",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:transferSequence"
+  },
+  {
+   "en": "RegisterSequence",
+   "ko": "등록순번",
+   "type": "int",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:registerSequence"
+  },
+  {
+   "en": "RepairSequence",
+   "ko": "수리순번",
+   "type": "int",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:repairSequence"
+  },
+  {
+   "en": "SerialNumber",
+   "ko": "제조번호",
+   "type": "string",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:serialNumber"
+  },
+  {
+   "en": "FaultLargeClass",
+   "ko": "하자현상대분류",
+   "type": "enum",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:faultLargeClass"
+  },
+  {
+   "en": "FaultSmallClass",
+   "ko": "하자현상소분류",
+   "type": "enum",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:faultSmallClass"
+  },
+  {
+   "en": "ErrorCode",
+   "ko": "오류코드",
+   "type": "enum",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:errorCode"
+  },
+  {
+   "en": "InstallationDate",
+   "ko": "설치일",
+   "type": "date",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:installationDate"
+  },
+  {
+   "en": "ProcessingDate",
+   "ko": "처리일",
+   "type": "date",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:processingDate"
+  },
+  {
+   "en": "EndIndicator",
+   "ko": "종료여부",
+   "type": "boolean",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:endIndicator"
+  },
+  {
+   "en": "WorkType",
+   "ko": "작업유형",
+   "type": "enum",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:workType"
+  },
+  {
+   "en": "ChildItemID",
+   "ko": "자품목식별자",
+   "type": "IDREF",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:childItemID"
+  },
+  {
+   "en": "ChildItemName",
+   "ko": "자품목명",
+   "type": "string",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:childItemName"
+  },
+  {
+   "en": "ItemSpecification",
+   "ko": "품목사양",
+   "type": "string",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:itemSpecification",
+   "copyOf": "ItemMaster.ItemSpecification"
+  },
+  {
+   "en": "RepairType",
+   "ko": "수리유형",
+   "type": "enum",
+   "in": "AfterSalesServiceRequestResult",
+   "property": "ksx:repairType"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "AfterSalesServiceRequestResult"
+  },
+  {
+   "attr": "EnterpriseID, RequestNumber",
+   "target": "AfterSalesServiceRequest",
+   "property": "ksx:refAfterSalesServiceRequest",
+   "in": "AfterSalesServiceRequestResult"
+  },
+  {
+   "attr": "EnterpriseID, ChildItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refChildItem",
+   "in": "AfterSalesServiceRequestResult"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "FaultLargeClass",
+   "group": "FaultLargeClass"
+  },
+  {
+   "attr": "FaultSmallClass",
+   "group": "FaultSmallClass"
+  },
+  {
+   "attr": "ErrorCode",
+   "group": "ServiceErrorCode"
+  },
+  {
+   "attr": "WorkType",
+   "group": "WorkType"
+  },
+  {
+   "attr": "RepairType",
+   "group": "RepairType"
+  }
+ ]
+}

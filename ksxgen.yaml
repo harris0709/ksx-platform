@@ -1,0 +1,5 @@
+# ksxgen 설정 (네임스페이스 호스트는 의사결정 D8에 따라 변경)
+ns: https://ontology.impix.co.kr/ksx9101/1.0/
+data_ns: https://data.impix.co.kr/
+version: KS X 9101-1:2025 개정안 v1.0
+schema: ksx

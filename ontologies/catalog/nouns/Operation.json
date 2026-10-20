@@ -1,0 +1,98 @@
+{
+ "noun": "Operation",
+ "ko": "공정",
+ "clause": "7.4.1.14",
+ "table": "표 25",
+ "area": "기준정보",
+ "definition": "생산작업을 수행하는 작업장 또는 작업장 내 세부 작업단위를 의미한다.",
+ "layer": "core",
+ "identity": [
+  "OperationID"
+ ],
+ "struct": null,
+ "physical": {
+  "Operation": {
+   "uk": [
+    "EnterpriseID",
+    "OperationID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "OperationID",
+   "ko": "공정식별자",
+   "type": "ID",
+   "in": "Operation",
+   "property": "ksx:operationID"
+  },
+  {
+   "en": "OperationName",
+   "ko": "공정명",
+   "type": "string",
+   "in": "Operation",
+   "property": "ksx:operationName"
+  },
+  {
+   "en": "OperationType",
+   "ko": "공정유형",
+   "type": "enum",
+   "in": "Operation",
+   "property": "ksx:operationType"
+  },
+  {
+   "en": "UseIndicator",
+   "ko": "사용여부",
+   "type": "boolean",
+   "in": "Operation",
+   "property": "ksx:useIndicator"
+  },
+  {
+   "en": "OperationLargeClass",
+   "ko": "공정대분류",
+   "type": "enum",
+   "in": "Operation",
+   "property": "ksx:operationLargeClass"
+  },
+  {
+   "en": "OperationMediumClass",
+   "ko": "공정중분류",
+   "type": "enum",
+   "in": "Operation",
+   "property": "ksx:operationMediumClass"
+  },
+  {
+   "en": "OperationSmallClass",
+   "ko": "공정소분류",
+   "type": "enum",
+   "in": "Operation",
+   "property": "ksx:operationSmallClass"
+  },
+  {
+   "en": "BackFlushedIndicator",
+   "ko": "백플러시여부",
+   "type": "boolean",
+   "in": "Operation",
+   "property": "ksx:backFlushedIndicator"
+  }
+ ],
+ "references": [],
+ "codes": [
+  {
+   "attr": "OperationType",
+   "group": "OperationType"
+  },
+  {
+   "attr": "OperationLargeClass",
+   "group": "OperationLargeClass"
+  },
+  {
+   "attr": "OperationMediumClass",
+   "group": "OperationMediumClass"
+  },
+  {
+   "attr": "OperationSmallClass",
+   "group": "OperationSmallClass"
+  }
+ ]
+}

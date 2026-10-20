@@ -1,0 +1,143 @@
+{
+ "noun": "ProductionPerformancePersonnel",
+ "ko": "생산실적투입인력",
+ "clause": "7.4.6.22",
+ "table": "표 65",
+ "area": "생산관리",
+ "definition": "생산 과정에서 투입된 인력정보를 의미한다. 생산실적투입인력 명사는 표 65와같은 정보 속성을 포함하고 있다.",
+ "layer": "core",
+ "identity": [
+  "ProductionPerformanceID",
+  "ProductionPerformanceSequence",
+  "PersonnelID"
+ ],
+ "struct": null,
+ "physical": {
+  "ProductionPerformancePersonnel": {
+   "uk": [
+    "EnterpriseID",
+    "ProductionPerformanceID",
+    "ProductionPerformanceSequence",
+    "PersonnelID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "ProductionPerformanceID",
+   "ko": "생산실적식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformancePersonnel",
+   "property": "ksx:productionPerformanceID"
+  },
+  {
+   "en": "ProductionPerformanceSequence",
+   "ko": "생산실적순번",
+   "type": "int",
+   "in": "ProductionPerformancePersonnel",
+   "property": "ksx:productionPerformanceSequence"
+  },
+  {
+   "en": "ProductionOrderID",
+   "ko": "생산지시식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformancePersonnel",
+   "property": "ksx:productionOrderID"
+  },
+  {
+   "en": "ProductionOrderSequence",
+   "ko": "생산지시순번",
+   "type": "int",
+   "in": "ProductionPerformancePersonnel",
+   "property": "ksx:productionOrderSequence"
+  },
+  {
+   "en": "OperationID",
+   "ko": "공정식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformancePersonnel",
+   "property": "ksx:operationID"
+  },
+  {
+   "en": "PersonnelID",
+   "ko": "사원식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformancePersonnel",
+   "property": "ksx:personnelID"
+  },
+  {
+   "en": "ExecutionStartDateTime",
+   "ko": "생산시작일시",
+   "type": "dateTime",
+   "in": "ProductionPerformancePersonnel",
+   "property": "ksx:executionStartDateTime"
+  },
+  {
+   "en": "ExecutionEndDateTime",
+   "ko": "생산종료일시",
+   "type": "dateTime",
+   "in": "ProductionPerformancePersonnel",
+   "property": "ksx:executionEndDateTime"
+  },
+  {
+   "en": "TaskGroupCode",
+   "ko": "근무조코드",
+   "type": "enum",
+   "in": "ProductionPerformancePersonnel",
+   "property": "ksx:taskGroupCode"
+  },
+  {
+   "en": "ActualLaborDateTime",
+   "ko": "투입일시",
+   "type": "dateTime",
+   "in": "ProductionPerformancePersonnel",
+   "property": "ksx:actualLaborDateTime"
+  },
+  {
+   "en": "ActualLaborTime",
+   "ko": "투입시간",
+   "type": "float",
+   "in": "ProductionPerformancePersonnel",
+   "property": "ksx:actualLaborTime"
+  },
+  {
+   "en": "ActualLaborTimeUOMCode",
+   "ko": "투입시간단위코드",
+   "type": "enum",
+   "in": "ProductionPerformancePersonnel",
+   "property": "ksx:actualLaborTimeUOMCode"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ProductionPerformanceID, ProductionPerformanceSequence",
+   "target": "ProductionPerformance",
+   "property": "ksx:refProductionPerformance",
+   "in": "ProductionPerformancePersonnel"
+  },
+  {
+   "attr": "EnterpriseID, ProductionOrderID, ProductionOrderSequence",
+   "target": "ProductionOrder",
+   "property": "ksx:refProductionOrder",
+   "in": "ProductionPerformancePersonnel"
+  },
+  {
+   "attr": "EnterpriseID, OperationID",
+   "target": "Operation",
+   "property": "ksx:refOperation",
+   "in": "ProductionPerformancePersonnel"
+  },
+  {
+   "attr": "EnterpriseID, PersonnelID",
+   "target": "Personnel",
+   "property": "ksx:refPersonnel",
+   "in": "ProductionPerformancePersonnel"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "TaskGroupCode",
+   "group": "TaskGroupCode"
+  }
+ ]
+}

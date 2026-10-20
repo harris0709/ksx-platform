@@ -1,0 +1,136 @@
+{
+ "noun": "Enterprise",
+ "ko": "회사",
+ "clause": "7.4.1.22",
+ "table": "표 33",
+ "area": "기준정보",
+ "definition": "기업업무시스템 간 제조업무데이터를 교환하는 법인 단위의 회사를 의미한다. 회사는 하나 이상의 사업장으로 구성되며, 모든 명사 정보의 최상위 소유 범위가 된다.",
+ "layer": "core",
+ "identity": [],
+ "struct": null,
+ "physical": {
+  "Enterprise": {
+   "uk": [
+    "EnterpriseID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "EnterpriseID",
+   "ko": "회사식별자",
+   "type": "ID",
+   "in": "Enterprise",
+   "property": "ksx:enterpriseID"
+  },
+  {
+   "en": "EnterpriseName",
+   "ko": "회사명",
+   "type": "string",
+   "in": "Enterprise",
+   "property": "ksx:enterpriseName"
+  },
+  {
+   "en": "BusinessRegistrationNumber",
+   "ko": "사업자등록번호",
+   "type": "string",
+   "in": "Enterprise",
+   "property": "ksx:businessRegistrationNumber"
+  },
+  {
+   "en": "CorporateRegistrationNumber",
+   "ko": "법인등록번호",
+   "type": "string",
+   "in": "Enterprise",
+   "property": "ksx:corporateRegistrationNumber"
+  },
+  {
+   "en": "RepresentativeName",
+   "ko": "대표자명",
+   "type": "string",
+   "in": "Enterprise",
+   "property": "ksx:representativeName"
+  },
+  {
+   "en": "ParentEnterpriseID",
+   "ko": "상위회사식별자",
+   "type": "IDREF",
+   "in": "Enterprise",
+   "property": "ksx:parentEnterpriseID"
+  },
+  {
+   "en": "CountryID",
+   "ko": "국가식별자",
+   "type": "enum",
+   "in": "Enterprise",
+   "property": "ksx:countryID"
+  },
+  {
+   "en": "BaseCurrencyCode",
+   "ko": "기준통화코드",
+   "type": "enum",
+   "in": "Enterprise",
+   "property": "ksx:baseCurrencyCode"
+  },
+  {
+   "en": "DialNumber",
+   "ko": "전화번호",
+   "type": "string",
+   "in": "Enterprise",
+   "property": "ksx:dialNumber"
+  },
+  {
+   "en": "FaxNumber",
+   "ko": "팩스번호",
+   "type": "string",
+   "in": "Enterprise",
+   "property": "ksx:faxNumber"
+  },
+  {
+   "en": "PostalCode",
+   "ko": "우편번호",
+   "type": "string",
+   "in": "Enterprise",
+   "property": "ksx:postalCode"
+  },
+  {
+   "en": "BaseAddress",
+   "ko": "기본주소",
+   "type": "string",
+   "in": "Enterprise",
+   "property": "ksx:baseAddress"
+  },
+  {
+   "en": "DetailAddress",
+   "ko": "상세주소",
+   "type": "string",
+   "in": "Enterprise",
+   "property": "ksx:detailAddress"
+  },
+  {
+   "en": "UseIndicator",
+   "ko": "사용여부",
+   "type": "boolean",
+   "in": "Enterprise",
+   "property": "ksx:useIndicator"
+  }
+ ],
+ "references": [
+  {
+   "attr": "ParentEnterpriseID",
+   "target": "Enterprise",
+   "property": "ksx:refParentEnterprise",
+   "in": "Enterprise"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "CountryID",
+   "group": "CountryID"
+  },
+  {
+   "attr": "BaseCurrencyCode",
+   "group": "CurrencyCode"
+  }
+ ]
+}

@@ -1,0 +1,87 @@
+{
+ "noun": "WorkCalendar",
+ "ko": "달력",
+ "clause": "7.4.1.8",
+ "table": "표 19",
+ "area": "기준정보",
+ "definition": "생산 현장의 달력을 의미한다. 단, 인사에서 사용하는 일반 달력과는 차이가 있다.",
+ "layer": "core",
+ "identity": [
+  "CalendarID"
+ ],
+ "struct": null,
+ "physical": {
+  "WorkCalendar": {
+   "uk": [
+    "EnterpriseID",
+    "CalendarID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "CalendarID",
+   "ko": "달력식별자",
+   "type": "ID",
+   "in": "WorkCalendar",
+   "property": "ksx:calendarID"
+  },
+  {
+   "en": "CalendarType",
+   "ko": "달력유형",
+   "type": "enum",
+   "in": "WorkCalendar",
+   "property": "ksx:calendarType"
+  },
+  {
+   "en": "CalendarDate",
+   "ko": "달력일자",
+   "type": "date",
+   "in": "WorkCalendar",
+   "property": "ksx:calendarDate"
+  },
+  {
+   "en": "DayOfWeek",
+   "ko": "요일",
+   "type": "enum",
+   "in": "WorkCalendar",
+   "property": "ksx:dayOfWeek"
+  },
+  {
+   "en": "WeekOfYear",
+   "ko": "주수",
+   "type": "int",
+   "in": "WorkCalendar",
+   "property": "ksx:weekOfYear"
+  },
+  {
+   "en": "DayOfYear",
+   "ko": "총누계일수",
+   "type": "int",
+   "in": "WorkCalendar",
+   "property": "ksx:dayOfYear"
+  },
+  {
+   "en": "ScheduleType",
+   "ko": "근무일유형",
+   "type": "enum",
+   "in": "WorkCalendar",
+   "property": "ksx:scheduleType"
+  }
+ ],
+ "references": [],
+ "codes": [
+  {
+   "attr": "CalendarType",
+   "group": "CalendarType"
+  },
+  {
+   "attr": "DayOfWeek",
+   "group": "DayOfWeek"
+  },
+  {
+   "attr": "ScheduleType",
+   "group": "ScheduleType"
+  }
+ ]
+}

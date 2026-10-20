@@ -1,0 +1,210 @@
+{
+ "noun": "ProductionPerformance",
+ "ko": "생산실적",
+ "clause": "7.4.6.20",
+ "table": "표 63",
+ "area": "생산관리",
+ "definition": "생산지시에 의해 실행된 생산의 실적 결과 정보를 의미한다.",
+ "layer": "core",
+ "identity": [
+  "ProductionPerformanceID",
+  "ProductionPerformanceSequence"
+ ],
+ "struct": null,
+ "physical": {
+  "ProductionPerformance": {
+   "uk": [
+    "EnterpriseID",
+    "ProductionPerformanceID",
+    "ProductionPerformanceSequence"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "ProductionPerformanceID",
+   "ko": "생산실적식별자",
+   "type": "ID",
+   "in": "ProductionPerformance",
+   "property": "ksx:productionPerformanceID"
+  },
+  {
+   "en": "ProductionPerformanceSequence",
+   "ko": "생산실적순번",
+   "type": "int",
+   "in": "ProductionPerformance",
+   "property": "ksx:productionPerformanceSequence"
+  },
+  {
+   "en": "ProductionOrderID",
+   "ko": "생산지시식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformance",
+   "property": "ksx:productionOrderID"
+  },
+  {
+   "en": "ProductionOrderSequence",
+   "ko": "생산지시순번",
+   "type": "int",
+   "in": "ProductionPerformance",
+   "property": "ksx:productionOrderSequence"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformance",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "ProductionPerformance",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "ProducedQuantity",
+   "ko": "생산수량",
+   "type": "float",
+   "in": "ProductionPerformance",
+   "property": "ksx:producedQuantity"
+  },
+  {
+   "en": "DefectQuantity",
+   "ko": "불량수량",
+   "type": "float",
+   "in": "ProductionPerformance",
+   "property": "ksx:defectQuantity"
+  },
+  {
+   "en": "ReworkQuantity",
+   "ko": "재작업수량",
+   "type": "int",
+   "in": "ProductionPerformance",
+   "property": "ksx:reworkQuantity"
+  },
+  {
+   "en": "OperationID",
+   "ko": "공정식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformance",
+   "property": "ksx:operationID"
+  },
+  {
+   "en": "RoutingID",
+   "ko": "공정경로식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformance",
+   "property": "ksx:routingID"
+  },
+  {
+   "en": "OperationSequence",
+   "ko": "공정순번",
+   "type": "int",
+   "in": "ProductionPerformance",
+   "property": "ksx:operationSequence"
+  },
+  {
+   "en": "PersonnelID",
+   "ko": "사원식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformance",
+   "property": "ksx:personnelID"
+  },
+  {
+   "en": "ProductionPerformanceDate",
+   "ko": "생산실적일자",
+   "type": "date",
+   "in": "ProductionPerformance",
+   "property": "ksx:productionPerformanceDate"
+  },
+  {
+   "en": "ExecutionStartDateTime",
+   "ko": "생산시작일시",
+   "type": "dateTime",
+   "in": "ProductionPerformance",
+   "property": "ksx:executionStartDateTime"
+  },
+  {
+   "en": "ExecutionEndDateTime",
+   "ko": "생산종료일시",
+   "type": "dateTime",
+   "in": "ProductionPerformance",
+   "property": "ksx:executionEndDateTime"
+  },
+  {
+   "en": "CancelIndicator",
+   "ko": "취소여부",
+   "type": "boolean",
+   "in": "ProductionPerformance",
+   "property": "ksx:cancelIndicator"
+  },
+  {
+   "en": "CancelDateTime",
+   "ko": "취소일시",
+   "type": "dateTime",
+   "in": "ProductionPerformance",
+   "property": "ksx:cancelDateTime"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformance",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "BatchID",
+   "ko": "배치식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformance",
+   "property": "ksx:batchID"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ProductionOrderID, ProductionOrderSequence",
+   "target": "ProductionOrder",
+   "property": "ksx:refProductionOrder",
+   "in": "ProductionPerformance"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "ProductionPerformance"
+  },
+  {
+   "attr": "EnterpriseID, OperationID",
+   "target": "Operation",
+   "property": "ksx:refOperation",
+   "in": "ProductionPerformance"
+  },
+  {
+   "attr": "EnterpriseID, RoutingID, OperationSequence",
+   "target": "RoutingLine",
+   "property": "ksx:refRoutingToRoutingLine",
+   "in": "ProductionPerformance"
+  },
+  {
+   "attr": "EnterpriseID, PersonnelID",
+   "target": "Personnel",
+   "property": "ksx:refPersonnel",
+   "in": "ProductionPerformance"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "ProductionPerformance"
+  },
+  {
+   "attr": "EnterpriseID, BatchID",
+   "target": "Batch",
+   "property": "ksx:refBatch",
+   "in": "ProductionPerformance"
+  }
+ ],
+ "codes": []
+}

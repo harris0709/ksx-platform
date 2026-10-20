@@ -1,0 +1,160 @@
+{
+ "noun": "Return",
+ "ko": "반품",
+ "clause": "7.4.9.1",
+ "table": "표 76",
+ "area": "서비스관리",
+ "definition": "반품(구매반품, 제품반품)에 대한 정보를 의미한다.",
+ "layer": "core",
+ "identity": [
+  "ReturnID",
+  "ReturnSequence"
+ ],
+ "struct": null,
+ "physical": {
+  "Return": {
+   "uk": [
+    "EnterpriseID",
+    "ReturnID",
+    "ReturnSequence"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "ReturnID",
+   "ko": "반품식별자",
+   "type": "ID",
+   "in": "Return",
+   "property": "ksx:returnID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "Return",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "Return",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "BatchID",
+   "ko": "배치식별자",
+   "type": "IDREF",
+   "in": "Return",
+   "property": "ksx:batchID"
+  },
+  {
+   "en": "WarehouseID",
+   "ko": "창고식별자",
+   "type": "IDREF",
+   "in": "Return",
+   "property": "ksx:warehouseID"
+  },
+  {
+   "en": "ReturnSequence",
+   "ko": "반품순서",
+   "type": "int",
+   "in": "Return",
+   "property": "ksx:returnSequence"
+  },
+  {
+   "en": "ReturnNumber",
+   "ko": "반품번호",
+   "type": "string",
+   "in": "Return",
+   "property": "ksx:returnNumber"
+  },
+  {
+   "en": "ProductReturnDocumentNumber",
+   "ko": "반품문서번호",
+   "type": "string",
+   "in": "Return",
+   "property": "ksx:productReturnDocumentNumber"
+  },
+  {
+   "en": "ReturnDateTime",
+   "ko": "반품일시",
+   "type": "dateTime",
+   "in": "Return",
+   "property": "ksx:returnDateTime"
+  },
+  {
+   "en": "CustomerID",
+   "ko": "고객사식별자",
+   "type": "IDREF",
+   "in": "Return",
+   "property": "ksx:customerID"
+  },
+  {
+   "en": "VendorID",
+   "ko": "공급사식별자",
+   "type": "IDREF",
+   "in": "Return",
+   "property": "ksx:vendorID"
+  },
+  {
+   "en": "ReturnQuantity",
+   "ko": "반품수량",
+   "type": "float",
+   "in": "Return",
+   "property": "ksx:returnQuantity"
+  },
+  {
+   "en": "ReturnType",
+   "ko": "반품유형",
+   "type": "enum",
+   "in": "Return",
+   "property": "ksx:returnType"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "Return"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "Return"
+  },
+  {
+   "attr": "EnterpriseID, BatchID",
+   "target": "Batch",
+   "property": "ksx:refBatch",
+   "in": "Return"
+  },
+  {
+   "attr": "EnterpriseID, WarehouseID",
+   "target": "WarehouseLocation",
+   "property": "ksx:refWarehouse",
+   "in": "Return"
+  },
+  {
+   "attr": "EnterpriseID, CustomerID",
+   "target": "CustomerPartyMaster",
+   "property": "ksx:refCustomer",
+   "in": "Return"
+  },
+  {
+   "attr": "EnterpriseID, VendorID",
+   "target": "VendorPartyMaster",
+   "property": "ksx:refVendor",
+   "in": "Return"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "ReturnType",
+   "group": "ReturnType"
+  }
+ ]
+}

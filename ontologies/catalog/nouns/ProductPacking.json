@@ -1,0 +1,107 @@
+{
+ "noun": "ProductPacking",
+ "ko": "제품포장",
+ "clause": "7.4.6.17",
+ "table": "표 60",
+ "area": "생산관리",
+ "definition": "제품 출하를 위해 완성된 제품을 포장하기 위한 정보를 의미한다.",
+ "layer": "core",
+ "identity": [
+  "BoxNumber",
+  "PackingSequence"
+ ],
+ "struct": null,
+ "physical": {
+  "ProductPacking": {
+   "uk": [
+    "EnterpriseID",
+    "BoxNumber",
+    "PackingSequence"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "PackingType",
+   "ko": "포장유형",
+   "type": "enum",
+   "in": "ProductPacking",
+   "property": "ksx:packingType"
+  },
+  {
+   "en": "WarehouseID",
+   "ko": "창고식별자",
+   "type": "IDREF",
+   "in": "ProductPacking",
+   "property": "ksx:warehouseID"
+  },
+  {
+   "en": "SerialNumber",
+   "ko": "일련번호",
+   "type": "string",
+   "in": "ProductPacking",
+   "property": "ksx:serialNumber"
+  },
+  {
+   "en": "BoxNumber",
+   "ko": "포장박스번호",
+   "type": "string",
+   "in": "ProductPacking",
+   "property": "ksx:boxNumber"
+  },
+  {
+   "en": "PalletNumber",
+   "ko": "포장파렛트번호",
+   "type": "string",
+   "in": "ProductPacking",
+   "property": "ksx:palletNumber"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "ProductPacking",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "PackingSequence",
+   "ko": "포장순번",
+   "type": "int",
+   "in": "ProductPacking",
+   "property": "ksx:packingSequence"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "ProductPacking",
+   "property": "ksx:lotID"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, WarehouseID",
+   "target": "WarehouseLocation",
+   "property": "ksx:refWarehouse",
+   "in": "ProductPacking"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "ProductPacking"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "ProductPacking"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "PackingType",
+   "group": "PackingType"
+  }
+ ]
+}

@@ -1,0 +1,369 @@
+{
+ "noun": "PurchaseOrder",
+ "ko": "구매발주",
+ "clause": "7.4.4.3",
+ "table": "표 40",
+ "area": "구매관리",
+ "definition": "구매발주(PurchaseOrder) 명사의 헤더 구조체(struct) 구매문서 1건의 공통 정보(공급사, 발주일, 결제·거래 조건, 담당자) 구매문서마다 1회 나타남",
+ "layer": "core",
+ "identity": [
+  "PurchaseDocumentNumber"
+ ],
+ "struct": {
+  "header": "PurchaseOrderHeader",
+  "line": "PurchaseOrderLine",
+  "lineKey": [
+   "PurchaseDocumentSequence"
+  ]
+ },
+ "physical": {
+  "PurchaseOrderHeader": {
+   "uk": [
+    "EnterpriseID",
+    "PurchaseDocumentNumber"
+   ]
+  },
+  "PurchaseOrderLine": {
+   "uk": [
+    "EnterpriseID",
+    "PurchaseDocumentNumber",
+    "PurchaseDocumentSequence"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "PurchaseDocumentNumber",
+   "ko": "구매문서번호",
+   "type": "ID",
+   "in": "PurchaseOrderHeader",
+   "property": "ksx:purchaseDocumentNumber"
+  },
+  {
+   "en": "VendorID",
+   "ko": "공급사식별자",
+   "type": "IDREF",
+   "in": "PurchaseOrderHeader",
+   "property": "ksx:vendorID"
+  },
+  {
+   "en": "PaymentTermsCode",
+   "ko": "결제조건코드",
+   "type": "enum",
+   "in": "PurchaseOrderHeader",
+   "property": "ksx:paymentTermsCode"
+  },
+  {
+   "en": "PurchaseGroupCode",
+   "ko": "구매그룹코드",
+   "type": "enum",
+   "in": "PurchaseOrderHeader",
+   "property": "ksx:purchaseGroupCode"
+  },
+  {
+   "en": "CurrencyCode",
+   "ko": "환종코드",
+   "type": "enum",
+   "in": "PurchaseOrderHeader",
+   "property": "ksx:currencyCode"
+  },
+  {
+   "en": "ExchangeRate",
+   "ko": "환율",
+   "type": "float",
+   "in": "PurchaseOrderHeader",
+   "property": "ksx:exchangeRate"
+  },
+  {
+   "en": "PurchaseApprovalDate",
+   "ko": "승인일",
+   "type": "date",
+   "in": "PurchaseOrderHeader",
+   "property": "ksx:purchaseApprovalDate"
+  },
+  {
+   "en": "PurchaseOrderDate",
+   "ko": "구매발주일",
+   "type": "date",
+   "in": "PurchaseOrderHeader",
+   "property": "ksx:purchaseOrderDate"
+  },
+  {
+   "en": "PurchaseOrderTypeCode",
+   "ko": "발주유형코드",
+   "type": "enum",
+   "in": "PurchaseOrderHeader",
+   "property": "ksx:purchaseOrderTypeCode"
+  },
+  {
+   "en": "PurchaseTransactionType",
+   "ko": "거래유형",
+   "type": "enum",
+   "in": "PurchaseOrderHeader",
+   "property": "ksx:purchaseTransactionType"
+  },
+  {
+   "en": "PurchaseOrderStartDate",
+   "ko": "시작일",
+   "type": "date",
+   "in": "PurchaseOrderHeader",
+   "property": "ksx:purchaseOrderStartDate"
+  },
+  {
+   "en": "PurchaseOrderValidDate",
+   "ko": "유효일",
+   "type": "date",
+   "in": "PurchaseOrderHeader",
+   "property": "ksx:purchaseOrderValidDate"
+  },
+  {
+   "en": "PersonnelID",
+   "ko": "사원식별자",
+   "type": "IDREF",
+   "in": "PurchaseOrderHeader",
+   "property": "ksx:personnelID"
+  },
+  {
+   "en": "PurchaseOrderClosingIndicator",
+   "ko": "발주마감여부",
+   "type": "boolean",
+   "in": "PurchaseOrderHeader",
+   "property": "ksx:purchaseOrderClosingIndicator"
+  },
+  {
+   "en": "PurchaseOrderClosingDate",
+   "ko": "발주마감일",
+   "type": "date",
+   "in": "PurchaseOrderHeader",
+   "property": "ksx:purchaseOrderClosingDate"
+  },
+  {
+   "en": "PurchaseDocumentNumber",
+   "ko": "구매문서번호",
+   "type": "IDREF",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:purchaseDocumentNumber"
+  },
+  {
+   "en": "PurchaseDocumentSequence",
+   "ko": "구매문서순번",
+   "type": "int",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:purchaseDocumentSequence"
+  },
+  {
+   "en": "ItemPurchaseType",
+   "ko": "구매라인유형",
+   "type": "enum",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:itemPurchaseType"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemName",
+   "ko": "품목명",
+   "type": "string",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:itemName",
+   "copyOf": "ItemMaster.ItemName"
+  },
+  {
+   "en": "PurchaseOrderLineStatusCode",
+   "ko": "발주라인상태코드",
+   "type": "enum",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:purchaseOrderLineStatusCode"
+  },
+  {
+   "en": "TaxCode",
+   "ko": "세무코드",
+   "type": "enum",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:taxCode"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "PurchaseOrderUOMCode",
+   "ko": "발주단위코드",
+   "type": "enum",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:purchaseOrderUOMCode"
+  },
+  {
+   "en": "ConversionUnitQuantity",
+   "ko": "단위환산수량",
+   "type": "float",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:conversionUnitQuantity"
+  },
+  {
+   "en": "ItemUnitQuantity",
+   "ko": "기준단위수량",
+   "type": "float",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:itemUnitQuantity"
+  },
+  {
+   "en": "PurchaseOrderQuantity",
+   "ko": "구매발주수량",
+   "type": "float",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:purchaseOrderQuantity"
+  },
+  {
+   "en": "PurchaseGoodsReceiptQuantity",
+   "ko": "구매입고수량",
+   "type": "float",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:purchaseGoodsReceiptQuantity"
+  },
+  {
+   "en": "PurchaseTransactionUnitPrice",
+   "ko": "구매거래단가",
+   "type": "float",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:purchaseTransactionUnitPrice"
+  },
+  {
+   "en": "PurchaseTransactionPrice",
+   "ko": "구매거래금액",
+   "type": "float",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:purchaseTransactionPrice"
+  },
+  {
+   "en": "PurchaseOrderUnitPrice",
+   "ko": "발주단가",
+   "type": "float",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:purchaseOrderUnitPrice"
+  },
+  {
+   "en": "PurchaseOrderPrice",
+   "ko": "발주금액",
+   "type": "float",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:purchaseOrderPrice"
+  },
+  {
+   "en": "VATPrice",
+   "ko": "부가세금액",
+   "type": "float",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:vatPrice"
+  },
+  {
+   "en": "ExpectedDeliveryDate",
+   "ko": "납기예정일",
+   "type": "date",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:expectedDeliveryDate"
+  },
+  {
+   "en": "IncomingInspectionIndicator",
+   "ko": "수입검사여부",
+   "type": "boolean",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:incomingInspectionIndicator",
+   "copyOf": "ItemMaster.IncomingInspectionIndicator"
+  },
+  {
+   "en": "AccountCode",
+   "ko": "계정코드",
+   "type": "enum",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:accountCode"
+  },
+  {
+   "en": "VATTransactionUnitPrice",
+   "ko": "부가세포함거래단가",
+   "type": "float",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:vatTransactionUnitPrice"
+  },
+  {
+   "en": "VATTransactionPrice",
+   "ko": "부가세포함거래금액",
+   "type": "float",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:vatTransactionPrice"
+  },
+  {
+   "en": "VATCarryingAmount",
+   "ko": "부가세포함장부금액",
+   "type": "float",
+   "in": "PurchaseOrderLine",
+   "property": "ksx:vatCarryingAmount"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, VendorID",
+   "target": "VendorPartyMaster",
+   "property": "ksx:refVendor",
+   "in": "PurchaseOrderHeader"
+  },
+  {
+   "attr": "EnterpriseID, PersonnelID",
+   "target": "Personnel",
+   "property": "ksx:refPersonnel",
+   "in": "PurchaseOrderHeader"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "PurchaseOrderLine"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "PaymentTermsCode",
+   "group": "PaymentTermsCode"
+  },
+  {
+   "attr": "PurchaseGroupCode",
+   "group": "PurchaseGroupCode"
+  },
+  {
+   "attr": "CurrencyCode",
+   "group": "CurrencyCode"
+  },
+  {
+   "attr": "PurchaseOrderTypeCode",
+   "group": "PurchaseOrderTypeCode"
+  },
+  {
+   "attr": "PurchaseTransactionType",
+   "group": "PurchaseTransactionType"
+  },
+  {
+   "attr": "ItemPurchaseType",
+   "group": "ItemPurchaseType"
+  },
+  {
+   "attr": "PurchaseOrderLineStatusCode",
+   "group": "PurchaseOrderLineStatusCode"
+  },
+  {
+   "attr": "TaxCode",
+   "group": "TaxCode"
+  },
+  {
+   "attr": "AccountCode",
+   "group": "AccountCode"
+  }
+ ]
+}

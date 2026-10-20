@@ -1,0 +1,9 @@
+PREFIX ksx: <https://ontology.impix.co.kr/ksx9101/1.0/>
+PREFIX inf: <https://ontology.impix.co.kr/inference/>
+PREFIX ksxq: <https://ontology.impix.co.kr/quality/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+# R-010 생산실적이 영향을 주는 수주: 생산실적 → 생산지시 → 수주라인 → 수주
+CONSTRUCT { ?pp inf:affectedSalesOrderLine ?sol . ?pp inf:affectedSalesOrder ?so }
+WHERE { ?pp a ksx:ProductionPerformance ; ksx:refProductionOrder ?po .
+        ?po ksx:refSalesOrderLine ?sol . ?sol ksx:lineOf ?so .
+        FILTER NOT EXISTS { ?pp ksxq:violates ?v } }

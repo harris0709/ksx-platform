@@ -1,0 +1,95 @@
+{
+ "noun": "InTransitLocation",
+ "ko": "운송위치",
+ "clause": "7.4.6.8",
+ "table": "표 51",
+ "area": "생산관리",
+ "definition": "이동 중 현재 운송 위치 정보를 보고한다.",
+ "layer": "core",
+ "identity": [
+  "InTransitLocationID"
+ ],
+ "struct": null,
+ "physical": {
+  "InTransitLocation": {
+   "uk": [
+    "EnterpriseID",
+    "InTransitLocationID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "InTransitLocationID",
+   "ko": "운송위치식별자",
+   "type": "ID",
+   "in": "InTransitLocation",
+   "property": "ksx:inTransitLocationID"
+  },
+  {
+   "en": "TransferCommandID",
+   "ko": "이동지시식별자",
+   "type": "IDREF",
+   "in": "InTransitLocation",
+   "property": "ksx:transferCommandID"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "InTransitLocation",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "LotName",
+   "ko": "로트명",
+   "type": "string",
+   "in": "InTransitLocation",
+   "property": "ksx:lotName",
+   "copyOf": "Lot.LotName"
+  },
+  {
+   "en": "LotDescription",
+   "ko": "로트설명",
+   "type": "string",
+   "in": "InTransitLocation",
+   "property": "ksx:lotDescription",
+   "copyOf": "Lot.LotDescription"
+  },
+  {
+   "en": "CarrierID",
+   "ko": "캐리어식별자",
+   "type": "IDREF",
+   "in": "InTransitLocation",
+   "property": "ksx:carrierID"
+  },
+  {
+   "en": "CurrentLocation",
+   "ko": "현재위치",
+   "type": "string",
+   "in": "InTransitLocation",
+   "property": "ksx:currentLocation"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, TransferCommandID",
+   "target": "TransferCommand",
+   "property": "ksx:refTransferCommand",
+   "in": "InTransitLocation"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "InTransitLocation"
+  },
+  {
+   "attr": "EnterpriseID, CarrierID",
+   "target": "Carrier",
+   "property": "ksx:refCarrier",
+   "in": "InTransitLocation"
+  }
+ ],
+ "codes": []
+}

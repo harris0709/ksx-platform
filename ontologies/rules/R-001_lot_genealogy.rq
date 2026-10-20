@@ -1,0 +1,7 @@
+PREFIX ksx: <https://ontology.impix.co.kr/ksx9101/1.0/>
+PREFIX inf: <https://ontology.impix.co.kr/inference/>
+PREFIX ksxq: <https://ontology.impix.co.kr/quality/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+# R-001 로트 계보 전개: 모로트를 끝까지 따라간다
+CONSTRUCT { ?lot inf:derivedFrom ?anc }
+WHERE { ?lot ksx:refParentLot+ ?anc . FILTER NOT EXISTS { ?lot ksxq:violates ?v } }

@@ -1,0 +1,297 @@
+{
+ "noun": "Batch",
+ "ko": "배치",
+ "clause": "7.4.1.20",
+ "table": "표 31",
+ "area": "기준정보",
+ "definition": "배치 공정의 1회 실행으로 생산되고 있거나 생산된 물질의 단위를 의미한다. 원료를 정해진 양만큼 투입하여 일괄 처리하는 공정(배합, 반응, 발효, 열처리 등)의 생산 단위이며, 공급사에서 생산하여 납품한 구매품의 배치를 포함한다.",
+ "layer": "core",
+ "identity": [
+  "BatchID"
+ ],
+ "struct": null,
+ "physical": {
+  "Batch": {
+   "uk": [
+    "EnterpriseID",
+    "BatchID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "BatchID",
+   "ko": "배치식별자",
+   "type": "ID",
+   "in": "Batch",
+   "property": "ksx:batchID"
+  },
+  {
+   "en": "BatchName",
+   "ko": "배치명",
+   "type": "string",
+   "in": "Batch",
+   "property": "ksx:batchName"
+  },
+  {
+   "en": "BatchDescription",
+   "ko": "배치설명",
+   "type": "string",
+   "in": "Batch",
+   "property": "ksx:batchDescription"
+  },
+  {
+   "en": "BatchType",
+   "ko": "배치유형",
+   "type": "enum",
+   "in": "Batch",
+   "property": "ksx:batchType"
+  },
+  {
+   "en": "ParentBatchID",
+   "ko": "모배치식별자",
+   "type": "IDREF",
+   "in": "Batch",
+   "property": "ksx:parentBatchID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "Batch",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "Batch",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "ProductionOrderID",
+   "ko": "생산지시식별자",
+   "type": "IDREF",
+   "in": "Batch",
+   "property": "ksx:productionOrderID"
+  },
+  {
+   "en": "ProductionOrderSequence",
+   "ko": "생산지시순번",
+   "type": "int",
+   "in": "Batch",
+   "property": "ksx:productionOrderSequence"
+  },
+  {
+   "en": "BOMID",
+   "ko": "자재명세서식별자",
+   "type": "IDREF",
+   "in": "Batch",
+   "property": "ksx:bomID"
+  },
+  {
+   "en": "BOMRevisionNumber",
+   "ko": "자재명세서버전",
+   "type": "int",
+   "in": "Batch",
+   "property": "ksx:bomRevisionNumber"
+  },
+  {
+   "en": "RecipeID",
+   "ko": "레시피식별자",
+   "type": "string",
+   "in": "Batch",
+   "property": "ksx:recipeID"
+  },
+  {
+   "en": "RecipeVersion",
+   "ko": "레시피버전",
+   "type": "string",
+   "in": "Batch",
+   "property": "ksx:recipeVersion"
+  },
+  {
+   "en": "OperationID",
+   "ko": "공정식별자",
+   "type": "IDREF",
+   "in": "Batch",
+   "property": "ksx:operationID"
+  },
+  {
+   "en": "EquipmentID",
+   "ko": "설비식별자",
+   "type": "IDREF",
+   "in": "Batch",
+   "property": "ksx:equipmentID"
+  },
+  {
+   "en": "BatchState",
+   "ko": "배치상태",
+   "type": "enum",
+   "in": "Batch",
+   "property": "ksx:batchState"
+  },
+  {
+   "en": "HoldIndicator",
+   "ko": "보류여부",
+   "type": "boolean",
+   "in": "Batch",
+   "property": "ksx:holdIndicator"
+  },
+  {
+   "en": "ReworkIndicator",
+   "ko": "재작업여부",
+   "type": "boolean",
+   "in": "Batch",
+   "property": "ksx:reworkIndicator"
+  },
+  {
+   "en": "QualityDispositionCode",
+   "ko": "품질판정코드",
+   "type": "enum",
+   "in": "Batch",
+   "property": "ksx:qualityDispositionCode"
+  },
+  {
+   "en": "BatchPlannedQuantity",
+   "ko": "배치계획수량",
+   "type": "float",
+   "in": "Batch",
+   "property": "ksx:batchPlannedQuantity"
+  },
+  {
+   "en": "ProducedQuantity",
+   "ko": "생산수량",
+   "type": "float",
+   "in": "Batch",
+   "property": "ksx:producedQuantity"
+  },
+  {
+   "en": "DefectQuantity",
+   "ko": "불량수량",
+   "type": "float",
+   "in": "Batch",
+   "property": "ksx:defectQuantity"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "Batch",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "ScheduleStartDateTime",
+   "ko": "계획시작일시",
+   "type": "dateTime",
+   "in": "Batch",
+   "property": "ksx:scheduleStartDateTime"
+  },
+  {
+   "en": "ScheduleEndDateTime",
+   "ko": "계획종료일시",
+   "type": "dateTime",
+   "in": "Batch",
+   "property": "ksx:scheduleEndDateTime"
+  },
+  {
+   "en": "BatchStartDateTime",
+   "ko": "배치시작일시",
+   "type": "dateTime",
+   "in": "Batch",
+   "property": "ksx:batchStartDateTime"
+  },
+  {
+   "en": "BatchEndDateTime",
+   "ko": "배치종료일시",
+   "type": "dateTime",
+   "in": "Batch",
+   "property": "ksx:batchEndDateTime"
+  },
+  {
+   "en": "ManufactureDate",
+   "ko": "제조일",
+   "type": "date",
+   "in": "Batch",
+   "property": "ksx:manufactureDate"
+  },
+  {
+   "en": "ValidEndDate",
+   "ko": "유효종료일",
+   "type": "date",
+   "in": "Batch",
+   "property": "ksx:validEndDate"
+  },
+  {
+   "en": "PersonnelID",
+   "ko": "사원식별자",
+   "type": "IDREF",
+   "in": "Batch",
+   "property": "ksx:personnelID"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ParentBatchID",
+   "target": "Batch",
+   "property": "ksx:refParentBatch",
+   "in": "Batch"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "Batch"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "Batch"
+  },
+  {
+   "attr": "EnterpriseID, ProductionOrderID, ProductionOrderSequence",
+   "target": "ProductionOrder",
+   "property": "ksx:refProductionOrder",
+   "in": "Batch"
+  },
+  {
+   "attr": "EnterpriseID, BOMID, BOMRevisionNumber",
+   "target": "BOM",
+   "property": "ksx:refBOM",
+   "in": "Batch"
+  },
+  {
+   "attr": "EnterpriseID, OperationID",
+   "target": "Operation",
+   "property": "ksx:refOperation",
+   "in": "Batch"
+  },
+  {
+   "attr": "EnterpriseID, EquipmentID",
+   "target": "Equipment",
+   "property": "ksx:refEquipment",
+   "in": "Batch"
+  },
+  {
+   "attr": "EnterpriseID, PersonnelID",
+   "target": "Personnel",
+   "property": "ksx:refPersonnel",
+   "in": "Batch"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "BatchType",
+   "group": "BatchType"
+  },
+  {
+   "attr": "BatchState",
+   "group": "BatchState"
+  },
+  {
+   "attr": "QualityDispositionCode",
+   "group": "QualityDispositionCode"
+  }
+ ]
+}

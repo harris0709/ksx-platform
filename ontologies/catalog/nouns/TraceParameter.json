@@ -1,0 +1,92 @@
+{
+ "noun": "TraceParameter",
+ "ko": "설비파라미터이력",
+ "clause": "7.4.6.19",
+ "table": "표 62",
+ "area": "생산관리",
+ "definition": "설비에서 수집되는 Parameter 값의 적재 및 검증 이력을 의미한다.",
+ "layer": "core",
+ "identity": [
+  "TraceParameterID"
+ ],
+ "struct": null,
+ "physical": {
+  "TraceParameter": {
+   "uk": [
+    "EnterpriseID",
+    "TraceParameterID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "TraceParameterID",
+   "ko": "설비파라미터이력식별자",
+   "type": "ID",
+   "in": "TraceParameter",
+   "property": "ksx:traceParameterID"
+  },
+  {
+   "en": "EquipmentID",
+   "ko": "설비식별자",
+   "type": "IDREF",
+   "in": "TraceParameter",
+   "property": "ksx:equipmentID"
+  },
+  {
+   "en": "ParameterID",
+   "ko": "파라미터식별자",
+   "type": "IDREF",
+   "in": "TraceParameter",
+   "property": "ksx:parameterID"
+  },
+  {
+   "en": "EventDateTime",
+   "ko": "이벤트발생일시",
+   "type": "dateTime",
+   "in": "TraceParameter",
+   "property": "ksx:eventDateTime"
+  },
+  {
+   "en": "ParameterUOMCode",
+   "ko": "파라미터단위코드",
+   "type": "enum",
+   "in": "TraceParameter",
+   "property": "ksx:parameterUOMCode"
+  },
+  {
+   "en": "ParameterValue",
+   "ko": "파라미터값",
+   "type": "float",
+   "in": "TraceParameter",
+   "property": "ksx:parameterValue"
+  },
+  {
+   "en": "ValidationResultCode",
+   "ko": "검증결과코드",
+   "type": "enum",
+   "in": "TraceParameter",
+   "property": "ksx:validationResultCode"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, EquipmentID",
+   "target": "Equipment",
+   "property": "ksx:refEquipment",
+   "in": "TraceParameter"
+  },
+  {
+   "attr": "EnterpriseID, ParameterID",
+   "target": "EquipmentParameter",
+   "property": "ksx:refParameter",
+   "in": "TraceParameter"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "ValidationResultCode",
+   "group": "ValidationResultCode"
+  }
+ ]
+}

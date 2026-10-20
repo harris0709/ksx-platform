@@ -1,0 +1,11 @@
+name: ksx
+version: "1.0.0"
+profile: ksx
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+models:
+  ksx:
+    stg: { +schema: stg, +materialized: view }
+    ksx: { +schema: ksx, +materialized: incremental }
+    ext: { +schema: ext, +materialized: incremental }

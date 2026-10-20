@@ -1,0 +1,81 @@
+{
+ "noun": "Site",
+ "ko": "사업장",
+ "clause": "7.4.1.1",
+ "table": "표 12",
+ "area": "기준정보",
+ "definition": "회사 내 하위 관리단위로서의 사업장을 의미한다.",
+ "layer": "core",
+ "identity": [
+  "SiteID"
+ ],
+ "struct": null,
+ "physical": {
+  "Site": {
+   "uk": [
+    "EnterpriseID",
+    "SiteID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "SiteID",
+   "ko": "사업장식별자",
+   "type": "ID",
+   "in": "Site",
+   "property": "ksx:siteID"
+  },
+  {
+   "en": "SiteName",
+   "ko": "사업장명",
+   "type": "string",
+   "in": "Site",
+   "property": "ksx:siteName"
+  },
+  {
+   "en": "BusinessRegistrationNumber",
+   "ko": "사업자등록번호",
+   "type": "string",
+   "in": "Site",
+   "property": "ksx:businessRegistrationNumber"
+  },
+  {
+   "en": "DialNumber",
+   "ko": "전화번호",
+   "type": "string",
+   "in": "Site",
+   "property": "ksx:dialNumber"
+  },
+  {
+   "en": "PostalCode",
+   "ko": "우편번호",
+   "type": "string",
+   "in": "Site",
+   "property": "ksx:postalCode"
+  },
+  {
+   "en": "BaseAddress",
+   "ko": "기본주소",
+   "type": "string",
+   "in": "Site",
+   "property": "ksx:baseAddress"
+  },
+  {
+   "en": "DetailAddress",
+   "ko": "상세주소",
+   "type": "string",
+   "in": "Site",
+   "property": "ksx:detailAddress"
+  },
+  {
+   "en": "UseIndicator",
+   "ko": "사용여부",
+   "type": "boolean",
+   "in": "Site",
+   "property": "ksx:useIndicator"
+  }
+ ],
+ "references": [],
+ "codes": []
+}

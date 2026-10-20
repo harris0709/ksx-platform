@@ -1,0 +1,179 @@
+{
+ "noun": "GoodsIssue",
+ "ko": "자재불출",
+ "clause": "7.4.5.3",
+ "table": "표 43",
+ "area": "자재관리",
+ "definition": "자재불출 요청된 자재를 불출하는 것을 의미한다(일반적으로 재고 관리주체가 다를 경우 창고관리부서에서 사용).",
+ "layer": "core",
+ "identity": [
+  "GoodsIssueID"
+ ],
+ "struct": null,
+ "physical": {
+  "GoodsIssue": {
+   "uk": [
+    "EnterpriseID",
+    "GoodsIssueID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "GoodsIssueID",
+   "ko": "자재불출식별자",
+   "type": "ID",
+   "in": "GoodsIssue",
+   "property": "ksx:goodsIssueID"
+  },
+  {
+   "en": "InventoryTransactionDocumentNumber",
+   "ko": "수불문서번호",
+   "type": "string",
+   "in": "GoodsIssue",
+   "property": "ksx:inventoryTransactionDocumentNumber"
+  },
+  {
+   "en": "InventoryTransactionDocumentSequence",
+   "ko": "수불문서순번",
+   "type": "int",
+   "in": "GoodsIssue",
+   "property": "ksx:inventoryTransactionDocumentSequence"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "GoodsIssue",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "InventoryTransactionTypeCode",
+   "ko": "수불유형코드",
+   "type": "enum",
+   "in": "GoodsIssue",
+   "property": "ksx:inventoryTransactionTypeCode"
+  },
+  {
+   "en": "InventoryTransferType",
+   "ko": "입출고유형",
+   "type": "enum",
+   "in": "GoodsIssue",
+   "property": "ksx:inventoryTransferType"
+  },
+  {
+   "en": "InventoryVariationType",
+   "ko": "재고증감유형",
+   "type": "enum",
+   "in": "GoodsIssue",
+   "property": "ksx:inventoryVariationType"
+  },
+  {
+   "en": "InventoryTransactionType",
+   "ko": "수불유형",
+   "type": "enum",
+   "in": "GoodsIssue",
+   "property": "ksx:inventoryTransactionType"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "GoodsIssue",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "SerialUseIndicator",
+   "ko": "시리얼사용여부",
+   "type": "boolean",
+   "in": "GoodsIssue",
+   "property": "ksx:serialUseIndicator"
+  },
+  {
+   "en": "VendorID",
+   "ko": "공급사식별자",
+   "type": "IDREF",
+   "in": "GoodsIssue",
+   "property": "ksx:vendorID"
+  },
+  {
+   "en": "WarehouseID",
+   "ko": "창고식별자",
+   "type": "IDREF",
+   "in": "GoodsIssue",
+   "property": "ksx:warehouseID"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "GoodsIssue",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "ItemUnitQuantity",
+   "ko": "기준단위수량",
+   "type": "float",
+   "in": "GoodsIssue",
+   "property": "ksx:itemUnitQuantity"
+  },
+  {
+   "en": "OrderUOMCode",
+   "ko": "오더단위코드",
+   "type": "enum",
+   "in": "GoodsIssue",
+   "property": "ksx:orderUOMCode"
+  },
+  {
+   "en": "OrderQuantity",
+   "ko": "오더수량",
+   "type": "float",
+   "in": "GoodsIssue",
+   "property": "ksx:orderQuantity"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "GoodsIssue"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "GoodsIssue"
+  },
+  {
+   "attr": "EnterpriseID, VendorID",
+   "target": "VendorPartyMaster",
+   "property": "ksx:refVendor",
+   "in": "GoodsIssue"
+  },
+  {
+   "attr": "EnterpriseID, WarehouseID",
+   "target": "WarehouseLocation",
+   "property": "ksx:refWarehouse",
+   "in": "GoodsIssue"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "InventoryTransactionTypeCode",
+   "group": "InventoryTransactionTypeCode"
+  },
+  {
+   "attr": "InventoryTransferType",
+   "group": "InventoryTransferType"
+  },
+  {
+   "attr": "InventoryVariationType",
+   "group": "InventoryVariationType"
+  },
+  {
+   "attr": "InventoryTransactionType",
+   "group": "InventoryTransactionType"
+  }
+ ]
+}

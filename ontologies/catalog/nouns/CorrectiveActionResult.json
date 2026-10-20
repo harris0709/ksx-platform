@@ -1,0 +1,206 @@
+{
+ "noun": "CorrectiveActionResult",
+ "ko": "시정조치결과",
+ "clause": "7.4.6.16",
+ "table": "표 59",
+ "area": "생산관리",
+ "definition": "시정조치계획에 따라 수행 결과를 고객사에 전달하는 것을 의미한다.",
+ "layer": "core",
+ "identity": [
+  "CorrectiveActionResultID"
+ ],
+ "struct": null,
+ "physical": {
+  "CorrectiveActionResult": {
+   "uk": [
+    "EnterpriseID",
+    "CorrectiveActionResultID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "VendorID",
+   "ko": "공급사식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:vendorID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemName",
+   "ko": "품목명",
+   "type": "string",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:itemName",
+   "copyOf": "ItemMaster.ItemName"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "BatchID",
+   "ko": "배치식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:batchID"
+  },
+  {
+   "en": "CorrectiveActionRequestID",
+   "ko": "시정조치요청식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:correctiveActionRequestID"
+  },
+  {
+   "en": "CorrectiveActionPlanID",
+   "ko": "시정조치계획식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:correctiveActionPlanID"
+  },
+  {
+   "en": "CorrectiveActionResultID",
+   "ko": "시정조치결과식별자",
+   "type": "ID",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:correctiveActionResultID"
+  },
+  {
+   "en": "PersonInChargeID",
+   "ko": "시정조치담당자식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:personInChargeID"
+  },
+  {
+   "en": "PersonInChargeEmail",
+   "ko": "시정조치담당자이메일명",
+   "type": "string",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:personInChargeEmail"
+  },
+  {
+   "en": "PersonInChargeDialNumber",
+   "ko": "시정조치담당자전화번호",
+   "type": "string",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:personInChargeDialNumber"
+  },
+  {
+   "en": "CorrectiveActionConfirmorID",
+   "ko": "시정조치확인자식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:correctiveActionConfirmorID"
+  },
+  {
+   "en": "CorrectiveActionConfirmorEmail",
+   "ko": "시정조치확인자이메일명",
+   "type": "string",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:correctiveActionConfirmorEmail"
+  },
+  {
+   "en": "CorrectiveActionConfirmorDialNumber",
+   "ko": "시정조치확인자전화번호",
+   "type": "string",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:correctiveActionConfirmorDialNumber"
+  },
+  {
+   "en": "CorrectiveActionDateTime",
+   "ko": "시정조치일시",
+   "type": "dateTime",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:correctiveActionDateTime"
+  },
+  {
+   "en": "CorrectiveActionResultDescription",
+   "ko": "시정조치결과내용",
+   "type": "string",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:correctiveActionResultDescription"
+  },
+  {
+   "en": "CorrectiveActionStatusCode",
+   "ko": "시정조치상태코드",
+   "type": "enum",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:correctiveActionStatusCode"
+  },
+  {
+   "en": "ReasonForRejection",
+   "ko": "반려사유",
+   "type": "string",
+   "in": "CorrectiveActionResult",
+   "property": "ksx:reasonForRejection"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, VendorID",
+   "target": "VendorPartyMaster",
+   "property": "ksx:refVendor",
+   "in": "CorrectiveActionResult"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "CorrectiveActionResult"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "CorrectiveActionResult"
+  },
+  {
+   "attr": "EnterpriseID, BatchID",
+   "target": "Batch",
+   "property": "ksx:refBatch",
+   "in": "CorrectiveActionResult"
+  },
+  {
+   "attr": "EnterpriseID, CorrectiveActionRequestID",
+   "target": "CorrectiveActionRequest",
+   "property": "ksx:refCorrectiveActionRequest",
+   "in": "CorrectiveActionResult"
+  },
+  {
+   "attr": "EnterpriseID, CorrectiveActionPlanID",
+   "target": "CorrectiveActionPlan",
+   "property": "ksx:refCorrectiveActionPlan",
+   "in": "CorrectiveActionResult"
+  },
+  {
+   "attr": "EnterpriseID, PersonInChargeID",
+   "target": "Personnel",
+   "property": "ksx:refPersonInCharge",
+   "in": "CorrectiveActionResult"
+  },
+  {
+   "attr": "EnterpriseID, CorrectiveActionConfirmorID",
+   "target": "Personnel",
+   "property": "ksx:refCorrectiveActionConfirmor",
+   "in": "CorrectiveActionResult"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "CorrectiveActionStatusCode",
+   "group": "CorrectiveActionStatusCode"
+  }
+ ]
+}

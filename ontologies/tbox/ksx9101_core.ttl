@@ -1,0 +1,2091 @@
+@prefix ksx:  <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+
+<https://ontology.impix.co.kr/ksx9101/1.0> a owl:Ontology ;
+    rdfs:label "KS X 9101-1 제조 온톨로지 Core"@ko ;
+    owl:versionInfo "KS X 9101-1:2025 개정안 v1.0" ;
+    dct:source "KSX9101-1_v1.0_테이블정의서.xlsx" .
+
+### 메타 클래스·주석 속성
+ksx:Noun a owl:Class ; rdfs:label "KS X 9101 명사"@ko .
+ksx:StructLine a owl:Class ; rdfs:label "라인 구조체(struct[1..N])"@ko ; rdfs:comment "명사 안에서만 존재하는 반복 행. 독립 명사가 아님"@ko .
+ksx:standardClause a owl:AnnotationProperty .
+ksx:standardTable a owl:AnnotationProperty .
+ksx:businessArea a owl:AnnotationProperty .
+ksx:sourceAttribute a owl:AnnotationProperty .
+ksx:copyOf a owl:AnnotationProperty ; rdfs:comment "사본 속성의 원천(Noun.Attr). 관계가 아님"@ko .
+ksx:codeGroup a owl:AnnotationProperty .
+ksx:structOf a owl:AnnotationProperty .
+ksx:structType a owl:AnnotationProperty .
+ksx:physicalTable a owl:AnnotationProperty .
+ksx:conversionFactor a owl:DatatypeProperty ; rdfs:label "기준단위 환산계수"@ko ; rdfs:range xsd:decimal .
+ksx:hasLine a owl:ObjectProperty ; rdfs:label "라인"@ko ; rdfs:range ksx:StructLine ; owl:inverseOf ksx:lineOf .
+ksx:lineOf a owl:ObjectProperty, owl:FunctionalProperty ; rdfs:label "소속 헤더"@ko .
+
+### 클래스(명사·라인 구조체)
+ksx:Site a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "사업장"@ko, "Site"@en ;
+    skos:definition "회사 내 하위 관리단위로서의 사업장을 의미한다."@ko ;
+    ksx:standardClause "7.4.1.1" ; ksx:standardTable "표 12" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "Site" .
+ksx:Plant a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "공장"@ko, "Plant"@en ;
+    skos:definition "회사 내 하위 관리단위로서의 공장을 의미한다."@ko ;
+    ksx:standardClause "7.4.1.2" ; ksx:standardTable "표 13" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "Plant" .
+ksx:Department a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "부서"@ko, "Department"@en ;
+    skos:definition "회사 내 하위 관리 단위로서의 부서를 의미한다."@ko ;
+    ksx:standardClause "7.4.1.3" ; ksx:standardTable "표 14" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "Department" .
+ksx:Personnel a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "사원"@ko, "Personnel"@en ;
+    skos:definition "사원코드, 사원명, 인적정보 등을 관리하는 사원 마스터를 의미한다. 일반적으로 HRMS(Human Resource Management System)에서 사용되지만 작업 스케줄링 또는 자원 할당에서 사용될 수도 있다."@ko ;
+    ksx:standardClause "7.4.1.4" ; ksx:standardTable "표 15" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "Personnel" .
+ksx:CustomerPartyMaster a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "고객사"@ko, "CustomerPartyMaster"@en ;
+    skos:definition "고객사 코드, 고객사명, 사업자등록번호 등 고객사 정보를 관리하는 고객사 마스터를 의미한다."@ko ;
+    ksx:standardClause "7.4.1.5" ; ksx:standardTable "표 16" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "CustomerPartyMaster" .
+ksx:VendorPartyMaster a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "공급사"@ko, "VendorPartyMaster"@en ;
+    skos:definition "공급사 코드, 공급사명, 사업자등록번호 등 공급사 정보를 관리하는 공급사 마스터를 의미한다."@ko ;
+    ksx:standardClause "7.4.1.6" ; ksx:standardTable "표 17" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "VendorPartyMaster" .
+ksx:CommonCodeMaster a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "공통코드정보"@ko, "CommonCodeMaster"@en ;
+    skos:definition "애플리케이션 내에서 사용되는 각종 코드를 모아 놓은 통합 코드를 의미한다."@ko ;
+    ksx:standardClause "7.4.1.7" ; ksx:standardTable "표 18" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "CommonCodeMaster" .
+ksx:WorkCalendar a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "달력"@ko, "WorkCalendar"@en ;
+    skos:definition "생산 현장의 달력을 의미한다. 단, 인사에서 사용하는 일반 달력과는 차이가 있다."@ko ;
+    ksx:standardClause "7.4.1.8" ; ksx:standardTable "표 19" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "WorkCalendar" .
+ksx:UOMGroup a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "단위그룹"@ko, "UOMGroup"@en ;
+    skos:definition "단위그룹(UOMGroup) 명사의 헤더 구조체(struct) 단위그룹 1건의 공통 정보(중량, 부피, 길이 등 측정 단위의 그룹) 단위그룹마다 1회 나타남"@ko ;
+    ksx:standardClause "7.4.1.9" ; ksx:standardTable "표 20" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "UOMGroupHeader" .
+ksx:UOMGroupLine a owl:Class ; rdfs:subClassOf ksx:StructLine ;
+    rdfs:label "단위그룹라인"@ko, "UOMGroupLine"@en ;
+    ksx:structOf ksx:UOMGroup ; ksx:structType "struct[1..N]" ;
+    ksx:physicalTable "UOMGroupLine" ; ksx:standardClause "7.4.1.9" .
+ksx:ItemMaster a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "품목마스터"@ko, "ItemMaster"@en ;
+    skos:definition "품목코드, 품목명, 규격 등과 각종 속성값을 관리하는 품목마스터를 의미한다. 단, 수량정보는 포함하지 않는다."@ko ;
+    ksx:standardClause "7.4.1.10" ; ksx:standardTable "표 21" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "ItemMaster" .
+ksx:BOM a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "자재명세서"@ko, "BOM"@en ;
+    skos:definition "자재명세서(BOM) 명사의 헤더 구조체(struct) 자재명세서 1건의 공통 정보(모품목, 버전, 유형, 공정경로) 자재명세서마다 1회 나타남"@ko ;
+    ksx:standardClause "7.4.1.11" ; ksx:standardTable "표 22" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "BOMHeader" .
+ksx:BOMLine a owl:Class ; rdfs:subClassOf ksx:StructLine ;
+    rdfs:label "자재명세서라인"@ko, "BOMLine"@en ;
+    ksx:structOf ksx:BOM ; ksx:structType "struct[1..N]" ;
+    ksx:physicalTable "BOMLine" ; ksx:standardClause "7.4.1.11" .
+ksx:Lot a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "로트"@ko, "Lot"@en ;
+    skos:definition "묶음 생산 단위의 정보를 의미한다."@ko ;
+    ksx:standardClause "7.4.1.12" ; ksx:standardTable "표 23" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "Lot" .
+ksx:Routing a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "공정경로"@ko, "Routing"@en ;
+    skos:definition "공정경로(Routing) 명사의 헤더 구조체(struct) 공정경로 1건의 공통 정보(공정경로명, 대상 품목, 사용 여부) 공정경로마다 1회 나타남"@ko ;
+    ksx:standardClause "7.4.1.13" ; ksx:standardTable "표 24" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "RoutingHeader" .
+ksx:RoutingLine a owl:Class ; rdfs:subClassOf ksx:StructLine ;
+    rdfs:label "공정경로라인"@ko, "RoutingLine"@en ;
+    ksx:structOf ksx:Routing ; ksx:structType "struct[1..N]" ;
+    ksx:physicalTable "RoutingLine" ; ksx:standardClause "7.4.1.13" .
+ksx:Operation a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "공정"@ko, "Operation"@en ;
+    skos:definition "생산작업을 수행하는 작업장 또는 작업장 내 세부 작업단위를 의미한다."@ko ;
+    ksx:standardClause "7.4.1.14" ; ksx:standardTable "표 25" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "Operation" .
+ksx:Equipment a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "설비"@ko, "Equipment"@en ;
+    skos:definition "설비명, 설비유형 등 설비 관리 및 회사의 자산으로서 관리를 위한 설비정보를 의미한다."@ko ;
+    ksx:standardClause "7.4.1.15" ; ksx:standardTable "표 26" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "Equipment" .
+ksx:OperationEquipment a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "공정설비"@ko, "OperationEquipment"@en ;
+    skos:definition "공정별 사용되는 설비 정보 데이터를 의미한다."@ko ;
+    ksx:standardClause "7.4.1.16" ; ksx:standardTable "표 27" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "OperationEquipment" .
+ksx:Carrier a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "캐리어"@ko, "Carrier"@en ;
+    skos:definition "제조 공정 내 이동에 필요한 물리적 용기를 의미한다."@ko ;
+    ksx:standardClause "7.4.1.17" ; ksx:standardTable "표 28" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "Carrier" .
+ksx:StockerInventory a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "저장소재공정보"@ko, "StockerInventory"@en ;
+    skos:definition "공장 내 공정 물류 저장소 정보를 의미한다. 이는 공정 내 물류 최적화를 위해 Lot Dispatcher를 사용하는데 SCS(StockerControlSystem), Dispatcher, MES 상호연동을 위해 존재한다."@ko ;
+    ksx:standardClause "7.4.1.18" ; ksx:standardTable "표 29" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "StockerInventory" .
+ksx:WarehouseLocation a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "창고"@ko, "WarehouseLocation"@en ;
+    skos:definition "창고(WarehouseLocation) 명사의 헤더 구조체(struct) 창고 1건의 공통 정보(창고명, 창고유형, 재고 관리 기준) 창고마다 1회 나타남"@ko ;
+    ksx:standardClause "7.4.1.19" ; ksx:standardTable "표 30" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "WarehouseLocationHeader" .
+ksx:WarehouseLocationLine a owl:Class ; rdfs:subClassOf ksx:StructLine ;
+    rdfs:label "창고라인"@ko, "WarehouseLocationLine"@en ;
+    ksx:structOf ksx:WarehouseLocation ; ksx:structType "struct[1..N]" ;
+    ksx:physicalTable "WarehouseLocationLine" ; ksx:standardClause "7.4.1.19" .
+ksx:Batch a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "배치"@ko, "Batch"@en ;
+    skos:definition "배치 공정의 1회 실행으로 생산되고 있거나 생산된 물질의 단위를 의미한다. 원료를 정해진 양만큼 투입하여 일괄 처리하는 공정(배합, 반응, 발효, 열처리 등)의 생산 단위이며, 공급사에서 생산하여 납품한 구매품의 배치를 포함한다."@ko ;
+    ksx:standardClause "7.4.1.20" ; ksx:standardTable "표 31" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "Batch" .
+ksx:Line a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "라인"@ko, "Line"@en ;
+    skos:definition "같은 공장 안에서 공정과 설비를 일정한 흐름으로 배치하여 특정 품목 또는 품목군을 생산하는 생산 단위를 의미한다. 라인은 공장에 속하며, 하나 이상의 공정과 설비로 구성된다."@ko ;
+    ksx:standardClause "7.4.1.21" ; ksx:standardTable "표 32" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "Line" .
+ksx:Enterprise a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "회사"@ko, "Enterprise"@en ;
+    skos:definition "기업업무시스템 간 제조업무데이터를 교환하는 법인 단위의 회사를 의미한다. 회사는 하나 이상의 사업장으로 구성되며, 모든 명사 정보의 최상위 소유 범위가 된다."@ko ;
+    ksx:standardClause "7.4.1.22" ; ksx:standardTable "표 33" ;
+    ksx:businessArea "기준정보"@ko ; ksx:physicalTable "Enterprise" .
+ksx:ProjectMaster a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "프로젝트마스터"@ko, "ProjectMaster"@en ;
+    skos:definition "프로젝트 코드, 프로젝트명 등을 관리하는 프로젝트마스터를 의미한다. 주요 프로젝트 필드의 ProjectAccounting 관련 애플리케이션 활성화를 위한정보로 활용되기도 한다."@ko ;
+    ksx:standardClause "7.4.2.1" ; ksx:standardTable "표 34" ;
+    ksx:businessArea "프로젝트관리"@ko ; ksx:physicalTable "ProjectMaster" .
+ksx:EngineeringChangeOrder a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "설계변경지시"@ko, "EngineeringChangeOrder"@en ;
+    skos:definition "제품의 설계를 변경하는 지시를 의미한다. 설계변경지시 수행 결과는 BOM 및 공정경로BOM에 반영된다."@ko ;
+    ksx:standardClause "7.4.2.2" ; ksx:standardTable "표 35" ;
+    ksx:businessArea "프로젝트관리"@ko ; ksx:physicalTable "EngineeringChangeOrder" .
+ksx:SalesOrder a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "수주오더"@ko, "SalesOrder"@en ;
+    skos:definition "수주오더(SalesOrder) 명사의 헤더 구조체(struct) 수주문서 1건의 공통 정보(고객사, 수주일, 수주유형, 거래 조건) 수주문서마다 1회 나타남"@ko ;
+    ksx:standardClause "7.4.3.1" ; ksx:standardTable "표 36" ;
+    ksx:businessArea "판매관리"@ko ; ksx:physicalTable "SalesOrderHeader" .
+ksx:SalesOrderLine a owl:Class ; rdfs:subClassOf ksx:StructLine ;
+    rdfs:label "수주오더라인"@ko, "SalesOrderLine"@en ;
+    ksx:structOf ksx:SalesOrder ; ksx:structType "struct[1..N]" ;
+    ksx:physicalTable "SalesOrderLine" ; ksx:standardClause "7.4.3.1" .
+ksx:SalesPlan a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "판매계획"@ko, "SalesPlan"@en ;
+    skos:definition "고객사 Forecast정보 및 수요예측정보를 토대로 작성된 판매계획을 의미한다."@ko ;
+    ksx:standardClause "7.4.3.2" ; ksx:standardTable "표 37" ;
+    ksx:businessArea "판매관리"@ko ; ksx:physicalTable "SalesPlan" .
+ksx:BasePrice a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "기준가격"@ko, "BasePrice"@en ;
+    skos:definition "구매요청 시 참조하기 위한 구매품의 기준가격 정보를 의미한다."@ko ;
+    ksx:standardClause "7.4.4.1" ; ksx:standardTable "표 38" ;
+    ksx:businessArea "구매관리"@ko ; ksx:physicalTable "BasePrice" .
+ksx:PurchaseRequisition a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "구매요청"@ko, "PurchaseRequisition"@en ;
+    skos:definition "생산 또는 판매를 위해 수급되어야 할 품목을 요청하는 것을 의미한다(원부자재, 소모품, 상품 등)."@ko ;
+    ksx:standardClause "7.4.4.2" ; ksx:standardTable "표 39" ;
+    ksx:businessArea "구매관리"@ko ; ksx:physicalTable "PurchaseRequisition" .
+ksx:PurchaseOrder a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "구매발주"@ko, "PurchaseOrder"@en ;
+    skos:definition "구매발주(PurchaseOrder) 명사의 헤더 구조체(struct) 구매문서 1건의 공통 정보(공급사, 발주일, 결제·거래 조건, 담당자) 구매문서마다 1회 나타남"@ko ;
+    ksx:standardClause "7.4.4.3" ; ksx:standardTable "표 40" ;
+    ksx:businessArea "구매관리"@ko ; ksx:physicalTable "PurchaseOrderHeader" .
+ksx:PurchaseOrderLine a owl:Class ; rdfs:subClassOf ksx:StructLine ;
+    rdfs:label "구매발주라인"@ko, "PurchaseOrderLine"@en ;
+    ksx:structOf ksx:PurchaseOrder ; ksx:structType "struct[1..N]" ;
+    ksx:physicalTable "PurchaseOrderLine" ; ksx:standardClause "7.4.4.3" .
+ksx:MaterialArrival a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "자재도착"@ko, "MaterialArrival"@en ;
+    skos:definition "자재가 입고 전 수입검사를 위해 도착한 정보를 의미한다."@ko ;
+    ksx:standardClause "7.4.5.1" ; ksx:standardTable "표 41" ;
+    ksx:businessArea "자재관리"@ko ; ksx:physicalTable "MaterialArrival" .
+ksx:GoodsReceipt a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "입고"@ko, "GoodsReceipt"@en ;
+    skos:definition "구매 발주된 품목을 협력업체로부터 납품 받은 정보를 의미한다."@ko ;
+    ksx:standardClause "7.4.5.2" ; ksx:standardTable "표 42" ;
+    ksx:businessArea "자재관리"@ko ; ksx:physicalTable "GoodsReceipt" .
+ksx:GoodsIssue a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "자재불출"@ko, "GoodsIssue"@en ;
+    skos:definition "자재불출 요청된 자재를 불출하는 것을 의미한다(일반적으로 재고 관리주체가 다를 경우 창고관리부서에서 사용)."@ko ;
+    ksx:standardClause "7.4.5.3" ; ksx:standardTable "표 43" ;
+    ksx:businessArea "자재관리"@ko ; ksx:physicalTable "GoodsIssue" .
+ksx:ProductionPlanning a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "생산계획"@ko, "ProductionPlanning"@en ;
+    skos:definition "특정 제품을 생산하기 위한 계획을 의미한다."@ko ;
+    ksx:standardClause "7.4.6.1" ; ksx:standardTable "표 44" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "ProductionPlanning" .
+ksx:ProductionOrder a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "생산지시"@ko, "ProductionOrder"@en ;
+    skos:definition "특정 제품의 생산을 지시하는 정보를 의미한다."@ko ;
+    ksx:standardClause "7.4.6.2" ; ksx:standardTable "표 45" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "ProductionOrder" .
+ksx:OperationStart a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "착공"@ko, "OperationStart"@en ;
+    skos:definition "설비에 해당 공정의 생산을 지시한다."@ko ;
+    ksx:standardClause "7.4.6.3" ; ksx:standardTable "표 46" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "OperationStart" .
+ksx:OperationEnd a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "완공"@ko, "OperationEnd"@en ;
+    skos:definition "해당 공정의 생산 완료를 보고한다."@ko ;
+    ksx:standardClause "7.4.6.4" ; ksx:standardTable "표 47" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "OperationEnd" .
+ksx:TransferCommand a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "이동지시"@ko, "TransferCommand"@en ;
+    skos:definition "현재 공정에서 다음 공정으로 작업할 Lot의 이동을 지시한다."@ko ;
+    ksx:standardClause "7.4.6.5" ; ksx:standardTable "표 48" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "TransferCommand" .
+ksx:TransferStart a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "운행시작"@ko, "TransferStart"@en ;
+    skos:definition "이동지시 명령을 받아 운행 시작 시 시작 정보를 보고한다."@ko ;
+    ksx:standardClause "7.4.6.6" ; ksx:standardTable "표 49" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "TransferStart" .
+ksx:TransferEnd a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "운행완료"@ko, "TransferEnd"@en ;
+    skos:definition "이동지시 명령을 받아 운행 완료 시 완료 정보를 보고한다."@ko ;
+    ksx:standardClause "7.4.6.7" ; ksx:standardTable "표 50" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "TransferEnd" .
+ksx:InTransitLocation a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "운송위치"@ko, "InTransitLocation"@en ;
+    skos:definition "이동 중 현재 운송 위치 정보를 보고한다."@ko ;
+    ksx:standardClause "7.4.6.8" ; ksx:standardTable "표 51" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "InTransitLocation" .
+ksx:EquipmentState a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "설비상태"@ko, "EquipmentState"@en ;
+    skos:definition "설비의 상태가 변경될 시 상태 정보를 보고한다."@ko ;
+    ksx:standardClause "7.4.6.9" ; ksx:standardTable "표 52" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "EquipmentState" .
+ksx:Alarm a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "알람"@ko, "Alarm"@en ;
+    skos:definition "설비에서 발생하는 알람 정보를 의미한다."@ko ;
+    ksx:standardClause "7.4.6.10" ; ksx:standardTable "표 53" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "Alarm" .
+ksx:SupplierInspectionPlan a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "협력업체품질검사계획"@ko, "SupplierInspectionPlan"@en ;
+    skos:definition "수주산업에서 프로젝트성으로 추진하고 있는 협력업체 발주품에 대해 발주처 및 협력업체 품질부서에서 품질검사를 하기 위한 일정 계획을 의미한다."@ko ;
+    ksx:standardClause "7.4.6.11" ; ksx:standardTable "표 54" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "SupplierInspectionPlan" .
+ksx:SupplierInspectionApplication a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "협력업체품질검사신청"@ko, "SupplierInspectionApplication"@en ;
+    skos:definition "품질검사계획에 따라 협력업체에 품질검사를 신청하는 것을 의미한다."@ko ;
+    ksx:standardClause "7.4.6.12" ; ksx:standardTable "표 55" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "SupplierInspectionApplication" .
+ksx:SupplierInspectionResult a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "협력업체품질검사결과"@ko, "SupplierInspectionResult"@en ;
+    skos:definition "검사결과를 품질관리 부서에 전달하는 것을 의미한다."@ko ;
+    ksx:standardClause "7.4.6.13" ; ksx:standardTable "표 56" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "SupplierInspectionResult" .
+ksx:CorrectiveActionRequest a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "시정조치요청"@ko, "CorrectiveActionRequest"@en ;
+    skos:definition "공급사에 시정조치를 요청하는 것을 의미한다."@ko ;
+    ksx:standardClause "7.4.6.14" ; ksx:standardTable "표 57" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "CorrectiveActionRequest" .
+ksx:CorrectiveActionPlan a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "시정조치계획"@ko, "CorrectiveActionPlan"@en ;
+    skos:definition "공급사에서 시정조치 사항을 기술하고, 시정조치 계획을 수립하여 고객사에게 전달하는 것을 의미한다."@ko ;
+    ksx:standardClause "7.4.6.15" ; ksx:standardTable "표 58" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "CorrectiveActionPlan" .
+ksx:CorrectiveActionResult a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "시정조치결과"@ko, "CorrectiveActionResult"@en ;
+    skos:definition "시정조치계획에 따라 수행 결과를 고객사에 전달하는 것을 의미한다."@ko ;
+    ksx:standardClause "7.4.6.16" ; ksx:standardTable "표 59" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "CorrectiveActionResult" .
+ksx:ProductPacking a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "제품포장"@ko, "ProductPacking"@en ;
+    skos:definition "제품 출하를 위해 완성된 제품을 포장하기 위한 정보를 의미한다."@ko ;
+    ksx:standardClause "7.4.6.17" ; ksx:standardTable "표 60" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "ProductPacking" .
+ksx:EquipmentParameter a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "설비파라미터"@ko, "EquipmentParameter"@en ;
+    skos:definition "설비에서 수집되는 Parameter 값의 집합을 의미한다."@ko ;
+    ksx:standardClause "7.4.6.18" ; ksx:standardTable "표 61" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "EquipmentParameter" .
+ksx:TraceParameter a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "설비파라미터이력"@ko, "TraceParameter"@en ;
+    skos:definition "설비에서 수집되는 Parameter 값의 적재 및 검증 이력을 의미한다."@ko ;
+    ksx:standardClause "7.4.6.19" ; ksx:standardTable "표 62" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "TraceParameter" .
+ksx:ProductionPerformance a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "생산실적"@ko, "ProductionPerformance"@en ;
+    skos:definition "생산지시에 의해 실행된 생산의 실적 결과 정보를 의미한다."@ko ;
+    ksx:standardClause "7.4.6.20" ; ksx:standardTable "표 63" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "ProductionPerformance" .
+ksx:ProductionPerformanceItem a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "생산실적투입품목"@ko, "ProductionPerformanceItem"@en ;
+    skos:definition "생산 과정에서 투입되는 모든 품목(원자재, 부자재, 반제품, 완제품 등) 관련 정보를 의미한다."@ko ;
+    ksx:standardClause "7.4.6.21" ; ksx:standardTable "표 64" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "ProductionPerformanceItem" .
+ksx:ProductionPerformancePersonnel a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "생산실적투입인력"@ko, "ProductionPerformancePersonnel"@en ;
+    skos:definition "생산 과정에서 투입된 인력정보를 의미한다. 생산실적투입인력 명사는 표 65와같은 정보 속성을 포함하고 있다."@ko ;
+    ksx:standardClause "7.4.6.22" ; ksx:standardTable "표 65" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "ProductionPerformancePersonnel" .
+ksx:ProductionPerformanceEquipment a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "설비활용실적"@ko, "ProductionPerformanceEquipment"@en ;
+    skos:definition "생산 과정에서 사용된 설비의 활용실적 정보를 의미한다."@ko ;
+    ksx:standardClause "7.4.6.23" ; ksx:standardTable "표 66" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "ProductionPerformanceEquipment" .
+ksx:ProductionPerformanceQuality a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "생산품질실적"@ko, "ProductionPerformanceQuality"@en ;
+    skos:definition "생산 과정에서 발생한 품질정보를 의미한다."@ko ;
+    ksx:standardClause "7.4.6.24" ; ksx:standardTable "표 67" ;
+    ksx:businessArea "생산관리"@ko ; ksx:physicalTable "ProductionPerformanceQuality" .
+ksx:Inventory a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "재고"@ko, "Inventory"@en ;
+    skos:definition "저장위치에 있는 품목의 실제 보유(On-hand) 수량을 의미한다."@ko ;
+    ksx:standardClause "7.4.7.1" ; ksx:standardTable "표 68" ;
+    ksx:businessArea "재고관리"@ko ; ksx:physicalTable "Inventory" .
+ksx:AvailableInventory a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "가용재고"@ko, "AvailableInventory"@en ;
+    skos:definition "현 재고와 특정 시점까지의 예상 입출고를 감안하여 사용 가능한 재고를 의미한다."@ko ;
+    ksx:standardClause "7.4.7.2" ; ksx:standardTable "표 69" ;
+    ksx:businessArea "재고관리"@ko ; ksx:physicalTable "AvailableInventory" .
+ksx:StockTransfer a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "재고이동"@ko, "StockTransfer"@en ;
+    skos:definition "재고가 다른 창고로 이동하기 위해 필요한 정보를 의미한다."@ko ;
+    ksx:standardClause "7.4.7.3" ; ksx:standardTable "표 70" ;
+    ksx:businessArea "재고관리"@ko ; ksx:physicalTable "StockTransfer" .
+ksx:InventoryCount a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "재고실사"@ko, "InventoryCount"@en ;
+    skos:definition "보관된 재고에 대해 실수량을 파악하기 위한 정보를 의미한다."@ko ;
+    ksx:standardClause "7.4.7.4" ; ksx:standardTable "표 71" ;
+    ksx:businessArea "재고관리"@ko ; ksx:physicalTable "InventoryCount" .
+ksx:ProductIncoming a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "제품입고"@ko, "ProductIncoming"@en ;
+    skos:definition "생산된 제품을 창고에 저장하는 것을 의미한다."@ko ;
+    ksx:standardClause "7.4.8.1" ; ksx:standardTable "표 72" ;
+    ksx:businessArea "창고관리"@ko ; ksx:physicalTable "ProductIncoming" .
+ksx:ProductReleaseRequest a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "출하의뢰"@ko, "ProductReleaseRequest"@en ;
+    skos:definition "출하의뢰(ProductReleaseRequest) 명사의 헤더 구조체(struct) 출하의뢰 문서 1건의 공통 정보(납품문서번호, 납품구분유형, 납품지시일, 고객사) 출하의뢰마다 1회 나타남"@ko ;
+    ksx:standardClause "7.4.8.2" ; ksx:standardTable "표 73" ;
+    ksx:businessArea "창고관리"@ko ; ksx:physicalTable "ProductReleaseRequestHeader" .
+ksx:ProductReleaseRequestLine a owl:Class ; rdfs:subClassOf ksx:StructLine ;
+    rdfs:label "출하의뢰라인"@ko, "ProductReleaseRequestLine"@en ;
+    ksx:structOf ksx:ProductReleaseRequest ; ksx:structType "struct[1..N]" ;
+    ksx:physicalTable "ProductReleaseRequestLine" ; ksx:standardClause "7.4.8.2" .
+ksx:ProductRelease a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "제품출고"@ko, "ProductRelease"@en ;
+    skos:definition "수주된 품목을 고객에게 보내는 것을 의미한다."@ko ;
+    ksx:standardClause "7.4.8.3" ; ksx:standardTable "표 74" ;
+    ksx:businessArea "창고관리"@ko ; ksx:physicalTable "ProductRelease" .
+ksx:Delivery a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "배송"@ko, "Delivery"@en ;
+    skos:definition "배송(Delivery) 명사의 헤더 구조체(struct) 특정 수량의 물품을 공급업체에서 단일 고객 목적지로 운송하는 데 사용되는 배송 1건의 공통 정보 배송마다 1회 나타남"@ko ;
+    ksx:standardClause "7.4.8.4" ; ksx:standardTable "표 75" ;
+    ksx:businessArea "창고관리"@ko ; ksx:physicalTable "DeliveryHeader" .
+ksx:DeliveryLine a owl:Class ; rdfs:subClassOf ksx:StructLine ;
+    rdfs:label "배송라인"@ko, "DeliveryLine"@en ;
+    ksx:structOf ksx:Delivery ; ksx:structType "struct[1..N]" ;
+    ksx:physicalTable "DeliveryLine" ; ksx:standardClause "7.4.8.4" .
+ksx:Return a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "반품"@ko, "Return"@en ;
+    skos:definition "반품(구매반품, 제품반품)에 대한 정보를 의미한다."@ko ;
+    ksx:standardClause "7.4.9.1" ; ksx:standardTable "표 76" ;
+    ksx:businessArea "서비스관리"@ko ; ksx:physicalTable "Return" .
+ksx:ProductTraceParameterOnCustomer a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "고객제품데이터"@ko, "ProductTraceParameterOnCustomer"@en ;
+    skos:definition "고객에게 판매 완료 후 부가적인 서비스 제공 및 가치창출을 위해 고객 제품에서 수집되는 데이터를 의미한다."@ko ;
+    ksx:standardClause "7.4.9.2" ; ksx:standardTable "표 77" ;
+    ksx:businessArea "서비스관리"@ko ; ksx:physicalTable "ProductTraceParameterOnCustomer" .
+ksx:AfterSalesServiceRequest a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "사후서비스신청"@ko, "AfterSalesServiceRequest"@en ;
+    skos:definition "고객에게 판매된 제품의 고장으로 제조자 혹은 대리점 등에 고장 접수 시 필요한 데이터를 의미한다."@ko ;
+    ksx:standardClause "7.4.9.3" ; ksx:standardTable "표 78" ;
+    ksx:businessArea "서비스관리"@ko ; ksx:physicalTable "AfterSalesServiceRequest" .
+ksx:AfterSalesServiceRequestResult a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "사후서비스결과"@ko, "AfterSalesServiceRequestResult"@en ;
+    skos:definition "고객의 사후서비스 접수 이후 제조사 혹은 대리점의 처리결과를 교환하기 위해 필요한 데이터를 의미한다."@ko ;
+    ksx:standardClause "7.4.9.4" ; ksx:standardTable "표 79" ;
+    ksx:businessArea "서비스관리"@ko ; ksx:physicalTable "AfterSalesServiceRequestResult" .
+
+### 속성
+ksx:abcClass a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ABCClass" ;
+    rdfs:label "에이비씨분류"@ko, "ABCClass"@en ;
+    ksx:sourceAttribute "ABCClass" .
+ksx:accountCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "AccountCode" ;
+    rdfs:label "계정코드"@ko, "AccountCode"@en ;
+    ksx:sourceAttribute "AccountCode" .
+ksx:acquisitionDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "취득일"@ko, "AcquisitionDate"@en ;
+    ksx:sourceAttribute "AcquisitionDate" .
+ksx:actualEndDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "실제종료일"@ko, "ActualEndDate"@en ;
+    ksx:sourceAttribute "ActualEndDate" .
+ksx:actualLaborDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "투입일시"@ko, "ActualLaborDateTime"@en ;
+    ksx:sourceAttribute "ActualLaborDateTime" .
+ksx:actualLaborTime a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "투입시간"@ko, "ActualLaborTime"@en ;
+    ksx:sourceAttribute "ActualLaborTime" .
+ksx:actualLaborTimeUOMCode a owl:ObjectProperty ; rdfs:range skos:Concept ;
+    rdfs:label "투입시간단위코드"@ko, "ActualLaborTimeUOMCode"@en ;
+    ksx:sourceAttribute "ActualLaborTimeUOMCode" .
+ksx:actualRequirementQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "실소요수량"@ko, "ActualRequirementQuantity"@en ;
+    ksx:sourceAttribute "ActualRequirementQuantity" .
+ksx:actualStartDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "실제시작일"@ko, "ActualStartDate"@en ;
+    ksx:sourceAttribute "ActualStartDate" .
+ksx:alarmID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "알람식별자"@ko, "AlarmID"@en ;
+    ksx:sourceAttribute "AlarmID" .
+ksx:alarmState a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "AlarmState" ;
+    rdfs:label "알람상태"@ko, "AlarmState"@en ;
+    ksx:sourceAttribute "AlarmState" .
+ksx:alternateStockerID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "대체저장소식별자"@ko, "AlternateStockerID"@en ;
+    ksx:sourceAttribute "AlternateStockerID" .
+ksx:applicationPersonnelID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "검사신청자"@ko, "ApplicationPersonnelID"@en ;
+    ksx:sourceAttribute "ApplicationPersonnelID" .
+ksx:availableInventoryID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "가용재고식별자"@ko, "AvailableInventoryID"@en ;
+    ksx:sourceAttribute "AvailableInventoryID" .
+ksx:availableInventoryQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "가용재고량"@ko, "AvailableInventoryQuantity"@en ;
+    ksx:sourceAttribute "AvailableInventoryQuantity" .
+ksx:backFlushedIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "백플러시여부"@ko, "BackFlushedIndicator"@en ;
+    ksx:sourceAttribute "BackFlushedIndicator" .
+ksx:baseAddress a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "기본주소"@ko, "BaseAddress"@en ;
+    ksx:sourceAttribute "BaseAddress" .
+ksx:baseCurrencyCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "CurrencyCode" ;
+    rdfs:label "기준통화코드"@ko, "BaseCurrencyCode"@en ;
+    ksx:sourceAttribute "BaseCurrencyCode" .
+ksx:basicAcceptProcessCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "BasicAcceptProcessCode" ;
+    rdfs:label "접수내용단순처리코드"@ko, "BasicAcceptProcessCode"@en ;
+    ksx:sourceAttribute "BasicAcceptProcessCode" .
+ksx:batchDescription a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "배치설명"@ko, "BatchDescription"@en ;
+    ksx:sourceAttribute "BatchDescription" .
+ksx:batchEndDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "배치종료일시"@ko, "BatchEndDateTime"@en ;
+    ksx:sourceAttribute "BatchEndDateTime" .
+ksx:batchID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "배치식별자"@ko, "BatchID"@en ;
+    ksx:sourceAttribute "BatchID" .
+ksx:batchName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "배치명"@ko, "BatchName"@en ;
+    ksx:sourceAttribute "BatchName" .
+ksx:batchPlannedQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "배치계획수량"@ko, "BatchPlannedQuantity"@en ;
+    ksx:sourceAttribute "BatchPlannedQuantity" .
+ksx:batchStartDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "배치시작일시"@ko, "BatchStartDateTime"@en ;
+    ksx:sourceAttribute "BatchStartDateTime" .
+ksx:batchState a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "BatchState" ;
+    rdfs:label "배치상태"@ko, "BatchState"@en ;
+    ksx:sourceAttribute "BatchState" .
+ksx:batchType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "BatchType" ;
+    rdfs:label "배치유형"@ko, "BatchType"@en ;
+    ksx:sourceAttribute "BatchType" .
+ksx:bomID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "자재명세서식별자"@ko, "BOMID"@en ;
+    ksx:sourceAttribute "BOMID" .
+ksx:bomLineSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "자재명세서라인순번"@ko, "BOMLineSequence"@en ;
+    ksx:sourceAttribute "BOMLineSequence" .
+ksx:bomQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "품목기준수량"@ko, "BOMQuantity"@en ;
+    ksx:sourceAttribute "BOMQuantity" .
+ksx:bomRevisionNumber a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "자재명세서버전"@ko, "BOMRevisionNumber"@en ;
+    ksx:sourceAttribute "BOMRevisionNumber" .
+ksx:bomType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "BOMType" ;
+    rdfs:label "자재명세서유형"@ko, "BOMType"@en ;
+    ksx:sourceAttribute "BOMType" .
+ksx:boxNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "포장박스번호"@ko, "BoxNumber"@en ;
+    ksx:sourceAttribute "BoxNumber" .
+ksx:businessRegistrationNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "사업자등록번호"@ko, "BusinessRegistrationNumber"@en ;
+    ksx:sourceAttribute "BusinessRegistrationNumber" .
+ksx:calendarDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "달력일자"@ko, "CalendarDate"@en ;
+    ksx:sourceAttribute "CalendarDate" .
+ksx:calendarID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "달력식별자"@ko, "CalendarID"@en ;
+    ksx:sourceAttribute "CalendarID" .
+ksx:calendarType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "CalendarType" ;
+    rdfs:label "달력유형"@ko, "CalendarType"@en ;
+    ksx:sourceAttribute "CalendarType" .
+ksx:cancelDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "취소일시"@ko, "CancelDateTime"@en ;
+    ksx:sourceAttribute "CancelDateTime" .
+ksx:cancelIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "취소여부"@ko, "CancelIndicator"@en ;
+    ksx:sourceAttribute "CancelIndicator" .
+ksx:capacityUOMCode a owl:ObjectProperty ; rdfs:range skos:Concept ;
+    rdfs:label "생산능력단위코드"@ko, "CapacityUOMCode"@en ;
+    ksx:sourceAttribute "CapacityUOMCode" .
+ksx:carrierID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "캐리어식별자"@ko, "CarrierID"@en ;
+    ksx:sourceAttribute "CarrierID" .
+ksx:carrierState a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "CarrierState" ;
+    rdfs:label "캐리어상태"@ko, "CarrierState"@en ;
+    ksx:sourceAttribute "CarrierState" .
+ksx:carrierType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "CarrierType" ;
+    rdfs:label "캐리어유형"@ko, "CarrierType"@en ;
+    ksx:sourceAttribute "CarrierType" .
+ksx:childItemID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "자품목식별자"@ko, "ChildItemID"@en ;
+    ksx:sourceAttribute "ChildItemID" .
+ksx:childItemName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "자품목명"@ko, "ChildItemName"@en ;
+    ksx:sourceAttribute "ChildItemName" .
+ksx:childItemUOMCode a owl:ObjectProperty ; rdfs:range skos:Concept ;
+    rdfs:label "자품목기준단위코드"@ko, "ChildItemUOMCode"@en ;
+    ksx:sourceAttribute "ChildItemUOMCode" .
+ksx:childLotID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "자로트식별자"@ko, "ChildLotID"@en ;
+    ksx:sourceAttribute "ChildLotID" .
+ksx:collectionDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "수집일시"@ko, "CollectionDateTime"@en ;
+    ksx:sourceAttribute "CollectionDateTime" .
+ksx:commonCodeGroup a owl:ObjectProperty ; rdfs:range skos:Concept ;
+    rdfs:label "공통코드그룹"@ko, "CommonCodeGroup"@en ;
+    ksx:sourceAttribute "CommonCodeGroup" .
+ksx:commonCodeID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "공통코드식별자"@ko, "CommonCodeID"@en ;
+    ksx:sourceAttribute "CommonCodeID" .
+ksx:commonCodeName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "공통코드명"@ko, "CommonCodeName"@en ;
+    ksx:sourceAttribute "CommonCodeName" .
+ksx:commonCodeSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "표시순번"@ko, "CommonCodeSequence"@en ;
+    ksx:sourceAttribute "CommonCodeSequence" .
+ksx:conversionUnitQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "단위환산수량"@ko, "ConversionUnitQuantity"@en ;
+    ksx:sourceAttribute "ConversionUnitQuantity" .
+ksx:corporateRegistrationNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "법인등록번호"@ko, "CorporateRegistrationNumber"@en ;
+    ksx:sourceAttribute "CorporateRegistrationNumber" .
+ksx:correctiveActionApprovalIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "시정조치접수여부"@ko, "CorrectiveActionApprovalIndicator"@en ;
+    ksx:sourceAttribute "CorrectiveActionApprovalIndicator" .
+ksx:correctiveActionConfirmorDialNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "시정조치확인자전화번호"@ko, "CorrectiveActionConfirmorDialNumber"@en ;
+    ksx:sourceAttribute "CorrectiveActionConfirmorDialNumber" .
+ksx:correctiveActionConfirmorEmail a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "시정조치확인자이메일명"@ko, "CorrectiveActionConfirmorEmail"@en ;
+    ksx:sourceAttribute "CorrectiveActionConfirmorEmail" .
+ksx:correctiveActionConfirmorID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "시정조치확인자식별자"@ko, "CorrectiveActionConfirmorID"@en ;
+    ksx:sourceAttribute "CorrectiveActionConfirmorID" .
+ksx:correctiveActionDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "시정조치일시"@ko, "CorrectiveActionDateTime"@en ;
+    ksx:sourceAttribute "CorrectiveActionDateTime" .
+ksx:correctiveActionPlanID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "시정조치계획식별자"@ko, "CorrectiveActionPlanID"@en ;
+    ksx:sourceAttribute "CorrectiveActionPlanID" .
+ksx:correctiveActionRequestDocumentReference a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "시정조치요청첨부자료"@ko, "CorrectiveActionRequestDocumentReference"@en ;
+    ksx:sourceAttribute "CorrectiveActionRequestDocumentReference" .
+ksx:correctiveActionRequestID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "시정조치요청식별자"@ko, "CorrectiveActionRequestID"@en ;
+    ksx:sourceAttribute "CorrectiveActionRequestID" .
+ksx:correctiveActionRequestIssuerID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "시정조치요청발행자식별자"@ko, "CorrectiveActionRequestIssuerID"@en ;
+    ksx:sourceAttribute "CorrectiveActionRequestIssuerID" .
+ksx:correctiveActionRequestLocation a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "시정조치요청위치"@ko, "CorrectiveActionRequestLocation"@en ;
+    ksx:sourceAttribute "CorrectiveActionRequestLocation" .
+ksx:correctiveActionRequestRecipientID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "시정조치요청접수자식별자"@ko, "CorrectiveActionRequestRecipientID"@en ;
+    ksx:sourceAttribute "CorrectiveActionRequestRecipientID" .
+ksx:correctiveActionResultDescription a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "시정조치결과내용"@ko, "CorrectiveActionResultDescription"@en ;
+    ksx:sourceAttribute "CorrectiveActionResultDescription" .
+ksx:correctiveActionResultID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "시정조치결과식별자"@ko, "CorrectiveActionResultID"@en ;
+    ksx:sourceAttribute "CorrectiveActionResultID" .
+ksx:correctiveActionStatusCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "CorrectiveActionStatusCode" ;
+    rdfs:label "시정조치상태코드"@ko, "CorrectiveActionStatusCode"@en ;
+    ksx:sourceAttribute "CorrectiveActionStatusCode" .
+ksx:countryID a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "CountryID" ;
+    rdfs:label "국가식별자"@ko, "CountryID"@en ;
+    ksx:sourceAttribute "CountryID" .
+ksx:countryOfOrigin a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "원산국가"@ko, "CountryOfOrigin"@en ;
+    ksx:sourceAttribute "CountryOfOrigin" .
+ksx:creationDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "등록일시"@ko, "CreationDateTime"@en ;
+    ksx:sourceAttribute "CreationDateTime" .
+ksx:creatorID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "등록자식별자"@ko, "CreatorID"@en ;
+    ksx:sourceAttribute "CreatorID" .
+ksx:currencyCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "CurrencyCode" ;
+    rdfs:label "환종코드"@ko, "CurrencyCode"@en ;
+    ksx:sourceAttribute "CurrencyCode" .
+ksx:currentCapacity a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "현재용량"@ko, "CurrentCapacity"@en ;
+    ksx:sourceAttribute "CurrentCapacity" .
+ksx:currentLocation a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "현재위치"@ko, "CurrentLocation"@en ;
+    ksx:sourceAttribute "CurrentLocation" .
+ksx:currentOperationID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "현재공정식별자"@ko, "CurrentOperationID"@en ;
+    ksx:sourceAttribute "CurrentOperationID" .
+ksx:currentQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "적재수량"@ko, "CurrentQuantity"@en ;
+    ksx:sourceAttribute "CurrentQuantity" .
+ksx:customerID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "고객사식별자"@ko, "CustomerID"@en ;
+    ksx:sourceAttribute "CustomerID" .
+ksx:customerName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "고객사명"@ko, "CustomerName"@en ;
+    ksx:sourceAttribute "CustomerName" .
+ksx:daqDevice a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "데이터수집장치"@ko, "DAQDevice"@en ;
+    ksx:sourceAttribute "DAQDevice" .
+ksx:dataCollectionPeriod a owl:DatatypeProperty ; rdfs:range xsd:duration ;
+    rdfs:label "수집주기"@ko, "DataCollectionPeriod"@en ;
+    ksx:sourceAttribute "DataCollectionPeriod" .
+ksx:dayOfWeek a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "DayOfWeek" ;
+    rdfs:label "요일"@ko, "DayOfWeek"@en ;
+    ksx:sourceAttribute "DayOfWeek" .
+ksx:dayOfYear a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "총누계일수"@ko, "DayOfYear"@en ;
+    ksx:sourceAttribute "DayOfYear" .
+ksx:defectQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "불량수량"@ko, "DefectQuantity"@en ;
+    ksx:sourceAttribute "DefectQuantity" .
+ksx:defectTypeCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "DefectTypeCode" ;
+    rdfs:label "불량유형코드"@ko, "DefectTypeCode"@en ;
+    ksx:sourceAttribute "DefectTypeCode" .
+ksx:defectTypeDetailCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "DefectTypeDetailCode" ;
+    rdfs:label "불량유형상세코드"@ko, "DefectTypeDetailCode"@en ;
+    ksx:sourceAttribute "DefectTypeDetailCode" .
+ksx:defectTypeQuantity a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "불량유형별수량"@ko, "DefectTypeQuantity"@en ;
+    ksx:sourceAttribute "DefectTypeQuantity" .
+ksx:deliveryConfirmationDocument a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "납품확인서"@ko, "DeliveryConfirmationDocument"@en ;
+    ksx:sourceAttribute "DeliveryConfirmationDocument" .
+ksx:deliveryDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "납품일"@ko, "DeliveryDate"@en ;
+    ksx:sourceAttribute "DeliveryDate" .
+ksx:deliveryDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "배송일시"@ko, "DeliveryDateTime"@en ;
+    ksx:sourceAttribute "DeliveryDateTime" .
+ksx:deliveryID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "배송식별자"@ko, "DeliveryID"@en ;
+    ksx:sourceAttribute "DeliveryID" .
+ksx:deliveryLineSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "배송라인순번"@ko, "DeliveryLineSequence"@en ;
+    ksx:sourceAttribute "DeliveryLineSequence" .
+ksx:deliveryNote a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "배송메모"@ko, "DeliveryNote"@en ;
+    ksx:sourceAttribute "DeliveryNote" .
+ksx:demandPriority a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "요청우선순위"@ko, "DemandPriority"@en ;
+    ksx:sourceAttribute "DemandPriority" .
+ksx:demandQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "구매요청수량"@ko, "DemandQuantity"@en ;
+    ksx:sourceAttribute "DemandQuantity" .
+ksx:departmentID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "부서식별자"@ko, "DepartmentID"@en ;
+    ksx:sourceAttribute "DepartmentID" .
+ksx:departmentInChargeID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "관리부서식별자"@ko, "DepartmentInChargeID"@en ;
+    ksx:sourceAttribute "DepartmentInChargeID" .
+ksx:departmentInChargeName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "배송처리담당부서명"@ko, "DepartmentInChargeName"@en ;
+    ksx:sourceAttribute "DepartmentInChargeName" ;
+    ksx:copyOf "Department.DepartmentName" .
+ksx:departmentName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "부서명"@ko, "DepartmentName"@en ;
+    ksx:sourceAttribute "DepartmentName" .
+ksx:destinationID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "목적지식별자"@ko, "DestinationID"@en ;
+    ksx:sourceAttribute "DestinationID" .
+ksx:destinationName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "목적지명"@ko, "DestinationName"@en ;
+    ksx:sourceAttribute "DestinationName" ;
+    ksx:copyOf "TransferCommand.DestinationName" .
+ksx:destinationType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "LocationType" ;
+    rdfs:label "목적지유형"@ko, "DestinationType"@en ;
+    ksx:sourceAttribute "DestinationType" .
+ksx:detailAddress a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "상세주소"@ko, "DetailAddress"@en ;
+    ksx:sourceAttribute "DetailAddress" .
+ksx:dialNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "전화번호"@ko, "DialNumber"@en ;
+    ksx:sourceAttribute "DialNumber" .
+ksx:dimensionUOMCode a owl:ObjectProperty ; rdfs:range skos:Concept ;
+    rdfs:label "치수단위코드"@ko, "DimensionUOMCode"@en ;
+    ksx:sourceAttribute "DimensionUOMCode" .
+ksx:divisionID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "사업부식별자"@ko, "DivisionID"@en ;
+    ksx:sourceAttribute "DivisionID" .
+ksx:drawingNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "도면번호"@ko, "DrawingNumber"@en ;
+    ksx:sourceAttribute "DrawingNumber" .
+ksx:employmentStatusType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "EmploymentStatusType" ;
+    rdfs:label "재직유형"@ko, "EmploymentStatusType"@en ;
+    ksx:sourceAttribute "EmploymentStatusType" .
+ksx:endIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "종료여부"@ko, "EndIndicator"@en ;
+    ksx:sourceAttribute "EndIndicator" .
+ksx:engineeringChangeOrderID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "설계변경지시식별자"@ko, "EngineeringChangeOrderID"@en ;
+    ksx:sourceAttribute "EngineeringChangeOrderID" .
+ksx:enterpriseID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "회사식별자"@ko, "EnterpriseID"@en ;
+    ksx:sourceAttribute "EnterpriseID" .
+ksx:enterpriseName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "회사명"@ko, "EnterpriseName"@en ;
+    ksx:sourceAttribute "EnterpriseName" .
+ksx:equipmentControlMode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "EquipmentControlMode" ;
+    rdfs:label "설비제어모드"@ko, "EquipmentControlMode"@en ;
+    ksx:sourceAttribute "EquipmentControlMode" .
+ksx:equipmentID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "설비식별자"@ko, "EquipmentID"@en ;
+    ksx:sourceAttribute "EquipmentID" .
+ksx:equipmentLargeClass a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "EquipmentLargeClass" ;
+    rdfs:label "설비대분류"@ko, "EquipmentLargeClass"@en ;
+    ksx:sourceAttribute "EquipmentLargeClass" .
+ksx:equipmentMediumClass a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "EquipmentMediumClass" ;
+    rdfs:label "설비중분류"@ko, "EquipmentMediumClass"@en ;
+    ksx:sourceAttribute "EquipmentMediumClass" .
+ksx:equipmentName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "설비명"@ko, "EquipmentName"@en ;
+    ksx:sourceAttribute "EquipmentName" ;
+    ksx:copyOf "Equipment.EquipmentName" .
+ksx:equipmentOperationMode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "EquipmentOperationMode" ;
+    rdfs:label "설비운영모드"@ko, "EquipmentOperationMode"@en ;
+    ksx:sourceAttribute "EquipmentOperationMode" .
+ksx:equipmentQuantity a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "기준사용대수"@ko, "EquipmentQuantity"@en ;
+    ksx:sourceAttribute "EquipmentQuantity" .
+ksx:equipmentSmallClass a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "EquipmentSmallClass" ;
+    rdfs:label "설비소분류"@ko, "EquipmentSmallClass"@en ;
+    ksx:sourceAttribute "EquipmentSmallClass" .
+ksx:equipmentState a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "EquipmentState" ;
+    rdfs:label "설비상태"@ko, "EquipmentState"@en ;
+    ksx:sourceAttribute "EquipmentState" .
+ksx:equipmentStateID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "설비상태식별자"@ko, "EquipmentStateID"@en ;
+    ksx:sourceAttribute "EquipmentStateID" .
+ksx:equipmentType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "EquipmentType" ;
+    rdfs:label "설비유형"@ko, "EquipmentType"@en ;
+    ksx:sourceAttribute "EquipmentType" .
+ksx:errorCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "TransferErrorCode" ;
+    rdfs:label "오류코드"@ko, "ErrorCode"@en ;
+    ksx:sourceAttribute "ErrorCode" .
+ksx:errorMessage a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "오류메세지"@ko, "ErrorMessage"@en ;
+    ksx:sourceAttribute "ErrorMessage" .
+ksx:eventDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "이벤트발생일시"@ko, "EventDateTime"@en ;
+    ksx:sourceAttribute "EventDateTime" .
+ksx:exchangeRate a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "환율"@ko, "ExchangeRate"@en ;
+    ksx:sourceAttribute "ExchangeRate" .
+ksx:executionDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "적용이행일"@ko, "ExecutionDate"@en ;
+    ksx:sourceAttribute "ExecutionDate" .
+ksx:executionEndDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "생산종료일시"@ko, "ExecutionEndDateTime"@en ;
+    ksx:sourceAttribute "ExecutionEndDateTime" .
+ksx:executionStartDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "생산시작일시"@ko, "ExecutionStartDateTime"@en ;
+    ksx:sourceAttribute "ExecutionStartDateTime" .
+ksx:expectedCorrectiveActionDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "시정조치예정일"@ko, "ExpectedCorrectiveActionDate"@en ;
+    ksx:sourceAttribute "ExpectedCorrectiveActionDate" .
+ksx:expectedDeliveryDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "납기예정일"@ko, "ExpectedDeliveryDate"@en ;
+    ksx:sourceAttribute "ExpectedDeliveryDate" ;
+    ksx:copyOf "PurchaseOrder.ExpectedDeliveryDate" .
+ksx:expectedEndDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "종료예정일"@ko, "ExpectedEndDate"@en ;
+    ksx:sourceAttribute "ExpectedEndDate" .
+ksx:expectedExecutionDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "적용예정일"@ko, "ExpectedExecutionDate"@en ;
+    ksx:sourceAttribute "ExpectedExecutionDate" .
+ksx:expectedInspectionDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "검사예정일"@ko, "ExpectedInspectionDate"@en ;
+    ksx:sourceAttribute "ExpectedInspectionDate" ;
+    ksx:copyOf "SupplierInspectionPlan.ExpectedInspectionDate" .
+ksx:expectedInspectionTimePeriod a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "검사예정기간"@ko, "ExpectedInspectionTimePeriod"@en ;
+    ksx:sourceAttribute "ExpectedInspectionTimePeriod" .
+ksx:expectedStartDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "시작예정일"@ko, "ExpectedStartDate"@en ;
+    ksx:sourceAttribute "ExpectedStartDate" .
+ksx:exportIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "수출여부"@ko, "ExportIndicator"@en ;
+    ksx:sourceAttribute "ExportIndicator" .
+ksx:faultLargeClass a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "FaultLargeClass" ;
+    rdfs:label "하자현상대분류"@ko, "FaultLargeClass"@en ;
+    ksx:sourceAttribute "FaultLargeClass" .
+ksx:faultSmallClass a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "FaultSmallClass" ;
+    rdfs:label "하자현상소분류"@ko, "FaultSmallClass"@en ;
+    ksx:sourceAttribute "FaultSmallClass" .
+ksx:faxNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "팩스번호"@ko, "FaxNumber"@en ;
+    ksx:sourceAttribute "FaxNumber" .
+ksx:finalInspectionIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "생산입고(최종)검사여부"@ko, "FinalInspectionIndicator"@en ;
+    ksx:sourceAttribute "FinalInspectionIndicator" .
+ksx:fixedAssetID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "고정자산식별자"@ko, "FixedAssetID"@en ;
+    ksx:sourceAttribute "FixedAssetID" .
+ksx:fullCapacity a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "최대용량"@ko, "FullCapacity"@en ;
+    ksx:sourceAttribute "FullCapacity" .
+ksx:goodsIssueID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "자재불출식별자"@ko, "GoodsIssueID"@en ;
+    ksx:sourceAttribute "GoodsIssueID" .
+ksx:goodsReceiptDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "입고처리일"@ko, "GoodsReceiptDate"@en ;
+    ksx:sourceAttribute "GoodsReceiptDate" .
+ksx:goodsReceiptID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "입고식별자"@ko, "GoodsReceiptID"@en ;
+    ksx:sourceAttribute "GoodsReceiptID" .
+ksx:goodsReceiptQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "입고처리수량"@ko, "GoodsReceiptQuantity"@en ;
+    ksx:sourceAttribute "GoodsReceiptQuantity" .
+ksx:goodsReceiptReturnType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "GoodsReceiptReturnType" ;
+    rdfs:label "입고반품유형"@ko, "GoodsReceiptReturnType"@en ;
+    ksx:sourceAttribute "GoodsReceiptReturnType" .
+ksx:goodsReceiptSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "입고순번"@ko, "GoodsReceiptSequence"@en ;
+    ksx:sourceAttribute "GoodsReceiptSequence" .
+ksx:goodsReceiptType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "GoodsReceiptType" ;
+    rdfs:label "입고처리유형"@ko, "GoodsReceiptType"@en ;
+    ksx:sourceAttribute "GoodsReceiptType" .
+ksx:height a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "높이"@ko, "Height"@en ;
+    ksx:sourceAttribute "Height" .
+ksx:holdIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "보류여부"@ko, "HoldIndicator"@en ;
+    ksx:sourceAttribute "HoldIndicator" .
+ksx:hotIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "긴급여부"@ko, "HotIndicator"@en ;
+    ksx:sourceAttribute "HotIndicator" .
+ksx:inTransitLocationID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "운송위치식별자"@ko, "InTransitLocationID"@en ;
+    ksx:sourceAttribute "InTransitLocationID" .
+ksx:incomingInspectionAcceptedQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "수입검사합격수량"@ko, "IncomingInspectionAcceptedQuantity"@en ;
+    ksx:sourceAttribute "IncomingInspectionAcceptedQuantity" .
+ksx:incomingInspectionIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "수입검사여부"@ko, "IncomingInspectionIndicator"@en ;
+    ksx:sourceAttribute "IncomingInspectionIndicator" ;
+    ksx:copyOf "ItemMaster.IncomingInspectionIndicator" .
+ksx:incomingInspectionRejectedQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "수입검사불합격수량"@ko, "IncomingInspectionRejectedQuantity"@en ;
+    ksx:sourceAttribute "IncomingInspectionRejectedQuantity" .
+ksx:inspectionApplicationID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "검사신청식별자"@ko, "InspectionApplicationID"@en ;
+    ksx:sourceAttribute "InspectionApplicationID" .
+ksx:inspectionCancelReason a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "검사취소사유"@ko, "InspectionCancelReason"@en ;
+    ksx:sourceAttribute "InspectionCancelReason" .
+ksx:inspectionCheckSheet a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "검사체크시트"@ko, "InspectionCheckSheet"@en ;
+    ksx:sourceAttribute "InspectionCheckSheet" .
+ksx:inspectionDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "검사일"@ko, "InspectionDate"@en ;
+    ksx:sourceAttribute "InspectionDate" .
+ksx:inspectionFinishedIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "공정검사여부"@ko, "InspectionFinishedIndicator"@en ;
+    ksx:sourceAttribute "InspectionFinishedIndicator" .
+ksx:inspectionID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "검사식별자"@ko, "InspectionID"@en ;
+    ksx:sourceAttribute "InspectionID" .
+ksx:inspectionLocation a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "검사위치"@ko, "InspectionLocation"@en ;
+    ksx:sourceAttribute "InspectionLocation" ;
+    ksx:copyOf "SupplierInspectionApplication.InspectionLocation" ;
+    ksx:copyOf "SupplierInspectionPlan.InspectionLocation" .
+ksx:inspectionMethod a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "InspectionMethod" ;
+    rdfs:label "검사방법"@ko, "InspectionMethod"@en ;
+    ksx:sourceAttribute "InspectionMethod" .
+ksx:inspectionName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "검사명"@ko, "InspectionName"@en ;
+    ksx:sourceAttribute "InspectionName" ;
+    ksx:copyOf "SupplierInspectionPlan.InspectionName" .
+ksx:inspectionParticipant a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "검사입회자"@ko, "InspectionParticipant"@en ;
+    ksx:sourceAttribute "InspectionParticipant" .
+ksx:inspectionPlanID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "검사계획식별자"@ko, "InspectionPlanID"@en ;
+    ksx:sourceAttribute "InspectionPlanID" .
+ksx:inspectionPlanQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "검사계획수량"@ko, "InspectionPlanQuantity"@en ;
+    ksx:sourceAttribute "InspectionPlanQuantity" .
+ksx:inspectionQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "검사수량"@ko, "InspectionQuantity"@en ;
+    ksx:sourceAttribute "InspectionQuantity" ;
+    ksx:copyOf "SupplierInspectionApplication.InspectionQuantity" .
+ksx:inspectionResult a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "InspectionResult" ;
+    rdfs:label "검사결과"@ko, "InspectionResult"@en ;
+    ksx:sourceAttribute "InspectionResult" .
+ksx:inspectionResultID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "검사결과식별자"@ko, "InspectionResultID"@en ;
+    ksx:sourceAttribute "InspectionResultID" .
+ksx:inspectionResultSheet a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "검사결과시트"@ko, "InspectionResultSheet"@en ;
+    ksx:sourceAttribute "InspectionResultSheet" .
+ksx:inspectionStatusCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "InspectionStatusCode" ;
+    rdfs:label "검사상태코드"@ko, "InspectionStatusCode"@en ;
+    ksx:sourceAttribute "InspectionStatusCode" .
+ksx:inspectionTimePeriod a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "검사기간"@ko, "InspectionTimePeriod"@en ;
+    ksx:sourceAttribute "InspectionTimePeriod" .
+ksx:inspector a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "검사자"@ko, "Inspector"@en ;
+    ksx:sourceAttribute "Inspector" .
+ksx:installationDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "설치일"@ko, "InstallationDate"@en ;
+    ksx:sourceAttribute "InstallationDate" .
+ksx:inventoryCountDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "재고실사일시"@ko, "InventoryCountDateTime"@en ;
+    ksx:sourceAttribute "InventoryCountDateTime" .
+ksx:inventoryCountDocumentNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "재고실사문서번호"@ko, "InventoryCountDocumentNumber"@en ;
+    ksx:sourceAttribute "InventoryCountDocumentNumber" .
+ksx:inventoryCountQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "실사수량"@ko, "InventoryCountQuantity"@en ;
+    ksx:sourceAttribute "InventoryCountQuantity" .
+ksx:inventoryQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "현재고수량"@ko, "InventoryQuantity"@en ;
+    ksx:sourceAttribute "InventoryQuantity" .
+ksx:inventoryTransactionDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "수불일"@ko, "InventoryTransactionDate"@en ;
+    ksx:sourceAttribute "InventoryTransactionDate" .
+ksx:inventoryTransactionDocumentNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "수불문서번호"@ko, "InventoryTransactionDocumentNumber"@en ;
+    ksx:sourceAttribute "InventoryTransactionDocumentNumber" .
+ksx:inventoryTransactionDocumentSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "수불문서순번"@ko, "InventoryTransactionDocumentSequence"@en ;
+    ksx:sourceAttribute "InventoryTransactionDocumentSequence" .
+ksx:inventoryTransactionType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "InventoryTransactionType" ;
+    rdfs:label "수불유형"@ko, "InventoryTransactionType"@en ;
+    ksx:sourceAttribute "InventoryTransactionType" .
+ksx:inventoryTransactionTypeCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "InventoryTransactionTypeCode" ;
+    rdfs:label "수불유형코드"@ko, "InventoryTransactionTypeCode"@en ;
+    ksx:sourceAttribute "InventoryTransactionTypeCode" .
+ksx:inventoryTransferType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "InventoryTransferType" ;
+    rdfs:label "입출고유형"@ko, "InventoryTransferType"@en ;
+    ksx:sourceAttribute "InventoryTransferType" .
+ksx:inventoryVariationType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "InventoryVariationType" ;
+    rdfs:label "재고증감유형"@ko, "InventoryVariationType"@en ;
+    ksx:sourceAttribute "InventoryVariationType" .
+ksx:invoiceNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "송장번호"@ko, "InvoiceNumber"@en ;
+    ksx:sourceAttribute "InvoiceNumber" .
+ksx:invoiceProcessingIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "송장처리여부"@ko, "InvoiceProcessingIndicator"@en ;
+    ksx:sourceAttribute "InvoiceProcessingIndicator" .
+ksx:invoiceSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "송장라인순번"@ko, "InvoiceSequence"@en ;
+    ksx:sourceAttribute "InvoiceSequence" .
+ksx:issueWarehouseID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "출고창고식별자"@ko, "IssueWarehouseID"@en ;
+    ksx:sourceAttribute "IssueWarehouseID" .
+ksx:issuedIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "출고완료여부"@ko, "IssuedIndicator"@en ;
+    ksx:sourceAttribute "IssuedIndicator" .
+ksx:issuedQuantity a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "출고수량"@ko, "IssuedQuantity"@en ;
+    ksx:sourceAttribute "IssuedQuantity" .
+ksx:itemDetailSpecification a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "품목상세사양"@ko, "ItemDetailSpecification"@en ;
+    ksx:sourceAttribute "ItemDetailSpecification" .
+ksx:itemID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "품목식별자"@ko, "ItemID"@en ;
+    ksx:sourceAttribute "ItemID" .
+ksx:itemLargeClass a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ItemLargeClass" ;
+    rdfs:label "품목대분류"@ko, "ItemLargeClass"@en ;
+    ksx:sourceAttribute "ItemLargeClass" .
+ksx:itemMediumClass a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ItemMediumClass" ;
+    rdfs:label "품목중분류"@ko, "ItemMediumClass"@en ;
+    ksx:sourceAttribute "ItemMediumClass" .
+ksx:itemName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "품목명"@ko, "ItemName"@en ;
+    ksx:sourceAttribute "ItemName" ;
+    ksx:copyOf "ItemMaster.ItemName" .
+ksx:itemPurchaseType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ItemPurchaseType" ;
+    rdfs:label "구매라인유형"@ko, "ItemPurchaseType"@en ;
+    ksx:sourceAttribute "ItemPurchaseType" .
+ksx:itemQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "품목수량"@ko, "ItemQuantity"@en ;
+    ksx:sourceAttribute "ItemQuantity" .
+ksx:itemSmallClass a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ItemSmallClass" ;
+    rdfs:label "품목소분류"@ko, "ItemSmallClass"@en ;
+    ksx:sourceAttribute "ItemSmallClass" .
+ksx:itemSpecification a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "품목사양"@ko, "ItemSpecification"@en ;
+    ksx:sourceAttribute "ItemSpecification" ;
+    ksx:copyOf "ItemMaster.ItemSpecification" .
+ksx:itemType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ItemType" ;
+    rdfs:label "품목유형"@ko, "ItemType"@en ;
+    ksx:sourceAttribute "ItemType" .
+ksx:itemUOMCode a owl:ObjectProperty ; rdfs:range skos:Concept ;
+    rdfs:label "기준단위코드"@ko, "ItemUOMCode"@en ;
+    ksx:sourceAttribute "ItemUOMCode" .
+ksx:itemUnitQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "기준단위수량"@ko, "ItemUnitQuantity"@en ;
+    ksx:sourceAttribute "ItemUnitQuantity" .
+ksx:lastOperationIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "최종공정여부"@ko, "LastOperationIndicator"@en ;
+    ksx:sourceAttribute "LastOperationIndicator" .
+ksx:lastProcessedLotID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "최종진행로트식별자"@ko, "LastProcessedLotID"@en ;
+    ksx:sourceAttribute "LastProcessedLotID" .
+ksx:lastProcessedOperationID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "최종진행공정식별자"@ko, "LastProcessedOperationID"@en ;
+    ksx:sourceAttribute "LastProcessedOperationID" .
+ksx:length a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "길이"@ko, "Length"@en ;
+    ksx:sourceAttribute "Length" .
+ksx:lineDescription a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "라인설명"@ko, "LineDescription"@en ;
+    ksx:sourceAttribute "LineDescription" .
+ksx:lineID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "라인식별자"@ko, "LineID"@en ;
+    ksx:sourceAttribute "LineID" .
+ksx:lineName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "라인명"@ko, "LineName"@en ;
+    ksx:sourceAttribute "LineName" .
+ksx:lineType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "LineType" ;
+    rdfs:label "라인유형"@ko, "LineType"@en ;
+    ksx:sourceAttribute "LineType" .
+ksx:loadState a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "LoadState" ;
+    rdfs:label "적재상태"@ko, "LoadState"@en ;
+    ksx:sourceAttribute "LoadState" .
+ksx:location a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "위치"@ko, "Location"@en ;
+    ksx:sourceAttribute "Location" .
+ksx:lotControlIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "로트사용여부"@ko, "LotControlIndicator"@en ;
+    ksx:sourceAttribute "LotControlIndicator" ;
+    ksx:copyOf "ItemMaster.LotControlIndicator" .
+ksx:lotCreatedQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "로트수량"@ko, "LotCreatedQuantity"@en ;
+    ksx:sourceAttribute "LotCreatedQuantity" ;
+    ksx:copyOf "Lot.LotCreatedQuantity" .
+ksx:lotDescription a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "로트설명"@ko, "LotDescription"@en ;
+    ksx:sourceAttribute "LotDescription" ;
+    ksx:copyOf "Lot.LotDescription" .
+ksx:lotID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "로트식별자"@ko, "LotID"@en ;
+    ksx:sourceAttribute "LotID" .
+ksx:lotName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "로트명"@ko, "LotName"@en ;
+    ksx:sourceAttribute "LotName" ;
+    ksx:copyOf "Lot.LotName" .
+ksx:lotPriority a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "로트우선순위"@ko, "LotPriority"@en ;
+    ksx:sourceAttribute "LotPriority" .
+ksx:lotSize a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "로트사이즈"@ko, "LotSize"@en ;
+    ksx:sourceAttribute "LotSize" .
+ksx:lotStartedDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "공정투입일시"@ko, "LotStartedDateTime"@en ;
+    ksx:sourceAttribute "LotStartedDateTime" .
+ksx:lotState a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "LotState" ;
+    rdfs:label "로트상태"@ko, "LotState"@en ;
+    ksx:sourceAttribute "LotState" .
+ksx:lotType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "LotType" ;
+    rdfs:label "로트유형"@ko, "LotType"@en ;
+    ksx:sourceAttribute "LotType" .
+ksx:lsl a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "규격하한"@ko, "LSL"@en ;
+    ksx:sourceAttribute "LSL" .
+ksx:mainCustomerID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "주요 고객사식별자"@ko, "MainCustomerID"@en ;
+    ksx:sourceAttribute "MainCustomerID" .
+ksx:mainVendorID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "주요 공급사식별자"@ko, "MainVendorID"@en ;
+    ksx:sourceAttribute "MainVendorID" .
+ksx:manufactureDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "제조일"@ko, "ManufactureDate"@en ;
+    ksx:sourceAttribute "ManufactureDate" .
+ksx:manufacturer a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "제조업체"@ko, "Manufacturer"@en ;
+    ksx:sourceAttribute "Manufacturer" .
+ksx:maximumStockLevel a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "최대재고수준"@ko, "MaximumStockLevel"@en ;
+    ksx:sourceAttribute "MaximumStockLevel" .
+ksx:modelName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "모델명"@ko, "ModelName"@en ;
+    ksx:sourceAttribute "ModelName" .
+ksx:modelNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "모델번호"@ko, "ModelNumber"@en ;
+    ksx:sourceAttribute "ModelNumber" .
+ksx:modificationDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "수정일시"@ko, "ModificationDateTime"@en ;
+    ksx:sourceAttribute "ModificationDateTime" .
+ksx:modifierID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "수정자식별자"@ko, "ModifierID"@en ;
+    ksx:sourceAttribute "ModifierID" .
+ksx:moveTime a owl:DatatypeProperty ; rdfs:range xsd:duration ;
+    rdfs:label "이동시간"@ko, "MoveTime"@en ;
+    ksx:sourceAttribute "MoveTime" .
+ksx:negativeInventoryIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "음수재고허용여부"@ko, "NegativeInventoryIndicator"@en ;
+    ksx:sourceAttribute "NegativeInventoryIndicator" .
+ksx:netWeight a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "순중량"@ko, "NetWeight"@en ;
+    ksx:sourceAttribute "NetWeight" .
+ksx:nextOperationID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "다음공정식별자"@ko, "NextOperationID"@en ;
+    ksx:sourceAttribute "NextOperationID" .
+ksx:note a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "비고"@ko, "Note"@en ;
+    ksx:sourceAttribute "Note" .
+ksx:operationEndID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "완공식별자"@ko, "OperationEndID"@en ;
+    ksx:sourceAttribute "OperationEndID" .
+ksx:operationEndTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "완공시간"@ko, "OperationEndTime"@en ;
+    ksx:sourceAttribute "OperationEndTime" .
+ksx:operationID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "공정식별자"@ko, "OperationID"@en ;
+    ksx:sourceAttribute "OperationID" .
+ksx:operationLargeClass a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "OperationLargeClass" ;
+    rdfs:label "공정대분류"@ko, "OperationLargeClass"@en ;
+    ksx:sourceAttribute "OperationLargeClass" .
+ksx:operationMediumClass a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "OperationMediumClass" ;
+    rdfs:label "공정중분류"@ko, "OperationMediumClass"@en ;
+    ksx:sourceAttribute "OperationMediumClass" .
+ksx:operationName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "공정명"@ko, "OperationName"@en ;
+    ksx:sourceAttribute "OperationName" ;
+    ksx:copyOf "Operation.OperationName" .
+ksx:operationSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "공정순번"@ko, "OperationSequence"@en ;
+    ksx:sourceAttribute "OperationSequence" .
+ksx:operationSmallClass a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "OperationSmallClass" ;
+    rdfs:label "공정소분류"@ko, "OperationSmallClass"@en ;
+    ksx:sourceAttribute "OperationSmallClass" .
+ksx:operationStartID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "착공식별자"@ko, "OperationStartID"@en ;
+    ksx:sourceAttribute "OperationStartID" .
+ksx:operationStartTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "착공시간"@ko, "OperationStartTime"@en ;
+    ksx:sourceAttribute "OperationStartTime" .
+ksx:operationType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "OperationType" ;
+    rdfs:label "공정유형"@ko, "OperationType"@en ;
+    ksx:sourceAttribute "OperationType" .
+ksx:orderQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "오더수량"@ko, "OrderQuantity"@en ;
+    ksx:sourceAttribute "OrderQuantity" .
+ksx:orderUOMCode a owl:ObjectProperty ; rdfs:range skos:Concept ;
+    rdfs:label "오더단위코드"@ko, "OrderUOMCode"@en ;
+    ksx:sourceAttribute "OrderUOMCode" .
+ksx:outgoingInspectionIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "출하검사여부"@ko, "OutgoingInspectionIndicator"@en ;
+    ksx:sourceAttribute "OutgoingInspectionIndicator" .
+ksx:packingList a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "포장내용"@ko, "PackingList"@en ;
+    ksx:sourceAttribute "PackingList" .
+ksx:packingSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "포장순번"@ko, "PackingSequence"@en ;
+    ksx:sourceAttribute "PackingSequence" .
+ksx:packingType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "PackingType" ;
+    rdfs:label "포장유형"@ko, "PackingType"@en ;
+    ksx:sourceAttribute "PackingType" .
+ksx:palletNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "포장파렛트번호"@ko, "PalletNumber"@en ;
+    ksx:sourceAttribute "PalletNumber" .
+ksx:parameterGrade a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ParameterGrade" ;
+    rdfs:label "파라미터등급"@ko, "ParameterGrade"@en ;
+    ksx:sourceAttribute "ParameterGrade" .
+ksx:parameterID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "파라미터식별자"@ko, "ParameterID"@en ;
+    ksx:sourceAttribute "ParameterID" .
+ksx:parameterName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "파라미터명"@ko, "ParameterName"@en ;
+    ksx:sourceAttribute "ParameterName" .
+ksx:parameterType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ParameterType" ;
+    rdfs:label "파라미터유형"@ko, "ParameterType"@en ;
+    ksx:sourceAttribute "ParameterType" .
+ksx:parameterUOMCode a owl:ObjectProperty ; rdfs:range skos:Concept ;
+    rdfs:label "파라미터단위코드"@ko, "ParameterUOMCode"@en ;
+    ksx:sourceAttribute "ParameterUOMCode" .
+ksx:parameterValue a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "파라미터값"@ko, "ParameterValue"@en ;
+    ksx:sourceAttribute "ParameterValue" .
+ksx:parentBatchID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "모배치식별자"@ko, "ParentBatchID"@en ;
+    ksx:sourceAttribute "ParentBatchID" .
+ksx:parentCommonCodeGroup a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "상위공통코드그룹"@ko, "ParentCommonCodeGroup"@en ;
+    ksx:sourceAttribute "ParentCommonCodeGroup" .
+ksx:parentCommonCodeID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "상위공통코드식별자"@ko, "ParentCommonCodeID"@en ;
+    ksx:sourceAttribute "ParentCommonCodeID" .
+ksx:parentDepartmentID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "상위부서식별자"@ko, "ParentDepartmentID"@en ;
+    ksx:sourceAttribute "ParentDepartmentID" .
+ksx:parentEnterpriseID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "상위회사식별자"@ko, "ParentEnterpriseID"@en ;
+    ksx:sourceAttribute "ParentEnterpriseID" .
+ksx:parentEquipmentID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "상위설비식별자"@ko, "ParentEquipmentID"@en ;
+    ksx:sourceAttribute "ParentEquipmentID" .
+ksx:parentLineID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "상위라인식별자"@ko, "ParentLineID"@en ;
+    ksx:sourceAttribute "ParentLineID" .
+ksx:parentLotID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "모로트식별자"@ko, "ParentLotID"@en ;
+    ksx:sourceAttribute "ParentLotID" .
+ksx:paymentTermsCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "PaymentTermsCode" ;
+    rdfs:label "결제조건코드"@ko, "PaymentTermsCode"@en ;
+    ksx:sourceAttribute "PaymentTermsCode" .
+ksx:periodicDataCollectionIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "주기적수집여부"@ko, "PeriodicDataCollectionIndicator"@en ;
+    ksx:sourceAttribute "PeriodicDataCollectionIndicator" .
+ksx:personInChargeDialNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "담당자전화번호"@ko, "PersonInChargeDialNumber"@en ;
+    ksx:sourceAttribute "PersonInChargeDialNumber" ;
+    ksx:copyOf "Personnel.PersonInChargeDialNumber" .
+ksx:personInChargeDialNumberOfTransportation a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "운송담당자전화번호"@ko, "PersonInChargeDialNumberOfTransportation"@en ;
+    ksx:sourceAttribute "PersonInChargeDialNumberOfTransportation" .
+ksx:personInChargeEmail a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "담당자이메일명"@ko, "PersonInChargeEmail"@en ;
+    ksx:sourceAttribute "PersonInChargeEmail" .
+ksx:personInChargeID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "관리자식별자"@ko, "PersonInChargeID"@en ;
+    ksx:sourceAttribute "PersonInChargeID" .
+ksx:personInChargeName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "담당자명"@ko, "PersonInChargeName"@en ;
+    ksx:sourceAttribute "PersonInChargeName" ;
+    ksx:copyOf "Personnel.PersonnelName" .
+ksx:personInChargeNameOfTransportation a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "운송담당자명"@ko, "PersonInChargeNameOfTransportation"@en ;
+    ksx:sourceAttribute "PersonInChargeNameOfTransportation" .
+ksx:personnelID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "사원식별자"@ko, "PersonnelID"@en ;
+    ksx:sourceAttribute "PersonnelID" .
+ksx:personnelName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "사원명"@ko, "PersonnelName"@en ;
+    ksx:sourceAttribute "PersonnelName" .
+ksx:phantomIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "가상품목여부"@ko, "PhantomIndicator"@en ;
+    ksx:sourceAttribute "PhantomIndicator" .
+ksx:placeOfOrigin a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "원산지역"@ko, "PlaceOfOrigin"@en ;
+    ksx:sourceAttribute "PlaceOfOrigin" .
+ksx:plantID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "공장식별자"@ko, "PlantID"@en ;
+    ksx:sourceAttribute "PlantID" .
+ksx:plantName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "공장명"@ko, "PlantName"@en ;
+    ksx:sourceAttribute "PlantName" .
+ksx:postalCode a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "우편번호"@ko, "PostalCode"@en ;
+    ksx:sourceAttribute "PostalCode" .
+ksx:preferredReceiptDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "인수희망일"@ko, "PreferredReceiptDate"@en ;
+    ksx:sourceAttribute "PreferredReceiptDate" .
+ksx:priorDemandQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "요청우선수량"@ko, "PriorDemandQuantity"@en ;
+    ksx:sourceAttribute "PriorDemandQuantity" .
+ksx:processedLotQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "진행로트수량"@ko, "ProcessedLotQuantity"@en ;
+    ksx:sourceAttribute "ProcessedLotQuantity" .
+ksx:processingDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "처리일"@ko, "ProcessingDate"@en ;
+    ksx:sourceAttribute "ProcessingDate" .
+ksx:producedQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "생산수량"@ko, "ProducedQuantity"@en ;
+    ksx:sourceAttribute "ProducedQuantity" .
+ksx:productDeliveryQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "납품수량"@ko, "ProductDeliveryQuantity"@en ;
+    ksx:sourceAttribute "ProductDeliveryQuantity" .
+ksx:productDeliveryUOMCode a owl:ObjectProperty ; rdfs:range skos:Concept ;
+    rdfs:label "납품단위코드"@ko, "ProductDeliveryUOMCode"@en ;
+    ksx:sourceAttribute "ProductDeliveryUOMCode" .
+ksx:productIncomingID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "제품입고식별자"@ko, "ProductIncomingID"@en ;
+    ksx:sourceAttribute "ProductIncomingID" .
+ksx:productIncomingSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "제품입고순번"@ko, "ProductIncomingSequence"@en ;
+    ksx:sourceAttribute "ProductIncomingSequence" .
+ksx:productReleaseDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "출고일"@ko, "ProductReleaseDate"@en ;
+    ksx:sourceAttribute "ProductReleaseDate" .
+ksx:productReleaseID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "출고식별자"@ko, "ProductReleaseID"@en ;
+    ksx:sourceAttribute "ProductReleaseID" .
+ksx:productReleaseQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "출고수량"@ko, "ProductReleaseQuantity"@en ;
+    ksx:sourceAttribute "ProductReleaseQuantity" .
+ksx:productReleaseRequestDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "납품지시일"@ko, "ProductReleaseRequestDate"@en ;
+    ksx:sourceAttribute "ProductReleaseRequestDate" .
+ksx:productReleaseRequestDocumentNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "납품문서번호"@ko, "ProductReleaseRequestDocumentNumber"@en ;
+    ksx:sourceAttribute "ProductReleaseRequestDocumentNumber" .
+ksx:productReleaseRequestID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "출하요청식별자"@ko, "ProductReleaseRequestID"@en ;
+    ksx:sourceAttribute "ProductReleaseRequestID" .
+ksx:productReleaseRequestQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "납품수량"@ko, "ProductReleaseRequestQuantity"@en ;
+    ksx:sourceAttribute "ProductReleaseRequestQuantity" .
+ksx:productReleaseRequestSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "납품순번"@ko, "ProductReleaseRequestSequence"@en ;
+    ksx:sourceAttribute "ProductReleaseRequestSequence" .
+ksx:productReleaseRequestType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ProductReleaseRequestType" ;
+    rdfs:label "납품구분유형"@ko, "ProductReleaseRequestType"@en ;
+    ksx:sourceAttribute "ProductReleaseRequestType" .
+ksx:productReleaseSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "출고순번"@ko, "ProductReleaseSequence"@en ;
+    ksx:sourceAttribute "ProductReleaseSequence" .
+ksx:productReleaseUnitQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "기준출고수량"@ko, "ProductReleaseUnitQuantity"@en ;
+    ksx:sourceAttribute "ProductReleaseUnitQuantity" .
+ksx:productReturnDocumentNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "반품문서번호"@ko, "ProductReturnDocumentNumber"@en ;
+    ksx:sourceAttribute "ProductReturnDocumentNumber" .
+ksx:productTraceParameterOnCustomerID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "고객제품데이터식별자"@ko, "ProductTraceParameterOnCustomerID"@en ;
+    ksx:sourceAttribute "ProductTraceParameterOnCustomerID" .
+ksx:productionDueDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "생산완료기한일시"@ko, "ProductionDueDateTime"@en ;
+    ksx:sourceAttribute "ProductionDueDateTime" .
+ksx:productionLeadTime a owl:DatatypeProperty ; rdfs:range xsd:duration ;
+    rdfs:label "생산리드타임"@ko, "ProductionLeadTime"@en ;
+    ksx:sourceAttribute "ProductionLeadTime" .
+ksx:productionMethodType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ProductionMethodType" ;
+    rdfs:label "생산방식유형"@ko, "ProductionMethodType"@en ;
+    ksx:sourceAttribute "ProductionMethodType" .
+ksx:productionOrderID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "생산지시식별자"@ko, "ProductionOrderID"@en ;
+    ksx:sourceAttribute "ProductionOrderID" .
+ksx:productionOrderQuantity a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "생산지시수량"@ko, "ProductionOrderQuantity"@en ;
+    ksx:sourceAttribute "ProductionOrderQuantity" .
+ksx:productionOrderSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "생산지시순번"@ko, "ProductionOrderSequence"@en ;
+    ksx:sourceAttribute "ProductionOrderSequence" .
+ksx:productionPerformanceDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "생산실적일자"@ko, "ProductionPerformanceDate"@en ;
+    ksx:sourceAttribute "ProductionPerformanceDate" .
+ksx:productionPerformanceID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "생산실적식별자"@ko, "ProductionPerformanceID"@en ;
+    ksx:sourceAttribute "ProductionPerformanceID" .
+ksx:productionPerformanceSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "생산실적순번"@ko, "ProductionPerformanceSequence"@en ;
+    ksx:sourceAttribute "ProductionPerformanceSequence" .
+ksx:productionPlanID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "생산계획식별자"@ko, "ProductionPlanID"@en ;
+    ksx:sourceAttribute "ProductionPlanID" .
+ksx:productionPlanQuantity a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "생산계획수량"@ko, "ProductionPlanQuantity"@en ;
+    ksx:sourceAttribute "ProductionPlanQuantity" .
+ksx:projectContractDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "프로젝트계약일"@ko, "ProjectContractDate"@en ;
+    ksx:sourceAttribute "ProjectContractDate" .
+ksx:projectID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "프로젝트식별자"@ko, "ProjectID"@en ;
+    ksx:sourceAttribute "ProjectID" .
+ksx:projectName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "프로젝트명"@ko, "ProjectName"@en ;
+    ksx:sourceAttribute "ProjectName" .
+ksx:projectStatusCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ProjectStatusCode" ;
+    rdfs:label "프로젝트상태코드"@ko, "ProjectStatusCode"@en ;
+    ksx:sourceAttribute "ProjectStatusCode" .
+ksx:projectionEndDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "예측종료일"@ko, "ProjectionEndDate"@en ;
+    ksx:sourceAttribute "ProjectionEndDate" .
+ksx:projectionStartDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "예측시작일"@ko, "ProjectionStartDate"@en ;
+    ksx:sourceAttribute "ProjectionStartDate" .
+ksx:promisedVisitDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "약속방문일시"@ko, "PromisedVisitDateTime"@en ;
+    ksx:sourceAttribute "PromisedVisitDateTime" .
+ksx:purchaseApprovalDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "승인일"@ko, "PurchaseApprovalDate"@en ;
+    ksx:sourceAttribute "PurchaseApprovalDate" .
+ksx:purchaseDocumentNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "구매문서번호"@ko, "PurchaseDocumentNumber"@en ;
+    ksx:sourceAttribute "PurchaseDocumentNumber" .
+ksx:purchaseDocumentSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "구매문서순번"@ko, "PurchaseDocumentSequence"@en ;
+    ksx:sourceAttribute "PurchaseDocumentSequence" .
+ksx:purchaseGoodsReceiptQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "구매입고수량"@ko, "PurchaseGoodsReceiptQuantity"@en ;
+    ksx:sourceAttribute "PurchaseGoodsReceiptQuantity" .
+ksx:purchaseGroupCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "PurchaseGroupCode" ;
+    rdfs:label "구매그룹코드"@ko, "PurchaseGroupCode"@en ;
+    ksx:sourceAttribute "PurchaseGroupCode" .
+ksx:purchaseLeadTime a owl:DatatypeProperty ; rdfs:range xsd:duration ;
+    rdfs:label "구매리드타임"@ko, "PurchaseLeadTime"@en ;
+    ksx:sourceAttribute "PurchaseLeadTime" .
+ksx:purchaseOrderClosingDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "발주마감일"@ko, "PurchaseOrderClosingDate"@en ;
+    ksx:sourceAttribute "PurchaseOrderClosingDate" .
+ksx:purchaseOrderClosingIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "발주마감여부"@ko, "PurchaseOrderClosingIndicator"@en ;
+    ksx:sourceAttribute "PurchaseOrderClosingIndicator" .
+ksx:purchaseOrderDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "구매발주일"@ko, "PurchaseOrderDate"@en ;
+    ksx:sourceAttribute "PurchaseOrderDate" .
+ksx:purchaseOrderLineStatusCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "PurchaseOrderLineStatusCode" ;
+    rdfs:label "발주라인상태코드"@ko, "PurchaseOrderLineStatusCode"@en ;
+    ksx:sourceAttribute "PurchaseOrderLineStatusCode" .
+ksx:purchaseOrderPrice a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "발주금액"@ko, "PurchaseOrderPrice"@en ;
+    ksx:sourceAttribute "PurchaseOrderPrice" .
+ksx:purchaseOrderQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "구매발주수량"@ko, "PurchaseOrderQuantity"@en ;
+    ksx:sourceAttribute "PurchaseOrderQuantity" ;
+    ksx:copyOf "PurchaseOrder.PurchaseOrderQuantity" .
+ksx:purchaseOrderStartDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "시작일"@ko, "PurchaseOrderStartDate"@en ;
+    ksx:sourceAttribute "PurchaseOrderStartDate" .
+ksx:purchaseOrderTypeCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "PurchaseOrderTypeCode" ;
+    rdfs:label "발주유형코드"@ko, "PurchaseOrderTypeCode"@en ;
+    ksx:sourceAttribute "PurchaseOrderTypeCode" .
+ksx:purchaseOrderUOMCode a owl:ObjectProperty ; rdfs:range skos:Concept ;
+    rdfs:label "발주단위코드"@ko, "PurchaseOrderUOMCode"@en ;
+    ksx:sourceAttribute "PurchaseOrderUOMCode" .
+ksx:purchaseOrderUnitPrice a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "발주단가"@ko, "PurchaseOrderUnitPrice"@en ;
+    ksx:sourceAttribute "PurchaseOrderUnitPrice" .
+ksx:purchaseOrderValidDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "유효일"@ko, "PurchaseOrderValidDate"@en ;
+    ksx:sourceAttribute "PurchaseOrderValidDate" .
+ksx:purchaseRequisitionID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "구매요청식별자"@ko, "PurchaseRequisitionID"@en ;
+    ksx:sourceAttribute "PurchaseRequisitionID" .
+ksx:purchaseRequisitionRevisionNumber a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "구매요청버전"@ko, "PurchaseRequisitionRevisionNumber"@en ;
+    ksx:sourceAttribute "PurchaseRequisitionRevisionNumber" .
+ksx:purchaseRequisitionUnitPrice a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "구매요청단가"@ko, "PurchaseRequisitionUnitPrice"@en ;
+    ksx:sourceAttribute "PurchaseRequisitionUnitPrice" .
+ksx:purchaseTransactionPrice a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "구매거래금액"@ko, "PurchaseTransactionPrice"@en ;
+    ksx:sourceAttribute "PurchaseTransactionPrice" .
+ksx:purchaseTransactionType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "PurchaseTransactionType" ;
+    rdfs:label "거래유형"@ko, "PurchaseTransactionType"@en ;
+    ksx:sourceAttribute "PurchaseTransactionType" .
+ksx:purchaseTransactionUnitPrice a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "구매거래단가"@ko, "PurchaseTransactionUnitPrice"@en ;
+    ksx:sourceAttribute "PurchaseTransactionUnitPrice" .
+ksx:qualityDispositionCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "QualityDispositionCode" ;
+    rdfs:label "품질판정코드"@ko, "QualityDispositionCode"@en ;
+    ksx:sourceAttribute "QualityDispositionCode" .
+ksx:reasonForApplication a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "검사신청사유"@ko, "ReasonForApplication"@en ;
+    ksx:sourceAttribute "ReasonForApplication" .
+ksx:reasonForRejection a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "반려사유"@ko, "ReasonForRejection"@en ;
+    ksx:sourceAttribute "ReasonForRejection" .
+ksx:receiptWarehouseID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "입고창고식별자"@ko, "ReceiptWarehouseID"@en ;
+    ksx:sourceAttribute "ReceiptWarehouseID" .
+ksx:recipeID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "레시피식별자"@ko, "RecipeID"@en ;
+    ksx:sourceAttribute "RecipeID" .
+ksx:recipeVersion a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "레시피버전"@ko, "RecipeVersion"@en ;
+    ksx:sourceAttribute "RecipeVersion" .
+ksx:recipient a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "수취인"@ko, "Recipient"@en ;
+    ksx:sourceAttribute "Recipient" .
+ksx:recipientDialNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "수취인전화번호"@ko, "RecipientDialNumber"@en ;
+    ksx:sourceAttribute "RecipientDialNumber" .
+ksx:recipientEmail a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "수취인이메일"@ko, "RecipientEmail"@en ;
+    ksx:sourceAttribute "RecipientEmail" .
+ksx:refAfterSalesServiceRequest a owl:ObjectProperty ; rdfs:range ksx:AfterSalesServiceRequest ; owl:inverseOf ksx:refAfterSalesServiceRequestInverse ;
+    rdfs:label "신청번호 참조"@ko, "refAfterSalesServiceRequest"@en ;
+    ksx:sourceAttribute "RequestNumber" .
+ksx:refAfterSalesServiceRequestInverse a owl:ObjectProperty ; rdfs:label "신청번호 참조(역)"@ko .
+ksx:refAlternateStocker a owl:ObjectProperty ; rdfs:range ksx:StockerInventory ; owl:inverseOf ksx:refAlternateStockerInverse ;
+    rdfs:label "대체저장소식별자 참조"@ko, "refAlternateStocker"@en ;
+    ksx:sourceAttribute "AlternateStockerID" .
+ksx:refAlternateStockerInverse a owl:ObjectProperty ; rdfs:label "대체저장소식별자 참조(역)"@ko .
+ksx:refApplicationPersonnel a owl:ObjectProperty ; rdfs:range ksx:Personnel ; owl:inverseOf ksx:refApplicationPersonnelInverse ;
+    rdfs:label "검사신청자 참조"@ko, "refApplicationPersonnel"@en ;
+    ksx:sourceAttribute "ApplicationPersonnelID" .
+ksx:refApplicationPersonnelInverse a owl:ObjectProperty ; rdfs:label "검사신청자 참조(역)"@ko .
+ksx:refBOM a owl:ObjectProperty ; rdfs:range ksx:BOM ; owl:inverseOf ksx:refBOMInverse ;
+    rdfs:label "자재명세서식별자 참조"@ko, "refBOM"@en ;
+    ksx:sourceAttribute "BOMID" .
+ksx:refBOMInverse a owl:ObjectProperty ; rdfs:label "자재명세서식별자 참조(역)"@ko .
+ksx:refBatch a owl:ObjectProperty ; rdfs:range ksx:Batch ; owl:inverseOf ksx:refBatchInverse ;
+    rdfs:label "배치식별자 참조"@ko, "refBatch"@en ;
+    ksx:sourceAttribute "BatchID" .
+ksx:refBatchInverse a owl:ObjectProperty ; rdfs:label "배치식별자 참조(역)"@ko .
+ksx:refCalendar a owl:ObjectProperty ; rdfs:range ksx:WorkCalendar ; owl:inverseOf ksx:refCalendarInverse ;
+    rdfs:label "달력식별자 참조"@ko, "refCalendar"@en ;
+    ksx:sourceAttribute "CalendarID" .
+ksx:refCalendarInverse a owl:ObjectProperty ; rdfs:label "달력식별자 참조(역)"@ko .
+ksx:refCarrier a owl:ObjectProperty ; rdfs:range ksx:Carrier ; owl:inverseOf ksx:refCarrierInverse ;
+    rdfs:label "캐리어식별자 참조"@ko, "refCarrier"@en ;
+    ksx:sourceAttribute "CarrierID" .
+ksx:refCarrierInverse a owl:ObjectProperty ; rdfs:label "캐리어식별자 참조(역)"@ko .
+ksx:refChildItem a owl:ObjectProperty ; rdfs:range ksx:ItemMaster ; owl:inverseOf ksx:refChildItemInverse ;
+    rdfs:label "자품목식별자 참조"@ko, "refChildItem"@en ;
+    ksx:sourceAttribute "ChildItemID" .
+ksx:refChildItemInverse a owl:ObjectProperty ; rdfs:label "자품목식별자 참조(역)"@ko .
+ksx:refChildLot a owl:ObjectProperty ; rdfs:range ksx:Lot ; owl:inverseOf ksx:refChildLotInverse ;
+    rdfs:label "자로트식별자 참조"@ko, "refChildLot"@en ;
+    ksx:sourceAttribute "ChildLotID" .
+ksx:refChildLotInverse a owl:ObjectProperty ; rdfs:label "자로트식별자 참조(역)"@ko .
+ksx:refCommonCodeMaster a owl:ObjectProperty ; rdfs:range ksx:CommonCodeMaster ; owl:inverseOf ksx:refCommonCodeMasterInverse ;
+    rdfs:label "상위공통코드그룹 참조"@ko, "refCommonCodeMaster"@en ;
+    ksx:sourceAttribute "ParentCommonCodeGroup" .
+ksx:refCommonCodeMasterInverse a owl:ObjectProperty ; rdfs:label "상위공통코드그룹 참조(역)"@ko .
+ksx:refCorrectiveActionConfirmor a owl:ObjectProperty ; rdfs:range ksx:Personnel ; owl:inverseOf ksx:refCorrectiveActionConfirmorInverse ;
+    rdfs:label "시정조치확인자식별자 참조"@ko, "refCorrectiveActionConfirmor"@en ;
+    ksx:sourceAttribute "CorrectiveActionConfirmorID" .
+ksx:refCorrectiveActionConfirmorInverse a owl:ObjectProperty ; rdfs:label "시정조치확인자식별자 참조(역)"@ko .
+ksx:refCorrectiveActionPlan a owl:ObjectProperty ; rdfs:range ksx:CorrectiveActionPlan ; owl:inverseOf ksx:refCorrectiveActionPlanInverse ;
+    rdfs:label "시정조치계획식별자 참조"@ko, "refCorrectiveActionPlan"@en ;
+    ksx:sourceAttribute "CorrectiveActionPlanID" .
+ksx:refCorrectiveActionPlanInverse a owl:ObjectProperty ; rdfs:label "시정조치계획식별자 참조(역)"@ko .
+ksx:refCorrectiveActionRequest a owl:ObjectProperty ; rdfs:range ksx:CorrectiveActionRequest ; owl:inverseOf ksx:refCorrectiveActionRequestInverse ;
+    rdfs:label "시정조치요청식별자 참조"@ko, "refCorrectiveActionRequest"@en ;
+    ksx:sourceAttribute "CorrectiveActionRequestID" .
+ksx:refCorrectiveActionRequestInverse a owl:ObjectProperty ; rdfs:label "시정조치요청식별자 참조(역)"@ko .
+ksx:refCorrectiveActionRequestIssuer a owl:ObjectProperty ; rdfs:range ksx:Personnel ; owl:inverseOf ksx:refCorrectiveActionRequestIssuerInverse ;
+    rdfs:label "시정조치요청발행자식별자 참조"@ko, "refCorrectiveActionRequestIssuer"@en ;
+    ksx:sourceAttribute "CorrectiveActionRequestIssuerID" .
+ksx:refCorrectiveActionRequestIssuerInverse a owl:ObjectProperty ; rdfs:label "시정조치요청발행자식별자 참조(역)"@ko .
+ksx:refCreator a owl:ObjectProperty ; rdfs:range ksx:Personnel ; owl:inverseOf ksx:refCreatorInverse ;
+    rdfs:label "등록자식별자 참조"@ko, "refCreator"@en ;
+    ksx:sourceAttribute "CreatorID" .
+ksx:refCreatorInverse a owl:ObjectProperty ; rdfs:label "등록자식별자 참조(역)"@ko .
+ksx:refCurrentOperation a owl:ObjectProperty ; rdfs:range ksx:Operation ; owl:inverseOf ksx:refCurrentOperationInverse ;
+    rdfs:label "현재공정식별자 참조"@ko, "refCurrentOperation"@en ;
+    ksx:sourceAttribute "CurrentOperationID" .
+ksx:refCurrentOperationInverse a owl:ObjectProperty ; rdfs:label "현재공정식별자 참조(역)"@ko .
+ksx:refCustomer a owl:ObjectProperty ; rdfs:range ksx:CustomerPartyMaster ; owl:inverseOf ksx:refCustomerInverse ;
+    rdfs:label "고객사식별자 참조"@ko, "refCustomer"@en ;
+    ksx:sourceAttribute "CustomerID" .
+ksx:refCustomerInverse a owl:ObjectProperty ; rdfs:label "고객사식별자 참조(역)"@ko .
+ksx:refDepartment a owl:ObjectProperty ; rdfs:range ksx:Department ; owl:inverseOf ksx:refDepartmentInverse ;
+    rdfs:label "부서식별자 참조"@ko, "refDepartment"@en ;
+    ksx:sourceAttribute "DepartmentID" .
+ksx:refDepartmentInverse a owl:ObjectProperty ; rdfs:label "부서식별자 참조(역)"@ko .
+ksx:refDepartmentInCharge a owl:ObjectProperty ; rdfs:range ksx:Department ; owl:inverseOf ksx:refDepartmentInChargeInverse ;
+    rdfs:label "관리부서식별자 참조"@ko, "refDepartmentInCharge"@en ;
+    ksx:sourceAttribute "DepartmentInChargeID" .
+ksx:refDepartmentInChargeInverse a owl:ObjectProperty ; rdfs:label "관리부서식별자 참조(역)"@ko .
+ksx:refDivision a owl:ObjectProperty ; rdfs:range ksx:Department ; owl:inverseOf ksx:refDivisionInverse ;
+    rdfs:label "사업부식별자 참조"@ko, "refDivision"@en ;
+    ksx:sourceAttribute "DivisionID" .
+ksx:refDivisionInverse a owl:ObjectProperty ; rdfs:label "사업부식별자 참조(역)"@ko .
+ksx:refEnterprise a owl:ObjectProperty ; rdfs:range ksx:Enterprise ; owl:inverseOf ksx:refEnterpriseInverse ;
+    rdfs:label "회사식별자 참조"@ko, "refEnterprise"@en ;
+    ksx:sourceAttribute "EnterpriseID" .
+ksx:refEnterpriseInverse a owl:ObjectProperty ; rdfs:label "회사식별자 참조(역)"@ko .
+ksx:refEquipment a owl:ObjectProperty ; rdfs:range ksx:Equipment ; owl:inverseOf ksx:refEquipmentInverse ;
+    rdfs:label "설비식별자 참조"@ko, "refEquipment"@en ;
+    ksx:sourceAttribute "EquipmentID" .
+ksx:refEquipmentInverse a owl:ObjectProperty ; rdfs:label "설비식별자 참조(역)"@ko .
+ksx:refInspectionApplication a owl:ObjectProperty ; rdfs:range ksx:SupplierInspectionApplication ; owl:inverseOf ksx:refInspectionApplicationInverse ;
+    rdfs:label "검사신청식별자 참조"@ko, "refInspectionApplication"@en ;
+    ksx:sourceAttribute "InspectionApplicationID" .
+ksx:refInspectionApplicationInverse a owl:ObjectProperty ; rdfs:label "검사신청식별자 참조(역)"@ko .
+ksx:refInspectionPlan a owl:ObjectProperty ; rdfs:range ksx:SupplierInspectionPlan ; owl:inverseOf ksx:refInspectionPlanInverse ;
+    rdfs:label "검사계획식별자 참조"@ko, "refInspectionPlan"@en ;
+    ksx:sourceAttribute "InspectionPlanID" .
+ksx:refInspectionPlanInverse a owl:ObjectProperty ; rdfs:label "검사계획식별자 참조(역)"@ko .
+ksx:refIssueWarehouse a owl:ObjectProperty ; rdfs:range ksx:WarehouseLocation ; owl:inverseOf ksx:refIssueWarehouseInverse ;
+    rdfs:label "출고창고식별자 참조"@ko, "refIssueWarehouse"@en ;
+    ksx:sourceAttribute "IssueWarehouseID" .
+ksx:refIssueWarehouseInverse a owl:ObjectProperty ; rdfs:label "출고창고식별자 참조(역)"@ko .
+ksx:refItem a owl:ObjectProperty ; rdfs:range ksx:ItemMaster ; owl:inverseOf ksx:refItemInverse ;
+    rdfs:label "품목식별자 참조"@ko, "refItem"@en ;
+    ksx:sourceAttribute "ItemID" .
+ksx:refItemInverse a owl:ObjectProperty ; rdfs:label "품목식별자 참조(역)"@ko .
+ksx:refLastProcessedLot a owl:ObjectProperty ; rdfs:range ksx:Lot ; owl:inverseOf ksx:refLastProcessedLotInverse ;
+    rdfs:label "최종진행로트식별자 참조"@ko, "refLastProcessedLot"@en ;
+    ksx:sourceAttribute "LastProcessedLotID" .
+ksx:refLastProcessedLotInverse a owl:ObjectProperty ; rdfs:label "최종진행로트식별자 참조(역)"@ko .
+ksx:refLastProcessedOperation a owl:ObjectProperty ; rdfs:range ksx:Operation ; owl:inverseOf ksx:refLastProcessedOperationInverse ;
+    rdfs:label "최종진행공정식별자 참조"@ko, "refLastProcessedOperation"@en ;
+    ksx:sourceAttribute "LastProcessedOperationID" .
+ksx:refLastProcessedOperationInverse a owl:ObjectProperty ; rdfs:label "최종진행공정식별자 참조(역)"@ko .
+ksx:refLine a owl:ObjectProperty ; rdfs:range ksx:Line ; owl:inverseOf ksx:refLineInverse ;
+    rdfs:label "라인식별자 참조"@ko, "refLine"@en ;
+    ksx:sourceAttribute "LineID" .
+ksx:refLineInverse a owl:ObjectProperty ; rdfs:label "라인식별자 참조(역)"@ko .
+ksx:refLot a owl:ObjectProperty ; rdfs:range ksx:Lot ; owl:inverseOf ksx:refLotInverse ;
+    rdfs:label "로트식별자 참조"@ko, "refLot"@en ;
+    ksx:sourceAttribute "LotID" .
+ksx:refLotInverse a owl:ObjectProperty ; rdfs:label "로트식별자 참조(역)"@ko .
+ksx:refMainCustomer a owl:ObjectProperty ; rdfs:range ksx:CustomerPartyMaster ; owl:inverseOf ksx:refMainCustomerInverse ;
+    rdfs:label "주요 고객사식별자 참조"@ko, "refMainCustomer"@en ;
+    ksx:sourceAttribute "MainCustomerID" .
+ksx:refMainCustomerInverse a owl:ObjectProperty ; rdfs:label "주요 고객사식별자 참조(역)"@ko .
+ksx:refMainVendor a owl:ObjectProperty ; rdfs:range ksx:VendorPartyMaster ; owl:inverseOf ksx:refMainVendorInverse ;
+    rdfs:label "주요 공급사식별자 참조"@ko, "refMainVendor"@en ;
+    ksx:sourceAttribute "MainVendorID" .
+ksx:refMainVendorInverse a owl:ObjectProperty ; rdfs:label "주요 공급사식별자 참조(역)"@ko .
+ksx:refModifier a owl:ObjectProperty ; rdfs:range ksx:Personnel ; owl:inverseOf ksx:refModifierInverse ;
+    rdfs:label "수정자식별자 참조"@ko, "refModifier"@en ;
+    ksx:sourceAttribute "ModifierID" .
+ksx:refModifierInverse a owl:ObjectProperty ; rdfs:label "수정자식별자 참조(역)"@ko .
+ksx:refNextOperation a owl:ObjectProperty ; rdfs:range ksx:Operation ; owl:inverseOf ksx:refNextOperationInverse ;
+    rdfs:label "다음공정식별자 참조"@ko, "refNextOperation"@en ;
+    ksx:sourceAttribute "NextOperationID" .
+ksx:refNextOperationInverse a owl:ObjectProperty ; rdfs:label "다음공정식별자 참조(역)"@ko .
+ksx:refOperation a owl:ObjectProperty ; rdfs:range ksx:Operation ; owl:inverseOf ksx:refOperationInverse ;
+    rdfs:label "공정식별자 참조"@ko, "refOperation"@en ;
+    ksx:sourceAttribute "OperationID" .
+ksx:refOperationInverse a owl:ObjectProperty ; rdfs:label "공정식별자 참조(역)"@ko .
+ksx:refParameter a owl:ObjectProperty ; rdfs:range ksx:EquipmentParameter ; owl:inverseOf ksx:refParameterInverse ;
+    rdfs:label "파라미터식별자 참조"@ko, "refParameter"@en ;
+    ksx:sourceAttribute "ParameterID" .
+ksx:refParameterInverse a owl:ObjectProperty ; rdfs:label "파라미터식별자 참조(역)"@ko .
+ksx:refParentBatch a owl:ObjectProperty ; rdfs:range ksx:Batch ; owl:inverseOf ksx:refParentBatchInverse ;
+    rdfs:label "모배치식별자 참조"@ko, "refParentBatch"@en ;
+    ksx:sourceAttribute "ParentBatchID" .
+ksx:refParentBatchInverse a owl:ObjectProperty ; rdfs:label "모배치식별자 참조(역)"@ko .
+ksx:refParentDepartment a owl:ObjectProperty ; rdfs:range ksx:Department ; owl:inverseOf ksx:refParentDepartmentInverse ;
+    rdfs:label "상위부서식별자 참조"@ko, "refParentDepartment"@en ;
+    ksx:sourceAttribute "ParentDepartmentID" .
+ksx:refParentDepartmentInverse a owl:ObjectProperty ; rdfs:label "상위부서식별자 참조(역)"@ko .
+ksx:refParentEnterprise a owl:ObjectProperty ; rdfs:range ksx:Enterprise ; owl:inverseOf ksx:refParentEnterpriseInverse ;
+    rdfs:label "상위회사식별자 참조"@ko, "refParentEnterprise"@en ;
+    ksx:sourceAttribute "ParentEnterpriseID" .
+ksx:refParentEnterpriseInverse a owl:ObjectProperty ; rdfs:label "상위회사식별자 참조(역)"@ko .
+ksx:refParentEquipment a owl:ObjectProperty ; rdfs:range ksx:Equipment ; owl:inverseOf ksx:refParentEquipmentInverse ;
+    rdfs:label "상위설비식별자 참조"@ko, "refParentEquipment"@en ;
+    ksx:sourceAttribute "ParentEquipmentID" .
+ksx:refParentEquipmentInverse a owl:ObjectProperty ; rdfs:label "상위설비식별자 참조(역)"@ko .
+ksx:refParentLine a owl:ObjectProperty ; rdfs:range ksx:Line ; owl:inverseOf ksx:refParentLineInverse ;
+    rdfs:label "상위라인식별자 참조"@ko, "refParentLine"@en ;
+    ksx:sourceAttribute "ParentLineID" .
+ksx:refParentLineInverse a owl:ObjectProperty ; rdfs:label "상위라인식별자 참조(역)"@ko .
+ksx:refParentLot a owl:ObjectProperty ; rdfs:range ksx:Lot ; owl:inverseOf ksx:refParentLotInverse ;
+    rdfs:label "모로트식별자 참조"@ko, "refParentLot"@en ;
+    ksx:sourceAttribute "ParentLotID" .
+ksx:refParentLotInverse a owl:ObjectProperty ; rdfs:label "모로트식별자 참조(역)"@ko .
+ksx:refPersonInCharge a owl:ObjectProperty ; rdfs:range ksx:Personnel ; owl:inverseOf ksx:refPersonInChargeInverse ;
+    rdfs:label "관리자식별자 참조"@ko, "refPersonInCharge"@en ;
+    ksx:sourceAttribute "PersonInChargeID" .
+ksx:refPersonInChargeInverse a owl:ObjectProperty ; rdfs:label "관리자식별자 참조(역)"@ko .
+ksx:refPersonnel a owl:ObjectProperty ; rdfs:range ksx:Personnel ; owl:inverseOf ksx:refPersonnelInverse ;
+    rdfs:label "사원식별자 참조"@ko, "refPersonnel"@en ;
+    ksx:sourceAttribute "PersonnelID" .
+ksx:refPersonnelInverse a owl:ObjectProperty ; rdfs:label "사원식별자 참조(역)"@ko .
+ksx:refPlant a owl:ObjectProperty ; rdfs:range ksx:Plant ; owl:inverseOf ksx:refPlantInverse ;
+    rdfs:label "공장식별자 참조"@ko, "refPlant"@en ;
+    ksx:sourceAttribute "PlantID" .
+ksx:refPlantInverse a owl:ObjectProperty ; rdfs:label "공장식별자 참조(역)"@ko .
+ksx:refProductRelease a owl:ObjectProperty ; rdfs:range ksx:ProductRelease ; owl:inverseOf ksx:refProductReleaseInverse ;
+    rdfs:label "출고식별자 참조"@ko, "refProductRelease"@en ;
+    ksx:sourceAttribute "ProductReleaseID" .
+ksx:refProductReleaseInverse a owl:ObjectProperty ; rdfs:label "출고식별자 참조(역)"@ko .
+ksx:refProductReleaseRequest a owl:ObjectProperty ; rdfs:range ksx:ProductReleaseRequest ; owl:inverseOf ksx:refProductReleaseRequestInverse ;
+    rdfs:label "출하요청식별자 참조"@ko, "refProductReleaseRequest"@en ;
+    ksx:sourceAttribute "ProductReleaseRequestID" .
+ksx:refProductReleaseRequestInverse a owl:ObjectProperty ; rdfs:label "출하요청식별자 참조(역)"@ko .
+ksx:refProductionOrder a owl:ObjectProperty ; rdfs:range ksx:ProductionOrder ; owl:inverseOf ksx:refProductionOrderInverse ;
+    rdfs:label "생산지시식별자 참조"@ko, "refProductionOrder"@en ;
+    ksx:sourceAttribute "ProductionOrderID" .
+ksx:refProductionOrderInverse a owl:ObjectProperty ; rdfs:label "생산지시식별자 참조(역)"@ko .
+ksx:refProductionPerformance a owl:ObjectProperty ; rdfs:range ksx:ProductionPerformance ; owl:inverseOf ksx:refProductionPerformanceInverse ;
+    rdfs:label "생산실적식별자 참조"@ko, "refProductionPerformance"@en ;
+    ksx:sourceAttribute "ProductionPerformanceID" .
+ksx:refProductionPerformanceInverse a owl:ObjectProperty ; rdfs:label "생산실적식별자 참조(역)"@ko .
+ksx:refProject a owl:ObjectProperty ; rdfs:range ksx:ProjectMaster ; owl:inverseOf ksx:refProjectInverse ;
+    rdfs:label "프로젝트식별자 참조"@ko, "refProject"@en ;
+    ksx:sourceAttribute "ProjectID" .
+ksx:refProjectInverse a owl:ObjectProperty ; rdfs:label "프로젝트식별자 참조(역)"@ko .
+ksx:refPurchaseOrderLine a owl:ObjectProperty ; rdfs:range ksx:PurchaseOrderLine ; owl:inverseOf ksx:refPurchaseOrderLineInverse ;
+    rdfs:label "구매문서번호 참조"@ko, "refPurchaseOrderLine"@en ;
+    ksx:sourceAttribute "PurchaseDocumentNumber" .
+ksx:refPurchaseOrderLineInverse a owl:ObjectProperty ; rdfs:label "구매문서번호 참조(역)"@ko .
+ksx:refReceiptWarehouse a owl:ObjectProperty ; rdfs:range ksx:WarehouseLocation ; owl:inverseOf ksx:refReceiptWarehouseInverse ;
+    rdfs:label "입고창고식별자 참조"@ko, "refReceiptWarehouse"@en ;
+    ksx:sourceAttribute "ReceiptWarehouseID" .
+ksx:refReceiptWarehouseInverse a owl:ObjectProperty ; rdfs:label "입고창고식별자 참조(역)"@ko .
+ksx:refReplacementChildItem a owl:ObjectProperty ; rdfs:range ksx:ItemMaster ; owl:inverseOf ksx:refReplacementChildItemInverse ;
+    rdfs:label "대체자재식별자 참조"@ko, "refReplacementChildItem"@en ;
+    ksx:sourceAttribute "ReplacementChildItemID" .
+ksx:refReplacementChildItemInverse a owl:ObjectProperty ; rdfs:label "대체자재식별자 참조(역)"@ko .
+ksx:refReplacementItem a owl:ObjectProperty ; rdfs:range ksx:ItemMaster ; owl:inverseOf ksx:refReplacementItemInverse ;
+    rdfs:label "대체품목식별자 참조"@ko, "refReplacementItem"@en ;
+    ksx:sourceAttribute "ReplacementItemID" .
+ksx:refReplacementItemInverse a owl:ObjectProperty ; rdfs:label "대체품목식별자 참조(역)"@ko .
+ksx:refRequesterDepartment a owl:ObjectProperty ; rdfs:range ksx:Department ; owl:inverseOf ksx:refRequesterDepartmentInverse ;
+    rdfs:label "구매요청부서 참조"@ko, "refRequesterDepartment"@en ;
+    ksx:sourceAttribute "RequesterDepartmentID" .
+ksx:refRequesterDepartmentInverse a owl:ObjectProperty ; rdfs:label "구매요청부서 참조(역)"@ko .
+ksx:refRequesterPersonnel a owl:ObjectProperty ; rdfs:range ksx:Personnel ; owl:inverseOf ksx:refRequesterPersonnelInverse ;
+    rdfs:label "구매요청자 참조"@ko, "refRequesterPersonnel"@en ;
+    ksx:sourceAttribute "RequesterPersonnelID" .
+ksx:refRequesterPersonnelInverse a owl:ObjectProperty ; rdfs:label "구매요청자 참조(역)"@ko .
+ksx:refResponsibleDepartment a owl:ObjectProperty ; rdfs:range ksx:Department ; owl:inverseOf ksx:refResponsibleDepartmentInverse ;
+    rdfs:label "프로젝트담당부서식별자 참조"@ko, "refResponsibleDepartment"@en ;
+    ksx:sourceAttribute "ResponsibleDepartmentID" .
+ksx:refResponsibleDepartmentInverse a owl:ObjectProperty ; rdfs:label "프로젝트담당부서식별자 참조(역)"@ko .
+ksx:refRouting a owl:ObjectProperty ; rdfs:range ksx:Routing ; owl:inverseOf ksx:refRoutingInverse ;
+    rdfs:label "공정경로식별자 참조"@ko, "refRouting"@en ;
+    ksx:sourceAttribute "RoutingID" .
+ksx:refRoutingInverse a owl:ObjectProperty ; rdfs:label "공정경로식별자 참조(역)"@ko .
+ksx:refRoutingToRoutingLine a owl:ObjectProperty ; rdfs:range ksx:RoutingLine ; owl:inverseOf ksx:refRoutingToRoutingLineInverse ;
+    rdfs:label "공정경로식별자 참조"@ko, "refRoutingToRoutingLine"@en ;
+    ksx:sourceAttribute "RoutingID" .
+ksx:refRoutingToRoutingLineInverse a owl:ObjectProperty ; rdfs:label "공정경로식별자 참조(역)"@ko .
+ksx:refSalesOrderLine a owl:ObjectProperty ; rdfs:range ksx:SalesOrderLine ; owl:inverseOf ksx:refSalesOrderLineInverse ;
+    rdfs:label "수주문서번호 참조"@ko, "refSalesOrderLine"@en ;
+    ksx:sourceAttribute "SalesDocumentNumber" .
+ksx:refSalesOrderLineInverse a owl:ObjectProperty ; rdfs:label "수주문서번호 참조(역)"@ko .
+ksx:refSite a owl:ObjectProperty ; rdfs:range ksx:Site ; owl:inverseOf ksx:refSiteInverse ;
+    rdfs:label "사업장식별자 참조"@ko, "refSite"@en ;
+    ksx:sourceAttribute "SiteID" .
+ksx:refSiteInverse a owl:ObjectProperty ; rdfs:label "사업장식별자 참조(역)"@ko .
+ksx:refTransferCommand a owl:ObjectProperty ; rdfs:range ksx:TransferCommand ; owl:inverseOf ksx:refTransferCommandInverse ;
+    rdfs:label "이동지시식별자 참조"@ko, "refTransferCommand"@en ;
+    ksx:sourceAttribute "TransferCommandID" .
+ksx:refTransferCommandInverse a owl:ObjectProperty ; rdfs:label "이동지시식별자 참조(역)"@ko .
+ksx:refVendor a owl:ObjectProperty ; rdfs:range ksx:VendorPartyMaster ; owl:inverseOf ksx:refVendorInverse ;
+    rdfs:label "공급사식별자 참조"@ko, "refVendor"@en ;
+    ksx:sourceAttribute "VendorID" .
+ksx:refVendorInverse a owl:ObjectProperty ; rdfs:label "공급사식별자 참조(역)"@ko .
+ksx:refWarehouse a owl:ObjectProperty ; rdfs:range ksx:WarehouseLocation ; owl:inverseOf ksx:refWarehouseInverse ;
+    rdfs:label "창고식별자 참조"@ko, "refWarehouse"@en ;
+    ksx:sourceAttribute "WarehouseID" .
+ksx:refWarehouseInverse a owl:ObjectProperty ; rdfs:label "창고식별자 참조(역)"@ko .
+ksx:refWarehouseToWarehouseLocationLine a owl:ObjectProperty ; rdfs:range ksx:WarehouseLocationLine ; owl:inverseOf ksx:refWarehouseToWarehouseLocationLineInverse ;
+    rdfs:label "창고식별자 참조"@ko, "refWarehouseToWarehouseLocationLine"@en ;
+    ksx:sourceAttribute "WarehouseID" .
+ksx:refWarehouseToWarehouseLocationLineInverse a owl:ObjectProperty ; rdfs:label "창고식별자 참조(역)"@ko .
+ksx:registerSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "등록순번"@ko, "RegisterSequence"@en ;
+    ksx:sourceAttribute "RegisterSequence" .
+ksx:repairSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "수리순번"@ko, "RepairSequence"@en ;
+    ksx:sourceAttribute "RepairSequence" .
+ksx:repairType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "RepairType" ;
+    rdfs:label "수리유형"@ko, "RepairType"@en ;
+    ksx:sourceAttribute "RepairType" .
+ksx:replacementChildItemID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "대체자재식별자"@ko, "ReplacementChildItemID"@en ;
+    ksx:sourceAttribute "ReplacementChildItemID" .
+ksx:replacementItemID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "대체품목식별자"@ko, "ReplacementItemID"@en ;
+    ksx:sourceAttribute "ReplacementItemID" .
+ksx:representativeName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "대표자명"@ko, "RepresentativeName"@en ;
+    ksx:sourceAttribute "RepresentativeName" .
+ksx:requestNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "신청번호"@ko, "RequestNumber"@en ;
+    ksx:sourceAttribute "RequestNumber" .
+ksx:requestedDeliveryDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "요청납기일"@ko, "RequestedDeliveryDate"@en ;
+    ksx:sourceAttribute "RequestedDeliveryDate" ;
+    ksx:copyOf "SalesOrder.RequestedDeliveryDate" .
+ksx:requesterDepartmentID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "구매요청부서"@ko, "RequesterDepartmentID"@en ;
+    ksx:sourceAttribute "RequesterDepartmentID" .
+ksx:requesterPersonnelID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "구매요청자"@ko, "RequesterPersonnelID"@en ;
+    ksx:sourceAttribute "RequesterPersonnelID" .
+ksx:requiredQuantity a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "소요수량"@ko, "RequiredQuantity"@en ;
+    ksx:sourceAttribute "RequiredQuantity" .
+ksx:responsibleDepartmentID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "프로젝트담당부서식별자"@ko, "ResponsibleDepartmentID"@en ;
+    ksx:sourceAttribute "ResponsibleDepartmentID" .
+ksx:returnDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "반품일시"@ko, "ReturnDateTime"@en ;
+    ksx:sourceAttribute "ReturnDateTime" .
+ksx:returnID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "반품식별자"@ko, "ReturnID"@en ;
+    ksx:sourceAttribute "ReturnID" .
+ksx:returnIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "반품여부"@ko, "ReturnIndicator"@en ;
+    ksx:sourceAttribute "ReturnIndicator" .
+ksx:returnNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "반품번호"@ko, "ReturnNumber"@en ;
+    ksx:sourceAttribute "ReturnNumber" .
+ksx:returnQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "반품수량"@ko, "ReturnQuantity"@en ;
+    ksx:sourceAttribute "ReturnQuantity" .
+ksx:returnSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "반품순서"@ko, "ReturnSequence"@en ;
+    ksx:sourceAttribute "ReturnSequence" .
+ksx:returnType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ReturnType" ;
+    rdfs:label "반품유형"@ko, "ReturnType"@en ;
+    ksx:sourceAttribute "ReturnType" .
+ksx:returnUnitQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "기준반품수량"@ko, "ReturnUnitQuantity"@en ;
+    ksx:sourceAttribute "ReturnUnitQuantity" .
+ksx:reworkCount a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "재작업횟수"@ko, "ReworkCount"@en ;
+    ksx:sourceAttribute "ReworkCount" .
+ksx:reworkIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "재작업여부"@ko, "ReworkIndicator"@en ;
+    ksx:sourceAttribute "ReworkIndicator" .
+ksx:reworkQuantity a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "재작업수량"@ko, "ReworkQuantity"@en ;
+    ksx:sourceAttribute "ReworkQuantity" .
+ksx:routingID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "공정경로식별자"@ko, "RoutingID"@en ;
+    ksx:sourceAttribute "RoutingID" .
+ksx:routingName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "공정경로명"@ko, "RoutingName"@en ;
+    ksx:sourceAttribute "RoutingName" .
+ksx:runTime a owl:DatatypeProperty ; rdfs:range xsd:duration ;
+    rdfs:label "작업시간"@ko, "RunTime"@en ;
+    ksx:sourceAttribute "RunTime" .
+ksx:safetyStock a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "안전재고"@ko, "SafetyStock"@en ;
+    ksx:sourceAttribute "SafetyStock" .
+ksx:salesAutomaticApprovalIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "수주자동승인여부"@ko, "SalesAutomaticApprovalIndicator"@en ;
+    ksx:sourceAttribute "SalesAutomaticApprovalIndicator" .
+ksx:salesDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "수주일"@ko, "SalesDate"@en ;
+    ksx:sourceAttribute "SalesDate" .
+ksx:salesDocumentNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "수주문서번호"@ko, "SalesDocumentNumber"@en ;
+    ksx:sourceAttribute "SalesDocumentNumber" .
+ksx:salesDocumentSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "수주문서순번"@ko, "SalesDocumentSequence"@en ;
+    ksx:sourceAttribute "SalesDocumentSequence" .
+ksx:salesOrderType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "SalesOrderType" ;
+    rdfs:label "수주유형"@ko, "SalesOrderType"@en ;
+    ksx:sourceAttribute "SalesOrderType" .
+ksx:salesPlanID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "판매계획식별자"@ko, "SalesPlanID"@en ;
+    ksx:sourceAttribute "SalesPlanID" .
+ksx:salesProjection a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "판매추정치"@ko, "SalesProjection"@en ;
+    ksx:sourceAttribute "SalesProjection" .
+ksx:salesQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "매출수량"@ko, "SalesQuantity"@en ;
+    ksx:sourceAttribute "SalesQuantity" .
+ksx:salesStatus a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "SalesStatus" ;
+    rdfs:label "수주상태"@ko, "SalesStatus"@en ;
+    ksx:sourceAttribute "SalesStatus" .
+ksx:salesTransactionType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "SalesTransactionType" ;
+    rdfs:label "거래유형"@ko, "SalesTransactionType"@en ;
+    ksx:sourceAttribute "SalesTransactionType" .
+ksx:salesUnitQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "기준매출수량"@ko, "SalesUnitQuantity"@en ;
+    ksx:sourceAttribute "SalesUnitQuantity" .
+ksx:scheduleEndDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "계획종료일시"@ko, "ScheduleEndDateTime"@en ;
+    ksx:sourceAttribute "ScheduleEndDateTime" .
+ksx:scheduleStartDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "계획시작일시"@ko, "ScheduleStartDateTime"@en ;
+    ksx:sourceAttribute "ScheduleStartDateTime" .
+ksx:scheduleType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ScheduleType" ;
+    rdfs:label "근무일유형"@ko, "ScheduleType"@en ;
+    ksx:sourceAttribute "ScheduleType" .
+ksx:scheduledDueDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "생산마감기한"@ko, "ScheduledDueDate"@en ;
+    ksx:sourceAttribute "ScheduledDueDate" .
+ksx:selfCheckInspectionResultSheet a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "자체점검결과시트"@ko, "SelfCheckInspectionResultSheet"@en ;
+    ksx:sourceAttribute "SelfCheckInspectionResultSheet" .
+ksx:sellingUOMCode a owl:ObjectProperty ; rdfs:range skos:Concept ;
+    rdfs:label "판매단위코드"@ko, "SellingUOMCode"@en ;
+    ksx:sourceAttribute "SellingUOMCode" .
+ksx:serialNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "일련번호"@ko, "SerialNumber"@en ;
+    ksx:sourceAttribute "SerialNumber" .
+ksx:serialUseIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "시리얼사용여부"@ko, "SerialUseIndicator"@en ;
+    ksx:sourceAttribute "SerialUseIndicator" .
+ksx:setupTime a owl:DatatypeProperty ; rdfs:range xsd:duration ;
+    rdfs:label "준비시간"@ko, "SetupTime"@en ;
+    ksx:sourceAttribute "SetupTime" .
+ksx:shiftCount a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "작업조수"@ko, "ShiftCount"@en ;
+    ksx:sourceAttribute "ShiftCount" .
+ksx:shipToAddress a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "배송지"@ko, "ShipToAddress"@en ;
+    ksx:sourceAttribute "ShipToAddress" .
+ksx:shipmentTermsCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ShipmentTermsCode" ;
+    rdfs:label "출하조건코드"@ko, "ShipmentTermsCode"@en ;
+    ksx:sourceAttribute "ShipmentTermsCode" .
+ksx:shippingPoint a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "선적지"@ko, "ShippingPoint"@en ;
+    ksx:sourceAttribute "ShippingPoint" .
+ksx:siteID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "사업장식별자"@ko, "SiteID"@en ;
+    ksx:sourceAttribute "SiteID" .
+ksx:siteName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "사업장명"@ko, "SiteName"@en ;
+    ksx:sourceAttribute "SiteName" .
+ksx:sourceID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "출발지식별자"@ko, "SourceID"@en ;
+    ksx:sourceAttribute "SourceID" .
+ksx:sourceName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "출발지명"@ko, "SourceName"@en ;
+    ksx:sourceAttribute "SourceName" .
+ksx:sourceType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "LocationType" ;
+    rdfs:label "출발지유형"@ko, "SourceType"@en ;
+    ksx:sourceAttribute "SourceType" .
+ksx:standardCapacity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "표준생산능력"@ko, "StandardCapacity"@en ;
+    ksx:sourceAttribute "StandardCapacity" .
+ksx:standardCycleTime a owl:DatatypeProperty ; rdfs:range xsd:duration ;
+    rdfs:label "표준사이클타임"@ko, "StandardCycleTime"@en ;
+    ksx:sourceAttribute "StandardCycleTime" .
+ksx:standardHeadcount a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "표준작업인원"@ko, "StandardHeadcount"@en ;
+    ksx:sourceAttribute "StandardHeadcount" .
+ksx:stockTransferID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "재고이동식별자"@ko, "StockTransferID"@en ;
+    ksx:sourceAttribute "StockTransferID" .
+ksx:stockTransferQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "재고이동수량"@ko, "StockTransferQuantity"@en ;
+    ksx:sourceAttribute "StockTransferQuantity" .
+ksx:stockerID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "저장소식별자"@ko, "StockerID"@en ;
+    ksx:sourceAttribute "StockerID" .
+ksx:taskGroupCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "TaskGroupCode" ;
+    rdfs:label "근무조코드"@ko, "TaskGroupCode"@en ;
+    ksx:sourceAttribute "TaskGroupCode" .
+ksx:taxCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "TaxCode" ;
+    rdfs:label "세무코드"@ko, "TaxCode"@en ;
+    ksx:sourceAttribute "TaxCode" .
+ksx:totalReworkCount a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "총재작업횟수"@ko, "TotalReworkCount"@en ;
+    ksx:sourceAttribute "TotalReworkCount" .
+ksx:traceParameterID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "설비파라미터이력식별자"@ko, "TraceParameterID"@en ;
+    ksx:sourceAttribute "TraceParameterID" .
+ksx:transferCommandID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "이동지시식별자"@ko, "TransferCommandID"@en ;
+    ksx:sourceAttribute "TransferCommandID" .
+ksx:transferDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "이동일시"@ko, "TransferDateTime"@en ;
+    ksx:sourceAttribute "TransferDateTime" .
+ksx:transferEndDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "운행완료일시"@ko, "TransferEndDateTime"@en ;
+    ksx:sourceAttribute "TransferEndDateTime" .
+ksx:transferEndID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "운행완료식별자"@ko, "TransferEndID"@en ;
+    ksx:sourceAttribute "TransferEndID" .
+ksx:transferRegistrationCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "TransferRegistrationCode" ;
+    rdfs:label "이관등록코드"@ko, "TransferRegistrationCode"@en ;
+    ksx:sourceAttribute "TransferRegistrationCode" .
+ksx:transferSequence a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "이관순번"@ko, "TransferSequence"@en ;
+    ksx:sourceAttribute "TransferSequence" .
+ksx:transferStartDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "운행시작일시"@ko, "TransferStartDateTime"@en ;
+    ksx:sourceAttribute "TransferStartDateTime" .
+ksx:transferStartID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "운행시작식별자"@ko, "TransferStartID"@en ;
+    ksx:sourceAttribute "TransferStartID" .
+ksx:transportationCompany a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "운송사"@ko, "TransportationCompany"@en ;
+    ksx:sourceAttribute "TransportationCompany" .
+ksx:transportationMethodCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "TransportationMethodCode" ;
+    rdfs:label "운송방법"@ko, "TransportationMethodCode"@en ;
+    ksx:sourceAttribute "TransportationMethodCode" .
+ksx:unitPrice a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "단가"@ko, "UnitPrice"@en ;
+    ksx:sourceAttribute "UnitPrice" .
+ksx:uomCode a owl:ObjectProperty ; rdfs:range skos:Concept ;
+    rdfs:label "단위코드"@ko, "UOMCode"@en ;
+    ksx:sourceAttribute "UOMCode" .
+ksx:uomCodeName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "단위코드명"@ko, "UOMCodeName"@en ;
+    ksx:sourceAttribute "UOMCodeName" .
+ksx:uomGroupID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "단위그룹식별자"@ko, "UOMGroupID"@en ;
+    ksx:sourceAttribute "UOMGroupID" .
+ksx:uomGroupName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "단위그룹명"@ko, "UOMGroupName"@en ;
+    ksx:sourceAttribute "UOMGroupName" .
+ksx:useIndicator a owl:DatatypeProperty ; rdfs:range xsd:boolean ;
+    rdfs:label "사용여부"@ko, "UseIndicator"@en ;
+    ksx:sourceAttribute "UseIndicator" .
+ksx:usl a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "규격상한"@ko, "USL"@en ;
+    ksx:sourceAttribute "USL" .
+ksx:validEndDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "유효종료일"@ko, "ValidEndDate"@en ;
+    ksx:sourceAttribute "ValidEndDate" .
+ksx:validEndDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "유효종료일시"@ko, "ValidEndDateTime"@en ;
+    ksx:sourceAttribute "ValidEndDateTime" .
+ksx:validStartDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "유효시작일"@ko, "ValidStartDate"@en ;
+    ksx:sourceAttribute "ValidStartDate" .
+ksx:validStartDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "유효시작일시"@ko, "ValidStartDateTime"@en ;
+    ksx:sourceAttribute "ValidStartDateTime" .
+ksx:validationResultCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ValidationResultCode" ;
+    rdfs:label "검증결과코드"@ko, "ValidationResultCode"@en ;
+    ksx:sourceAttribute "ValidationResultCode" .
+ksx:vatCarryingAmount a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "부가세포함장부금액"@ko, "VATCarryingAmount"@en ;
+    ksx:sourceAttribute "VATCarryingAmount" .
+ksx:vatPrice a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "부가세금액"@ko, "VATPrice"@en ;
+    ksx:sourceAttribute "VATPrice" .
+ksx:vatTransactionPrice a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "부가세포함거래금액"@ko, "VATTransactionPrice"@en ;
+    ksx:sourceAttribute "VATTransactionPrice" .
+ksx:vatTransactionUnitPrice a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "부가세포함거래단가"@ko, "VATTransactionUnitPrice"@en ;
+    ksx:sourceAttribute "VATTransactionUnitPrice" .
+ksx:vendorID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "공급사식별자"@ko, "VendorID"@en ;
+    ksx:sourceAttribute "VendorID" .
+ksx:vendorName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "공급사명"@ko, "VendorName"@en ;
+    ksx:sourceAttribute "VendorName" ;
+    ksx:copyOf "VendorPartyMaster.VendorName" .
+ksx:volume a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "부피"@ko, "Volume"@en ;
+    ksx:sourceAttribute "Volume" .
+ksx:volumeUOMCode a owl:ObjectProperty ; rdfs:range skos:Concept ;
+    rdfs:label "부피단위코드"@ko, "VolumeUOMCode"@en ;
+    ksx:sourceAttribute "VolumeUOMCode" .
+ksx:warehouseID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "창고식별자"@ko, "WarehouseID"@en ;
+    ksx:sourceAttribute "WarehouseID" .
+ksx:warehouseName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "창고명"@ko, "WarehouseName"@en ;
+    ksx:sourceAttribute "WarehouseName" .
+ksx:warehouseSection a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "창고섹션"@ko, "WarehouseSection"@en ;
+    ksx:sourceAttribute "WarehouseSection" .
+ksx:warehouseSectionName a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "창고섹션명"@ko, "WarehouseSectionName"@en ;
+    ksx:sourceAttribute "WarehouseSectionName" .
+ksx:warehouseType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "WarehouseType" ;
+    rdfs:label "창고유형"@ko, "WarehouseType"@en ;
+    ksx:sourceAttribute "WarehouseType" .
+ksx:weekOfYear a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "주수"@ko, "WeekOfYear"@en ;
+    ksx:sourceAttribute "WeekOfYear" .
+ksx:weight a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "중량"@ko, "Weight"@en ;
+    ksx:sourceAttribute "Weight" .
+ksx:weightUOMCode a owl:ObjectProperty ; rdfs:range skos:Concept ;
+    rdfs:label "중량단위코드"@ko, "WeightUOMCode"@en ;
+    ksx:sourceAttribute "WeightUOMCode" .
+ksx:width a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "너비"@ko, "Width"@en ;
+    ksx:sourceAttribute "Width" .
+ksx:workType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "WorkType" ;
+    rdfs:label "작업유형"@ko, "WorkType"@en ;
+    ksx:sourceAttribute "WorkType" .
+ksx:zoneID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "구역식별자"@ko, "ZoneID"@en ;
+    ksx:sourceAttribute "ZoneID" .

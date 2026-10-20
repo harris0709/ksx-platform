@@ -1,0 +1,80 @@
+{
+ "noun": "UOMGroup",
+ "ko": "단위그룹",
+ "clause": "7.4.1.9",
+ "table": "표 20",
+ "area": "기준정보",
+ "definition": "단위그룹(UOMGroup) 명사의 헤더 구조체(struct) 단위그룹 1건의 공통 정보(중량, 부피, 길이 등 측정 단위의 그룹) 단위그룹마다 1회 나타남",
+ "layer": "core",
+ "identity": [
+  "UOMGroupID"
+ ],
+ "struct": {
+  "header": "UOMGroupHeader",
+  "line": "UOMGroupLine",
+  "lineKey": [
+   "UOMCode"
+  ]
+ },
+ "physical": {
+  "UOMGroupHeader": {
+   "uk": [
+    "EnterpriseID",
+    "UOMGroupID"
+   ]
+  },
+  "UOMGroupLine": {
+   "uk": [
+    "EnterpriseID",
+    "UOMGroupID",
+    "UOMCode"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "UOMGroupID",
+   "ko": "단위그룹식별자",
+   "type": "ID",
+   "in": "UOMGroupHeader",
+   "property": "ksx:uomGroupID"
+  },
+  {
+   "en": "UOMGroupName",
+   "ko": "단위그룹명",
+   "type": "string",
+   "in": "UOMGroupHeader",
+   "property": "ksx:uomGroupName"
+  },
+  {
+   "en": "UOMGroupID",
+   "ko": "단위그룹식별자",
+   "type": "IDREF",
+   "in": "UOMGroupLine",
+   "property": "ksx:uomGroupID"
+  },
+  {
+   "en": "UOMCode",
+   "ko": "단위코드",
+   "type": "enum",
+   "in": "UOMGroupLine",
+   "property": "ksx:uomCode"
+  },
+  {
+   "en": "UOMCodeName",
+   "ko": "단위코드명",
+   "type": "string",
+   "in": "UOMGroupLine",
+   "property": "ksx:uomCodeName"
+  },
+  {
+   "en": "UseIndicator",
+   "ko": "사용여부",
+   "type": "boolean",
+   "in": "UOMGroupLine",
+   "property": "ksx:useIndicator"
+  }
+ ],
+ "references": [],
+ "codes": []
+}

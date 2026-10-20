@@ -1,0 +1,166 @@
+{
+ "noun": "ProjectMaster",
+ "ko": "프로젝트마스터",
+ "clause": "7.4.2.1",
+ "table": "표 34",
+ "area": "프로젝트관리",
+ "definition": "프로젝트 코드, 프로젝트명 등을 관리하는 프로젝트마스터를 의미한다. 주요 프로젝트 필드의 ProjectAccounting 관련 애플리케이션 활성화를 위한정보로 활용되기도 한다.",
+ "layer": "core",
+ "identity": [
+  "ProjectID"
+ ],
+ "struct": null,
+ "physical": {
+  "ProjectMaster": {
+   "uk": [
+    "EnterpriseID",
+    "ProjectID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "ProjectID",
+   "ko": "프로젝트식별자",
+   "type": "ID",
+   "in": "ProjectMaster",
+   "property": "ksx:projectID"
+  },
+  {
+   "en": "ProjectName",
+   "ko": "프로젝트명",
+   "type": "string",
+   "in": "ProjectMaster",
+   "property": "ksx:projectName"
+  },
+  {
+   "en": "ProjectStatusCode",
+   "ko": "프로젝트상태코드",
+   "type": "enum",
+   "in": "ProjectMaster",
+   "property": "ksx:projectStatusCode"
+  },
+  {
+   "en": "ResponsibleDepartmentID",
+   "ko": "프로젝트담당부서식별자",
+   "type": "IDREF",
+   "in": "ProjectMaster",
+   "property": "ksx:responsibleDepartmentID"
+  },
+  {
+   "en": "PersonInChargeID",
+   "ko": "프로젝트담당자식별자",
+   "type": "IDREF",
+   "in": "ProjectMaster",
+   "property": "ksx:personInChargeID"
+  },
+  {
+   "en": "ProjectContractDate",
+   "ko": "프로젝트계약일",
+   "type": "date",
+   "in": "ProjectMaster",
+   "property": "ksx:projectContractDate"
+  },
+  {
+   "en": "ExpectedStartDate",
+   "ko": "시작예정일",
+   "type": "date",
+   "in": "ProjectMaster",
+   "property": "ksx:expectedStartDate"
+  },
+  {
+   "en": "ExpectedEndDate",
+   "ko": "종료예정일",
+   "type": "date",
+   "in": "ProjectMaster",
+   "property": "ksx:expectedEndDate"
+  },
+  {
+   "en": "ActualStartDate",
+   "ko": "실제시작일",
+   "type": "date",
+   "in": "ProjectMaster",
+   "property": "ksx:actualStartDate"
+  },
+  {
+   "en": "ActualEndDate",
+   "ko": "실제종료일",
+   "type": "date",
+   "in": "ProjectMaster",
+   "property": "ksx:actualEndDate"
+  },
+  {
+   "en": "SalesDocumentNumber",
+   "ko": "수주문서번호",
+   "type": "IDREF",
+   "in": "ProjectMaster",
+   "property": "ksx:salesDocumentNumber"
+  },
+  {
+   "en": "SalesDocumentSequence",
+   "ko": "수주문서순번",
+   "type": "int",
+   "in": "ProjectMaster",
+   "property": "ksx:salesDocumentSequence"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "ProjectMaster",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "UseIndicator",
+   "ko": "사용여부",
+   "type": "boolean",
+   "in": "ProjectMaster",
+   "property": "ksx:useIndicator"
+  },
+  {
+   "en": "DivisionID",
+   "ko": "사업부식별자",
+   "type": "IDREF",
+   "in": "ProjectMaster",
+   "property": "ksx:divisionID"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ResponsibleDepartmentID",
+   "target": "Department",
+   "property": "ksx:refResponsibleDepartment",
+   "in": "ProjectMaster"
+  },
+  {
+   "attr": "EnterpriseID, PersonInChargeID",
+   "target": "Personnel",
+   "property": "ksx:refPersonInCharge",
+   "in": "ProjectMaster"
+  },
+  {
+   "attr": "EnterpriseID, SalesDocumentNumber, SalesDocumentSequence",
+   "target": "SalesOrderLine",
+   "property": "ksx:refSalesOrderLine",
+   "in": "ProjectMaster"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "ProjectMaster"
+  },
+  {
+   "attr": "EnterpriseID, DivisionID",
+   "target": "Department",
+   "property": "ksx:refDivision",
+   "in": "ProjectMaster"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "ProjectStatusCode",
+   "group": "ProjectStatusCode"
+  }
+ ]
+}

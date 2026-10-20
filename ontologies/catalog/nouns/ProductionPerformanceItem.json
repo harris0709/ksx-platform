@@ -1,0 +1,183 @@
+{
+ "noun": "ProductionPerformanceItem",
+ "ko": "생산실적투입품목",
+ "clause": "7.4.6.21",
+ "table": "표 64",
+ "area": "생산관리",
+ "definition": "생산 과정에서 투입되는 모든 품목(원자재, 부자재, 반제품, 완제품 등) 관련 정보를 의미한다.",
+ "layer": "core",
+ "identity": [
+  "ProductionPerformanceID",
+  "ProductionPerformanceSequence",
+  "ItemID"
+ ],
+ "struct": null,
+ "physical": {
+  "ProductionPerformanceItem": {
+   "uk": [
+    "EnterpriseID",
+    "ProductionPerformanceID",
+    "ProductionPerformanceSequence",
+    "ItemID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "ProductionPerformanceID",
+   "ko": "생산실적식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformanceItem",
+   "property": "ksx:productionPerformanceID"
+  },
+  {
+   "en": "ProductionPerformanceSequence",
+   "ko": "생산실적순번",
+   "type": "int",
+   "in": "ProductionPerformanceItem",
+   "property": "ksx:productionPerformanceSequence"
+  },
+  {
+   "en": "ProductionOrderID",
+   "ko": "생산지시식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformanceItem",
+   "property": "ksx:productionOrderID"
+  },
+  {
+   "en": "ProductionOrderSequence",
+   "ko": "생산지시순번",
+   "type": "int",
+   "in": "ProductionPerformanceItem",
+   "property": "ksx:productionOrderSequence"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformanceItem",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "ProductionPerformanceItem",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "LineID",
+   "ko": "라인식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformanceItem",
+   "property": "ksx:lineID"
+  },
+  {
+   "en": "OperationID",
+   "ko": "공정식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformanceItem",
+   "property": "ksx:operationID"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformanceItem",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "ReplacementChildItemID",
+   "ko": "대체자재식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformanceItem",
+   "property": "ksx:replacementChildItemID"
+  },
+  {
+   "en": "WarehouseID",
+   "ko": "창고식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformanceItem",
+   "property": "ksx:warehouseID"
+  },
+  {
+   "en": "WarehouseSection",
+   "ko": "창고섹션",
+   "type": "string",
+   "in": "ProductionPerformanceItem",
+   "property": "ksx:warehouseSection"
+  },
+  {
+   "en": "RequiredQuantity",
+   "ko": "소요수량",
+   "type": "int",
+   "in": "ProductionPerformanceItem",
+   "property": "ksx:requiredQuantity"
+  },
+  {
+   "en": "IssuedQuantity",
+   "ko": "출고수량",
+   "type": "int",
+   "in": "ProductionPerformanceItem",
+   "property": "ksx:issuedQuantity"
+  },
+  {
+   "en": "IssuedIndicator",
+   "ko": "출고완료여부",
+   "type": "boolean",
+   "in": "ProductionPerformanceItem",
+   "property": "ksx:issuedIndicator"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ProductionPerformanceID, ProductionPerformanceSequence",
+   "target": "ProductionPerformance",
+   "property": "ksx:refProductionPerformance",
+   "in": "ProductionPerformanceItem"
+  },
+  {
+   "attr": "EnterpriseID, ProductionOrderID, ProductionOrderSequence",
+   "target": "ProductionOrder",
+   "property": "ksx:refProductionOrder",
+   "in": "ProductionPerformanceItem"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "ProductionPerformanceItem"
+  },
+  {
+   "attr": "EnterpriseID, LineID",
+   "target": "Line",
+   "property": "ksx:refLine",
+   "in": "ProductionPerformanceItem"
+  },
+  {
+   "attr": "EnterpriseID, OperationID",
+   "target": "Operation",
+   "property": "ksx:refOperation",
+   "in": "ProductionPerformanceItem"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "ProductionPerformanceItem"
+  },
+  {
+   "attr": "EnterpriseID, ReplacementChildItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refReplacementChildItem",
+   "in": "ProductionPerformanceItem"
+  },
+  {
+   "attr": "EnterpriseID, WarehouseID, WarehouseSection",
+   "target": "WarehouseLocationLine",
+   "property": "ksx:refWarehouseToWarehouseLocationLine",
+   "in": "ProductionPerformanceItem"
+  }
+ ],
+ "codes": []
+}

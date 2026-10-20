@@ -1,0 +1,243 @@
+{
+ "noun": "ProductReleaseRequest",
+ "ko": "출하의뢰",
+ "clause": "7.4.8.2",
+ "table": "표 73",
+ "area": "창고관리",
+ "definition": "출하의뢰(ProductReleaseRequest) 명사의 헤더 구조체(struct) 출하의뢰 문서 1건의 공통 정보(납품문서번호, 납품구분유형, 납품지시일, 고객사) 출하의뢰마다 1회 나타남",
+ "layer": "core",
+ "identity": [
+  "ProductReleaseRequestID"
+ ],
+ "struct": {
+  "header": "ProductReleaseRequestHeader",
+  "line": "ProductReleaseRequestLine",
+  "lineKey": [
+   "ProductReleaseRequestSequence"
+  ]
+ },
+ "physical": {
+  "ProductReleaseRequestHeader": {
+   "uk": [
+    "EnterpriseID",
+    "ProductReleaseRequestID"
+   ]
+  },
+  "ProductReleaseRequestLine": {
+   "uk": [
+    "EnterpriseID",
+    "ProductReleaseRequestID",
+    "ProductReleaseRequestSequence"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "ProductReleaseRequestID",
+   "ko": "출하요청식별자",
+   "type": "ID",
+   "in": "ProductReleaseRequestHeader",
+   "property": "ksx:productReleaseRequestID"
+  },
+  {
+   "en": "ProductReleaseRequestDocumentNumber",
+   "ko": "납품문서번호",
+   "type": "string",
+   "in": "ProductReleaseRequestHeader",
+   "property": "ksx:productReleaseRequestDocumentNumber"
+  },
+  {
+   "en": "ProductReleaseRequestType",
+   "ko": "납품구분유형",
+   "type": "enum",
+   "in": "ProductReleaseRequestHeader",
+   "property": "ksx:productReleaseRequestType"
+  },
+  {
+   "en": "ProductReleaseRequestDate",
+   "ko": "납품지시일",
+   "type": "date",
+   "in": "ProductReleaseRequestHeader",
+   "property": "ksx:productReleaseRequestDate"
+  },
+  {
+   "en": "CustomerID",
+   "ko": "고객사식별자",
+   "type": "IDREF",
+   "in": "ProductReleaseRequestHeader",
+   "property": "ksx:customerID"
+  },
+  {
+   "en": "ProductReleaseRequestID",
+   "ko": "출하요청식별자",
+   "type": "IDREF",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:productReleaseRequestID"
+  },
+  {
+   "en": "ProductReleaseRequestSequence",
+   "ko": "납품순번",
+   "type": "int",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:productReleaseRequestSequence"
+  },
+  {
+   "en": "LineID",
+   "ko": "라인식별자",
+   "type": "IDREF",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:lineID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemName",
+   "ko": "품목명",
+   "type": "string",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:itemName",
+   "copyOf": "ItemMaster.ItemName"
+  },
+  {
+   "en": "ProductReleaseRequestQuantity",
+   "ko": "납품수량",
+   "type": "float",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:productReleaseRequestQuantity"
+  },
+  {
+   "en": "ProductReleaseQuantity",
+   "ko": "출고수량",
+   "type": "float",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:productReleaseQuantity"
+  },
+  {
+   "en": "SalesQuantity",
+   "ko": "매출수량",
+   "type": "float",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:salesQuantity"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "SellingUOMCode",
+   "ko": "판매단위코드",
+   "type": "enum",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:sellingUOMCode"
+  },
+  {
+   "en": "ItemUnitQuantity",
+   "ko": "기준단위수량",
+   "type": "float",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:itemUnitQuantity"
+  },
+  {
+   "en": "ProductReleaseUnitQuantity",
+   "ko": "기준출고수량",
+   "type": "float",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:productReleaseUnitQuantity"
+  },
+  {
+   "en": "SalesUnitQuantity",
+   "ko": "기준매출수량",
+   "type": "float",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:salesUnitQuantity"
+  },
+  {
+   "en": "WarehouseID",
+   "ko": "창고식별자",
+   "type": "IDREF",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:warehouseID"
+  },
+  {
+   "en": "RequestedDeliveryDate",
+   "ko": "요청납기일",
+   "type": "date",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:requestedDeliveryDate"
+  },
+  {
+   "en": "SalesDocumentNumber",
+   "ko": "수주문서번호",
+   "type": "IDREF",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:salesDocumentNumber"
+  },
+  {
+   "en": "SalesDocumentSequence",
+   "ko": "수주문서순번",
+   "type": "int",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:salesDocumentSequence"
+  },
+  {
+   "en": "ProductReleaseDate",
+   "ko": "출고일",
+   "type": "date",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:productReleaseDate"
+  },
+  {
+   "en": "DeliveryDate",
+   "ko": "납품일",
+   "type": "date",
+   "in": "ProductReleaseRequestLine",
+   "property": "ksx:deliveryDate"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, CustomerID",
+   "target": "CustomerPartyMaster",
+   "property": "ksx:refCustomer",
+   "in": "ProductReleaseRequestHeader"
+  },
+  {
+   "attr": "EnterpriseID, LineID",
+   "target": "Line",
+   "property": "ksx:refLine",
+   "in": "ProductReleaseRequestLine"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "ProductReleaseRequestLine"
+  },
+  {
+   "attr": "EnterpriseID, WarehouseID",
+   "target": "WarehouseLocation",
+   "property": "ksx:refWarehouse",
+   "in": "ProductReleaseRequestLine"
+  },
+  {
+   "attr": "EnterpriseID, SalesDocumentNumber, SalesDocumentSequence",
+   "target": "SalesOrderLine",
+   "property": "ksx:refSalesOrderLine",
+   "in": "ProductReleaseRequestLine"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "ProductReleaseRequestType",
+   "group": "ProductReleaseRequestType"
+  }
+ ]
+}

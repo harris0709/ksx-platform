@@ -1,0 +1,2 @@
+src_system,src_group,src_code,ksx_group,ksx_code,rule
+MES,LOT_STAT,10,LotState,Start,equal

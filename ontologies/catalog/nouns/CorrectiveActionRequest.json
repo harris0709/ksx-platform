@@ -1,0 +1,140 @@
+{
+ "noun": "CorrectiveActionRequest",
+ "ko": "시정조치요청",
+ "clause": "7.4.6.14",
+ "table": "표 57",
+ "area": "생산관리",
+ "definition": "공급사에 시정조치를 요청하는 것을 의미한다.",
+ "layer": "core",
+ "identity": [
+  "CorrectiveActionRequestID"
+ ],
+ "struct": null,
+ "physical": {
+  "CorrectiveActionRequest": {
+   "uk": [
+    "EnterpriseID",
+    "CorrectiveActionRequestID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "VendorID",
+   "ko": "공급사식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionRequest",
+   "property": "ksx:vendorID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionRequest",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemName",
+   "ko": "품목명",
+   "type": "string",
+   "in": "CorrectiveActionRequest",
+   "property": "ksx:itemName",
+   "copyOf": "ItemMaster.ItemName"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionRequest",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "BatchID",
+   "ko": "배치식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionRequest",
+   "property": "ksx:batchID"
+  },
+  {
+   "en": "InspectionApplicationID",
+   "ko": "검사신청식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionRequest",
+   "property": "ksx:inspectionApplicationID"
+  },
+  {
+   "en": "CorrectiveActionRequestID",
+   "ko": "시정조치요청식별자",
+   "type": "ID",
+   "in": "CorrectiveActionRequest",
+   "property": "ksx:correctiveActionRequestID"
+  },
+  {
+   "en": "CorrectiveActionRequestIssuerID",
+   "ko": "시정조치요청발행자식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionRequest",
+   "property": "ksx:correctiveActionRequestIssuerID"
+  },
+  {
+   "en": "CorrectiveActionRequestRecipientID",
+   "ko": "시정조치요청접수자식별자",
+   "type": "string",
+   "in": "CorrectiveActionRequest",
+   "property": "ksx:correctiveActionRequestRecipientID"
+  },
+  {
+   "en": "CorrectiveActionRequestLocation",
+   "ko": "시정조치요청위치",
+   "type": "string",
+   "in": "CorrectiveActionRequest",
+   "property": "ksx:correctiveActionRequestLocation"
+  },
+  {
+   "en": "CorrectiveActionRequestDocumentReference",
+   "ko": "시정조치요청첨부자료",
+   "type": "string",
+   "in": "CorrectiveActionRequest",
+   "property": "ksx:correctiveActionRequestDocumentReference"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, VendorID",
+   "target": "VendorPartyMaster",
+   "property": "ksx:refVendor",
+   "in": "CorrectiveActionRequest"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "CorrectiveActionRequest"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "CorrectiveActionRequest"
+  },
+  {
+   "attr": "EnterpriseID, BatchID",
+   "target": "Batch",
+   "property": "ksx:refBatch",
+   "in": "CorrectiveActionRequest"
+  },
+  {
+   "attr": "EnterpriseID, InspectionApplicationID",
+   "target": "SupplierInspectionApplication",
+   "property": "ksx:refInspectionApplication",
+   "in": "CorrectiveActionRequest"
+  },
+  {
+   "attr": "EnterpriseID, CorrectiveActionRequestIssuerID",
+   "target": "Personnel",
+   "property": "ksx:refCorrectiveActionRequestIssuer",
+   "in": "CorrectiveActionRequest"
+  }
+ ],
+ "codes": []
+}

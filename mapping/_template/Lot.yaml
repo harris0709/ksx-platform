@@ -1,0 +1,14 @@
+# 원천 → KS X 9101 매핑 명세 예시 (status: draft → reviewed → approved)
+noun: Lot
+source: { system: MES, table: mes.tb_lot, filter: "use_yn = 'Y'" }
+base: { EnterpriseID: const(ACME), SiteID: xref(site, plant_cd), PlantID: xref(plant, plant_cd) }
+identity: [LotID]
+attributes:
+  LotID:            { from: lot_no,   match: normalized, status: draft }
+  ItemID:           { from: item_cd,  match: component,  status: draft }
+  LotState:         { from: lot_stat, code: LOT_STAT -> LotState, status: draft }
+  ProducedQuantity: { from: prod_qty, uom: { from: unit, map: units.csv }, status: draft }
+  CreationDateTime: { from: reg_dt,   transform: to_iso8601(tz=Asia/Seoul), status: draft }
+extension: {}
+excluded:
+  - { column: pgm_id, reason: "생성 프로그램 ID(기술 컬럼)" }

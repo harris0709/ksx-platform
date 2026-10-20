@@ -1,0 +1,93 @@
+{
+ "noun": "ProductTraceParameterOnCustomer",
+ "ko": "고객제품데이터",
+ "clause": "7.4.9.2",
+ "table": "표 77",
+ "area": "서비스관리",
+ "definition": "고객에게 판매 완료 후 부가적인 서비스 제공 및 가치창출을 위해 고객 제품에서 수집되는 데이터를 의미한다.",
+ "layer": "core",
+ "identity": [
+  "ProductTraceParameterOnCustomerID"
+ ],
+ "struct": null,
+ "physical": {
+  "ProductTraceParameterOnCustomer": {
+   "uk": [
+    "EnterpriseID",
+    "ProductTraceParameterOnCustomerID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "ProductTraceParameterOnCustomerID",
+   "ko": "고객제품데이터식별자",
+   "type": "ID",
+   "in": "ProductTraceParameterOnCustomer",
+   "property": "ksx:productTraceParameterOnCustomerID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "ProductTraceParameterOnCustomer",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "SerialNumber",
+   "ko": "제조번호",
+   "type": "string",
+   "in": "ProductTraceParameterOnCustomer",
+   "property": "ksx:serialNumber"
+  },
+  {
+   "en": "Location",
+   "ko": "위치",
+   "type": "string",
+   "in": "ProductTraceParameterOnCustomer",
+   "property": "ksx:location"
+  },
+  {
+   "en": "ItemType",
+   "ko": "품목유형",
+   "type": "enum",
+   "in": "ProductTraceParameterOnCustomer",
+   "property": "ksx:itemType"
+  },
+  {
+   "en": "ParameterName",
+   "ko": "파라미터명",
+   "type": "string",
+   "in": "ProductTraceParameterOnCustomer",
+   "property": "ksx:parameterName"
+  },
+  {
+   "en": "ParameterValue",
+   "ko": "파라미터값",
+   "type": "float",
+   "in": "ProductTraceParameterOnCustomer",
+   "property": "ksx:parameterValue"
+  },
+  {
+   "en": "CollectionDateTime",
+   "ko": "수집일시",
+   "type": "dateTime",
+   "in": "ProductTraceParameterOnCustomer",
+   "property": "ksx:collectionDateTime"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "ProductTraceParameterOnCustomer"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "ItemType",
+   "group": "ItemType"
+  }
+ ]
+}

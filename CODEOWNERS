@@ -1,0 +1,8 @@
+/standards/      @ksx-standard-admins
+/extensions/     @ksx-ontology
+/mapping/        @ksx-data @ksx-domain
+/ontologies/     @ksx-ontology
+/tools/ksxgen/   @ksx-ontology
+/etl/            @ksx-data
+/services/       @ksx-backend @ksx-ai
+/infra/          @ksx-infra

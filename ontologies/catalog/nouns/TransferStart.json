@@ -1,0 +1,147 @@
+{
+ "noun": "TransferStart",
+ "ko": "운행시작",
+ "clause": "7.4.6.6",
+ "table": "표 49",
+ "area": "생산관리",
+ "definition": "이동지시 명령을 받아 운행 시작 시 시작 정보를 보고한다.",
+ "layer": "core",
+ "identity": [
+  "TransferStartID"
+ ],
+ "struct": null,
+ "physical": {
+  "TransferStart": {
+   "uk": [
+    "EnterpriseID",
+    "TransferStartID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "TransferStartID",
+   "ko": "운행시작식별자",
+   "type": "ID",
+   "in": "TransferStart",
+   "property": "ksx:transferStartID"
+  },
+  {
+   "en": "TransferCommandID",
+   "ko": "이동지시식별자",
+   "type": "IDREF",
+   "in": "TransferStart",
+   "property": "ksx:transferCommandID"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "TransferStart",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "LotName",
+   "ko": "로트명",
+   "type": "string",
+   "in": "TransferStart",
+   "property": "ksx:lotName",
+   "copyOf": "Lot.LotName"
+  },
+  {
+   "en": "LotDescription",
+   "ko": "로트설명",
+   "type": "string",
+   "in": "TransferStart",
+   "property": "ksx:lotDescription",
+   "copyOf": "Lot.LotDescription"
+  },
+  {
+   "en": "CarrierID",
+   "ko": "캐리어식별자",
+   "type": "IDREF",
+   "in": "TransferStart",
+   "property": "ksx:carrierID"
+  },
+  {
+   "en": "TransferStartDateTime",
+   "ko": "운행시작일시",
+   "type": "dateTime",
+   "in": "TransferStart",
+   "property": "ksx:transferStartDateTime"
+  },
+  {
+   "en": "CurrentLocation",
+   "ko": "현재위치",
+   "type": "string",
+   "in": "TransferStart",
+   "property": "ksx:currentLocation"
+  },
+  {
+   "en": "DestinationID",
+   "ko": "목적지식별자",
+   "type": "IDREF",
+   "in": "TransferStart",
+   "property": "ksx:destinationID"
+  },
+  {
+   "en": "DestinationType",
+   "ko": "목적지유형",
+   "type": "enum",
+   "in": "TransferStart",
+   "property": "ksx:destinationType"
+  },
+  {
+   "en": "DestinationName",
+   "ko": "목적지명",
+   "type": "string",
+   "in": "TransferStart",
+   "property": "ksx:destinationName",
+   "copyOf": "TransferCommand.DestinationName"
+  },
+  {
+   "en": "ErrorCode",
+   "ko": "오류코드",
+   "type": "enum",
+   "in": "TransferStart",
+   "property": "ksx:errorCode"
+  },
+  {
+   "en": "ErrorMessage",
+   "ko": "오류메세지",
+   "type": "string",
+   "in": "TransferStart",
+   "property": "ksx:errorMessage"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, TransferCommandID",
+   "target": "TransferCommand",
+   "property": "ksx:refTransferCommand",
+   "in": "TransferStart"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "TransferStart"
+  },
+  {
+   "attr": "EnterpriseID, CarrierID",
+   "target": "Carrier",
+   "property": "ksx:refCarrier",
+   "in": "TransferStart"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "DestinationType",
+   "group": "LocationType"
+  },
+  {
+   "attr": "ErrorCode",
+   "group": "TransferErrorCode"
+  }
+ ]
+}

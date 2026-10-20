@@ -1,0 +1,99 @@
+{
+ "noun": "WarehouseLocation",
+ "ko": "창고",
+ "clause": "7.4.1.19",
+ "table": "표 30",
+ "area": "기준정보",
+ "definition": "창고(WarehouseLocation) 명사의 헤더 구조체(struct) 창고 1건의 공통 정보(창고명, 창고유형, 재고 관리 기준) 창고마다 1회 나타남",
+ "layer": "core",
+ "identity": [
+  "WarehouseID"
+ ],
+ "struct": {
+  "header": "WarehouseLocationHeader",
+  "line": "WarehouseLocationLine",
+  "lineKey": [
+   "WarehouseSection"
+  ]
+ },
+ "physical": {
+  "WarehouseLocationHeader": {
+   "uk": [
+    "EnterpriseID",
+    "WarehouseID"
+   ]
+  },
+  "WarehouseLocationLine": {
+   "uk": [
+    "EnterpriseID",
+    "WarehouseID",
+    "WarehouseSection"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "WarehouseID",
+   "ko": "창고식별자",
+   "type": "ID",
+   "in": "WarehouseLocationHeader",
+   "property": "ksx:warehouseID"
+  },
+  {
+   "en": "WarehouseName",
+   "ko": "창고명",
+   "type": "string",
+   "in": "WarehouseLocationHeader",
+   "property": "ksx:warehouseName"
+  },
+  {
+   "en": "WarehouseType",
+   "ko": "창고유형",
+   "type": "enum",
+   "in": "WarehouseLocationHeader",
+   "property": "ksx:warehouseType"
+  },
+  {
+   "en": "UseIndicator",
+   "ko": "사용여부",
+   "type": "boolean",
+   "in": "WarehouseLocationHeader",
+   "property": "ksx:useIndicator"
+  },
+  {
+   "en": "NegativeInventoryIndicator",
+   "ko": "음수재고허용여부",
+   "type": "boolean",
+   "in": "WarehouseLocationHeader",
+   "property": "ksx:negativeInventoryIndicator"
+  },
+  {
+   "en": "WarehouseID",
+   "ko": "창고식별자",
+   "type": "IDREF",
+   "in": "WarehouseLocationLine",
+   "property": "ksx:warehouseID"
+  },
+  {
+   "en": "WarehouseSection",
+   "ko": "창고섹션",
+   "type": "string",
+   "in": "WarehouseLocationLine",
+   "property": "ksx:warehouseSection"
+  },
+  {
+   "en": "WarehouseSectionName",
+   "ko": "창고섹션명",
+   "type": "string",
+   "in": "WarehouseLocationLine",
+   "property": "ksx:warehouseSectionName"
+  }
+ ],
+ "references": [],
+ "codes": [
+  {
+   "attr": "WarehouseType",
+   "group": "WarehouseType"
+  }
+ ]
+}

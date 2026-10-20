@@ -1,0 +1,148 @@
+{
+ "noun": "PurchaseRequisition",
+ "ko": "구매요청",
+ "clause": "7.4.4.2",
+ "table": "표 39",
+ "area": "구매관리",
+ "definition": "생산 또는 판매를 위해 수급되어야 할 품목을 요청하는 것을 의미한다(원부자재, 소모품, 상품 등).",
+ "layer": "core",
+ "identity": [
+  "PurchaseRequisitionID"
+ ],
+ "struct": null,
+ "physical": {
+  "PurchaseRequisition": {
+   "uk": [
+    "EnterpriseID",
+    "PurchaseRequisitionID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "PurchaseRequisitionID",
+   "ko": "구매요청식별자",
+   "type": "ID",
+   "in": "PurchaseRequisition",
+   "property": "ksx:purchaseRequisitionID"
+  },
+  {
+   "en": "PurchaseRequisitionRevisionNumber",
+   "ko": "구매요청버전",
+   "type": "int",
+   "in": "PurchaseRequisition",
+   "property": "ksx:purchaseRequisitionRevisionNumber"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "PurchaseRequisition",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemName",
+   "ko": "품목명",
+   "type": "string",
+   "in": "PurchaseRequisition",
+   "property": "ksx:itemName",
+   "copyOf": "ItemMaster.ItemName"
+  },
+  {
+   "en": "DemandQuantity",
+   "ko": "구매요청수량",
+   "type": "float",
+   "in": "PurchaseRequisition",
+   "property": "ksx:demandQuantity"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "PurchaseRequisition",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "PurchaseRequisitionUnitPrice",
+   "ko": "구매요청단가",
+   "type": "float",
+   "in": "PurchaseRequisition",
+   "property": "ksx:purchaseRequisitionUnitPrice"
+  },
+  {
+   "en": "CurrencyCode",
+   "ko": "환종코드",
+   "type": "enum",
+   "in": "PurchaseRequisition",
+   "property": "ksx:currencyCode"
+  },
+  {
+   "en": "VendorID",
+   "ko": "공급사식별자",
+   "type": "IDREF",
+   "in": "PurchaseRequisition",
+   "property": "ksx:vendorID"
+  },
+  {
+   "en": "VendorName",
+   "ko": "공급사명",
+   "type": "string",
+   "in": "PurchaseRequisition",
+   "property": "ksx:vendorName",
+   "copyOf": "VendorPartyMaster.VendorName"
+  },
+  {
+   "en": "RequestedDeliveryDate",
+   "ko": "요청납기일",
+   "type": "date",
+   "in": "PurchaseRequisition",
+   "property": "ksx:requestedDeliveryDate"
+  },
+  {
+   "en": "RequesterDepartmentID",
+   "ko": "구매요청부서",
+   "type": "IDREF",
+   "in": "PurchaseRequisition",
+   "property": "ksx:requesterDepartmentID"
+  },
+  {
+   "en": "RequesterPersonnelID",
+   "ko": "구매요청자",
+   "type": "IDREF",
+   "in": "PurchaseRequisition",
+   "property": "ksx:requesterPersonnelID"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "PurchaseRequisition"
+  },
+  {
+   "attr": "EnterpriseID, VendorID",
+   "target": "VendorPartyMaster",
+   "property": "ksx:refVendor",
+   "in": "PurchaseRequisition"
+  },
+  {
+   "attr": "EnterpriseID, RequesterDepartmentID",
+   "target": "Department",
+   "property": "ksx:refRequesterDepartment",
+   "in": "PurchaseRequisition"
+  },
+  {
+   "attr": "EnterpriseID, RequesterPersonnelID",
+   "target": "Personnel",
+   "property": "ksx:refRequesterPersonnel",
+   "in": "PurchaseRequisition"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "CurrencyCode",
+   "group": "CurrencyCode"
+  }
+ ]
+}

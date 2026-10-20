@@ -1,0 +1,128 @@
+{
+ "noun": "CustomerPartyMaster",
+ "ko": "고객사",
+ "clause": "7.4.1.5",
+ "table": "표 16",
+ "area": "기준정보",
+ "definition": "고객사 코드, 고객사명, 사업자등록번호 등 고객사 정보를 관리하는 고객사 마스터를 의미한다.",
+ "layer": "core",
+ "identity": [
+  "CustomerID"
+ ],
+ "struct": null,
+ "physical": {
+  "CustomerPartyMaster": {
+   "uk": [
+    "EnterpriseID",
+    "CustomerID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "CustomerID",
+   "ko": "고객사식별자",
+   "type": "ID",
+   "in": "CustomerPartyMaster",
+   "property": "ksx:customerID"
+  },
+  {
+   "en": "CustomerName",
+   "ko": "고객사명",
+   "type": "string",
+   "in": "CustomerPartyMaster",
+   "property": "ksx:customerName"
+  },
+  {
+   "en": "BusinessRegistrationNumber",
+   "ko": "사업자등록번호",
+   "type": "string",
+   "in": "CustomerPartyMaster",
+   "property": "ksx:businessRegistrationNumber"
+  },
+  {
+   "en": "RepresentativeName",
+   "ko": "대표자명",
+   "type": "string",
+   "in": "CustomerPartyMaster",
+   "property": "ksx:representativeName"
+  },
+  {
+   "en": "CountryID",
+   "ko": "국가식별자",
+   "type": "enum",
+   "in": "CustomerPartyMaster",
+   "property": "ksx:countryID"
+  },
+  {
+   "en": "PostalCode",
+   "ko": "우편번호",
+   "type": "string",
+   "in": "CustomerPartyMaster",
+   "property": "ksx:postalCode"
+  },
+  {
+   "en": "BaseAddress",
+   "ko": "기본주소",
+   "type": "string",
+   "in": "CustomerPartyMaster",
+   "property": "ksx:baseAddress"
+  },
+  {
+   "en": "DetailAddress",
+   "ko": "상세주소",
+   "type": "string",
+   "in": "CustomerPartyMaster",
+   "property": "ksx:detailAddress"
+  },
+  {
+   "en": "DialNumber",
+   "ko": "전화번호",
+   "type": "string",
+   "in": "CustomerPartyMaster",
+   "property": "ksx:dialNumber"
+  },
+  {
+   "en": "FaxNumber",
+   "ko": "팩스번호",
+   "type": "string",
+   "in": "CustomerPartyMaster",
+   "property": "ksx:faxNumber"
+  },
+  {
+   "en": "UseIndicator",
+   "ko": "사용여부",
+   "type": "boolean",
+   "in": "CustomerPartyMaster",
+   "property": "ksx:useIndicator"
+  },
+  {
+   "en": "PersonInChargeName",
+   "ko": "담당자명",
+   "type": "string",
+   "in": "CustomerPartyMaster",
+   "property": "ksx:personInChargeName"
+  },
+  {
+   "en": "PersonInChargeEmail",
+   "ko": "담당자이메일명",
+   "type": "string",
+   "in": "CustomerPartyMaster",
+   "property": "ksx:personInChargeEmail"
+  },
+  {
+   "en": "PersonInChargeDialNumber",
+   "ko": "담당자전화번호",
+   "type": "string",
+   "in": "CustomerPartyMaster",
+   "property": "ksx:personInChargeDialNumber"
+  }
+ ],
+ "references": [],
+ "codes": [
+  {
+   "attr": "CountryID",
+   "group": "CountryID"
+  }
+ ]
+}

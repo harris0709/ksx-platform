@@ -1,0 +1,89 @@
+{
+ "noun": "OperationEquipment",
+ "ko": "공정설비",
+ "clause": "7.4.1.16",
+ "table": "표 27",
+ "area": "기준정보",
+ "definition": "공정별 사용되는 설비 정보 데이터를 의미한다.",
+ "layer": "core",
+ "identity": [
+  "OperationID",
+  "EquipmentID"
+ ],
+ "struct": null,
+ "physical": {
+  "OperationEquipment": {
+   "uk": [
+    "EnterpriseID",
+    "OperationID",
+    "EquipmentID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "OperationID",
+   "ko": "공정식별자",
+   "type": "IDREF",
+   "in": "OperationEquipment",
+   "property": "ksx:operationID"
+  },
+  {
+   "en": "OperationName",
+   "ko": "공정명",
+   "type": "string",
+   "in": "OperationEquipment",
+   "property": "ksx:operationName",
+   "copyOf": "Operation.OperationName"
+  },
+  {
+   "en": "EquipmentID",
+   "ko": "설비식별자",
+   "type": "IDREF",
+   "in": "OperationEquipment",
+   "property": "ksx:equipmentID"
+  },
+  {
+   "en": "EquipmentName",
+   "ko": "설비명",
+   "type": "string",
+   "in": "OperationEquipment",
+   "property": "ksx:equipmentName",
+   "copyOf": "Equipment.EquipmentName"
+  },
+  {
+   "en": "EquipmentSmallClass",
+   "ko": "설비소분류",
+   "type": "enum",
+   "in": "OperationEquipment",
+   "property": "ksx:equipmentSmallClass"
+  },
+  {
+   "en": "EquipmentQuantity",
+   "ko": "기준사용대수",
+   "type": "int",
+   "in": "OperationEquipment",
+   "property": "ksx:equipmentQuantity"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, OperationID",
+   "target": "Operation",
+   "property": "ksx:refOperation",
+   "in": "OperationEquipment"
+  },
+  {
+   "attr": "EnterpriseID, EquipmentID",
+   "target": "Equipment",
+   "property": "ksx:refEquipment",
+   "in": "OperationEquipment"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "EquipmentSmallClass",
+   "group": "EquipmentSmallClass"
+  }
+ ]
+}

@@ -1,0 +1,67 @@
+{
+ "noun": "ProductionPlanning",
+ "ko": "생산계획",
+ "clause": "7.4.6.1",
+ "table": "표 44",
+ "area": "생산관리",
+ "definition": "특정 제품을 생산하기 위한 계획을 의미한다.",
+ "layer": "core",
+ "identity": [
+  "ProductionPlanID"
+ ],
+ "struct": null,
+ "physical": {
+  "ProductionPlanning": {
+   "uk": [
+    "EnterpriseID",
+    "ProductionPlanID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "ProductionPlanID",
+   "ko": "생산계획식별자",
+   "type": "ID",
+   "in": "ProductionPlanning",
+   "property": "ksx:productionPlanID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "ProductionPlanning",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ProductionPlanQuantity",
+   "ko": "생산계획수량",
+   "type": "int",
+   "in": "ProductionPlanning",
+   "property": "ksx:productionPlanQuantity"
+  },
+  {
+   "en": "ScheduleStartDateTime",
+   "ko": "생산계획시작일시",
+   "type": "dateTime",
+   "in": "ProductionPlanning",
+   "property": "ksx:scheduleStartDateTime"
+  },
+  {
+   "en": "ScheduleEndDateTime",
+   "ko": "생산계획종료일시",
+   "type": "dateTime",
+   "in": "ProductionPlanning",
+   "property": "ksx:scheduleEndDateTime"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "ProductionPlanning"
+  }
+ ],
+ "codes": []
+}

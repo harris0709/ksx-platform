@@ -1,0 +1,26 @@
+# 비밀·환경
+.env
+*.pem
+*.key
+# 파이썬·노드
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+# dbt
+etl/dbt/target/
+etl/dbt/dbt_packages/
+etl/dbt/logs/
+# 실행 산출물(대용량 RDF, 리포트 원본)
+out/
+*.nt
+*.nq
+!tests/**/*.nt
+# 모델 가중치·어댑터(모델 레지스트리에서 관리)
+models/
+*.safetensors
+# OS·에디터
+.DS_Store
+.idea/
+.vscode/
+~$*

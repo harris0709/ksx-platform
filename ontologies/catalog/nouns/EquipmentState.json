@@ -1,0 +1,131 @@
+{
+ "noun": "EquipmentState",
+ "ko": "설비상태",
+ "clause": "7.4.6.9",
+ "table": "표 52",
+ "area": "생산관리",
+ "definition": "설비의 상태가 변경될 시 상태 정보를 보고한다.",
+ "layer": "core",
+ "identity": [
+  "EquipmentStateID"
+ ],
+ "struct": null,
+ "physical": {
+  "EquipmentState": {
+   "uk": [
+    "EnterpriseID",
+    "EquipmentStateID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "EquipmentStateID",
+   "ko": "설비상태식별자",
+   "type": "ID",
+   "in": "EquipmentState",
+   "property": "ksx:equipmentStateID"
+  },
+  {
+   "en": "EquipmentID",
+   "ko": "설비식별자",
+   "type": "IDREF",
+   "in": "EquipmentState",
+   "property": "ksx:equipmentID"
+  },
+  {
+   "en": "EquipmentState",
+   "ko": "설비상태",
+   "type": "enum",
+   "in": "EquipmentState",
+   "property": "ksx:equipmentState"
+  },
+  {
+   "en": "EquipmentControlMode",
+   "ko": "설비제어모드",
+   "type": "enum",
+   "in": "EquipmentState",
+   "property": "ksx:equipmentControlMode"
+  },
+  {
+   "en": "EquipmentOperationMode",
+   "ko": "설비운영모드",
+   "type": "enum",
+   "in": "EquipmentState",
+   "property": "ksx:equipmentOperationMode"
+  },
+  {
+   "en": "ProcessedLotQuantity",
+   "ko": "진행로트수량",
+   "type": "float",
+   "in": "EquipmentState",
+   "property": "ksx:processedLotQuantity"
+  },
+  {
+   "en": "LastProcessedLotID",
+   "ko": "최종진행로트식별자",
+   "type": "IDREF",
+   "in": "EquipmentState",
+   "property": "ksx:lastProcessedLotID"
+  },
+  {
+   "en": "LastProcessedOperationID",
+   "ko": "최종진행공정식별자",
+   "type": "IDREF",
+   "in": "EquipmentState",
+   "property": "ksx:lastProcessedOperationID"
+  },
+  {
+   "en": "ErrorCode",
+   "ko": "오류코드",
+   "type": "enum",
+   "in": "EquipmentState",
+   "property": "ksx:errorCode"
+  },
+  {
+   "en": "ErrorMessage",
+   "ko": "오류메세지",
+   "type": "string",
+   "in": "EquipmentState",
+   "property": "ksx:errorMessage"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, EquipmentID",
+   "target": "Equipment",
+   "property": "ksx:refEquipment",
+   "in": "EquipmentState"
+  },
+  {
+   "attr": "EnterpriseID, LastProcessedLotID",
+   "target": "Lot",
+   "property": "ksx:refLastProcessedLot",
+   "in": "EquipmentState"
+  },
+  {
+   "attr": "EnterpriseID, LastProcessedOperationID",
+   "target": "Operation",
+   "property": "ksx:refLastProcessedOperation",
+   "in": "EquipmentState"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "EquipmentState",
+   "group": "EquipmentState"
+  },
+  {
+   "attr": "EquipmentControlMode",
+   "group": "EquipmentControlMode"
+  },
+  {
+   "attr": "EquipmentOperationMode",
+   "group": "EquipmentOperationMode"
+  },
+  {
+   "attr": "ErrorCode",
+   "group": "EquipmentErrorCode"
+  }
+ ]
+}

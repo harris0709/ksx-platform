@@ -1,0 +1,93 @@
+{
+ "noun": "StockerInventory",
+ "ko": "저장소재공정보",
+ "clause": "7.4.1.18",
+ "table": "표 29",
+ "area": "기준정보",
+ "definition": "공장 내 공정 물류 저장소 정보를 의미한다. 이는 공정 내 물류 최적화를 위해 Lot Dispatcher를 사용하는데 SCS(StockerControlSystem), Dispatcher, MES 상호연동을 위해 존재한다.",
+ "layer": "core",
+ "identity": [
+  "StockerID"
+ ],
+ "struct": null,
+ "physical": {
+  "StockerInventory": {
+   "uk": [
+    "EnterpriseID",
+    "StockerID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "StockerID",
+   "ko": "저장소식별자",
+   "type": "ID",
+   "in": "StockerInventory",
+   "property": "ksx:stockerID"
+  },
+  {
+   "en": "ZoneID",
+   "ko": "구역식별자",
+   "type": "string",
+   "in": "StockerInventory",
+   "property": "ksx:zoneID"
+  },
+  {
+   "en": "FullCapacity",
+   "ko": "최대용량",
+   "type": "int",
+   "in": "StockerInventory",
+   "property": "ksx:fullCapacity"
+  },
+  {
+   "en": "CurrentCapacity",
+   "ko": "현재용량",
+   "type": "int",
+   "in": "StockerInventory",
+   "property": "ksx:currentCapacity"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "StockerInventory",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "CarrierID",
+   "ko": "캐리어식별자",
+   "type": "IDREF",
+   "in": "StockerInventory",
+   "property": "ksx:carrierID"
+  },
+  {
+   "en": "AlternateStockerID",
+   "ko": "대체저장소식별자",
+   "type": "IDREF",
+   "in": "StockerInventory",
+   "property": "ksx:alternateStockerID"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "StockerInventory"
+  },
+  {
+   "attr": "EnterpriseID, CarrierID",
+   "target": "Carrier",
+   "property": "ksx:refCarrier",
+   "in": "StockerInventory"
+  },
+  {
+   "attr": "EnterpriseID, AlternateStockerID",
+   "target": "StockerInventory",
+   "property": "ksx:refAlternateStocker",
+   "in": "StockerInventory"
+  }
+ ],
+ "codes": []
+}

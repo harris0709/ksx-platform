@@ -1,0 +1,368 @@
+{
+ "noun": "Delivery",
+ "ko": "배송",
+ "clause": "7.4.8.4",
+ "table": "표 75",
+ "area": "창고관리",
+ "definition": "배송(Delivery) 명사의 헤더 구조체(struct) 특정 수량의 물품을 공급업체에서 단일 고객 목적지로 운송하는 데 사용되는 배송 1건의 공통 정보 배송마다 1회 나타남",
+ "layer": "core",
+ "identity": [
+  "DeliveryID"
+ ],
+ "struct": {
+  "header": "DeliveryHeader",
+  "line": "DeliveryLine",
+  "lineKey": [
+   "DeliveryLineSequence"
+  ]
+ },
+ "physical": {
+  "DeliveryHeader": {
+   "uk": [
+    "EnterpriseID",
+    "DeliveryID"
+   ]
+  },
+  "DeliveryLine": {
+   "uk": [
+    "EnterpriseID",
+    "DeliveryID",
+    "DeliveryLineSequence"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "DeliveryID",
+   "ko": "배송식별자",
+   "type": "ID",
+   "in": "DeliveryHeader",
+   "property": "ksx:deliveryID"
+  },
+  {
+   "en": "DeliveryDateTime",
+   "ko": "배송일시",
+   "type": "dateTime",
+   "in": "DeliveryHeader",
+   "property": "ksx:deliveryDateTime"
+  },
+  {
+   "en": "CustomerID",
+   "ko": "고객사식별자",
+   "type": "IDREF",
+   "in": "DeliveryHeader",
+   "property": "ksx:customerID"
+  },
+  {
+   "en": "PackingList",
+   "ko": "포장내용",
+   "type": "string",
+   "in": "DeliveryHeader",
+   "property": "ksx:packingList"
+  },
+  {
+   "en": "PackingType",
+   "ko": "포장유형",
+   "type": "enum",
+   "in": "DeliveryHeader",
+   "property": "ksx:packingType"
+  },
+  {
+   "en": "TransportationMethodCode",
+   "ko": "운송방법",
+   "type": "enum",
+   "in": "DeliveryHeader",
+   "property": "ksx:transportationMethodCode"
+  },
+  {
+   "en": "DepartmentInChargeID",
+   "ko": "배송처리담당부서식별자",
+   "type": "IDREF",
+   "in": "DeliveryHeader",
+   "property": "ksx:departmentInChargeID"
+  },
+  {
+   "en": "DepartmentInChargeName",
+   "ko": "배송처리담당부서명",
+   "type": "string",
+   "in": "DeliveryHeader",
+   "property": "ksx:departmentInChargeName",
+   "copyOf": "Department.DepartmentName"
+  },
+  {
+   "en": "PersonInChargeID",
+   "ko": "배송처리담당자식별자",
+   "type": "IDREF",
+   "in": "DeliveryHeader",
+   "property": "ksx:personInChargeID"
+  },
+  {
+   "en": "PersonInChargeName",
+   "ko": "배송처리담당자명",
+   "type": "string",
+   "in": "DeliveryHeader",
+   "property": "ksx:personInChargeName",
+   "copyOf": "Personnel.PersonnelName"
+  },
+  {
+   "en": "PersonInChargeDialNumber",
+   "ko": "배송처리담당자전화번호",
+   "type": "string",
+   "in": "DeliveryHeader",
+   "property": "ksx:personInChargeDialNumber",
+   "copyOf": "Personnel.PersonInChargeDialNumber"
+  },
+  {
+   "en": "TransportationCompany",
+   "ko": "운송사",
+   "type": "string",
+   "in": "DeliveryHeader",
+   "property": "ksx:transportationCompany"
+  },
+  {
+   "en": "PersonInChargeNameOfTransportation",
+   "ko": "운송담당자명",
+   "type": "string",
+   "in": "DeliveryHeader",
+   "property": "ksx:personInChargeNameOfTransportation"
+  },
+  {
+   "en": "PersonInChargeDialNumberOfTransportation",
+   "ko": "운송담당자전화번호",
+   "type": "string",
+   "in": "DeliveryHeader",
+   "property": "ksx:personInChargeDialNumberOfTransportation"
+  },
+  {
+   "en": "Recipient",
+   "ko": "수취인",
+   "type": "string",
+   "in": "DeliveryHeader",
+   "property": "ksx:recipient"
+  },
+  {
+   "en": "RecipientDialNumber",
+   "ko": "수취인전화번호",
+   "type": "string",
+   "in": "DeliveryHeader",
+   "property": "ksx:recipientDialNumber"
+  },
+  {
+   "en": "RecipientEmail",
+   "ko": "수취인이메일",
+   "type": "string",
+   "in": "DeliveryHeader",
+   "property": "ksx:recipientEmail"
+  },
+  {
+   "en": "ShippingPoint",
+   "ko": "선적지",
+   "type": "string",
+   "in": "DeliveryHeader",
+   "property": "ksx:shippingPoint"
+  },
+  {
+   "en": "ShipToAddress",
+   "ko": "배송지",
+   "type": "string",
+   "in": "DeliveryHeader",
+   "property": "ksx:shipToAddress"
+  },
+  {
+   "en": "PreferredReceiptDate",
+   "ko": "인수희망일",
+   "type": "date",
+   "in": "DeliveryHeader",
+   "property": "ksx:preferredReceiptDate"
+  },
+  {
+   "en": "DeliveryNote",
+   "ko": "배송메모",
+   "type": "string",
+   "in": "DeliveryHeader",
+   "property": "ksx:deliveryNote"
+  },
+  {
+   "en": "DeliveryConfirmationDocument",
+   "ko": "납품확인서",
+   "type": "string",
+   "in": "DeliveryHeader",
+   "property": "ksx:deliveryConfirmationDocument"
+  },
+  {
+   "en": "DeliveryID",
+   "ko": "배송식별자",
+   "type": "IDREF",
+   "in": "DeliveryLine",
+   "property": "ksx:deliveryID"
+  },
+  {
+   "en": "DeliveryLineSequence",
+   "ko": "배송라인순번",
+   "type": "int",
+   "in": "DeliveryLine",
+   "property": "ksx:deliveryLineSequence"
+  },
+  {
+   "en": "ProductReleaseID",
+   "ko": "출고식별자",
+   "type": "IDREF",
+   "in": "DeliveryLine",
+   "property": "ksx:productReleaseID"
+  },
+  {
+   "en": "ProductReleaseSequence",
+   "ko": "출고순번",
+   "type": "int",
+   "in": "DeliveryLine",
+   "property": "ksx:productReleaseSequence"
+  },
+  {
+   "en": "SalesDocumentNumber",
+   "ko": "수주문서번호",
+   "type": "IDREF",
+   "in": "DeliveryLine",
+   "property": "ksx:salesDocumentNumber"
+  },
+  {
+   "en": "SalesDocumentSequence",
+   "ko": "수주문서순번",
+   "type": "int",
+   "in": "DeliveryLine",
+   "property": "ksx:salesDocumentSequence"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "DeliveryLine",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemName",
+   "ko": "품목명",
+   "type": "string",
+   "in": "DeliveryLine",
+   "property": "ksx:itemName",
+   "copyOf": "ItemMaster.ItemName"
+  },
+  {
+   "en": "InvoiceNumber",
+   "ko": "거래명세서번호",
+   "type": "string",
+   "in": "DeliveryLine",
+   "property": "ksx:invoiceNumber"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "DeliveryLine",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "DeliveryLine",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "ItemUnitQuantity",
+   "ko": "기준단위수량",
+   "type": "float",
+   "in": "DeliveryLine",
+   "property": "ksx:itemUnitQuantity"
+  },
+  {
+   "en": "OrderUOMCode",
+   "ko": "오더단위코드",
+   "type": "enum",
+   "in": "DeliveryLine",
+   "property": "ksx:orderUOMCode"
+  },
+  {
+   "en": "OrderQuantity",
+   "ko": "오더수량",
+   "type": "float",
+   "in": "DeliveryLine",
+   "property": "ksx:orderQuantity"
+  },
+  {
+   "en": "ProductDeliveryUOMCode",
+   "ko": "납품단위코드",
+   "type": "enum",
+   "in": "DeliveryLine",
+   "property": "ksx:productDeliveryUOMCode"
+  },
+  {
+   "en": "ProductDeliveryQuantity",
+   "ko": "납품수량",
+   "type": "float",
+   "in": "DeliveryLine",
+   "property": "ksx:productDeliveryQuantity"
+  },
+  {
+   "en": "RequestedDeliveryDate",
+   "ko": "요청납품일",
+   "type": "date",
+   "in": "DeliveryLine",
+   "property": "ksx:requestedDeliveryDate",
+   "copyOf": "SalesOrder.RequestedDeliveryDate"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, CustomerID",
+   "target": "CustomerPartyMaster",
+   "property": "ksx:refCustomer",
+   "in": "DeliveryHeader"
+  },
+  {
+   "attr": "EnterpriseID, DepartmentInChargeID",
+   "target": "Department",
+   "property": "ksx:refDepartmentInCharge",
+   "in": "DeliveryHeader"
+  },
+  {
+   "attr": "EnterpriseID, PersonInChargeID",
+   "target": "Personnel",
+   "property": "ksx:refPersonInCharge",
+   "in": "DeliveryHeader"
+  },
+  {
+   "attr": "EnterpriseID, ProductReleaseID, ProductReleaseSequence",
+   "target": "ProductRelease",
+   "property": "ksx:refProductRelease",
+   "in": "DeliveryLine"
+  },
+  {
+   "attr": "EnterpriseID, SalesDocumentNumber, SalesDocumentSequence",
+   "target": "SalesOrderLine",
+   "property": "ksx:refSalesOrderLine",
+   "in": "DeliveryLine"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "DeliveryLine"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "DeliveryLine"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "PackingType",
+   "group": "PackingType"
+  },
+  {
+   "attr": "TransportationMethodCode",
+   "group": "TransportationMethodCode"
+  }
+ ]
+}

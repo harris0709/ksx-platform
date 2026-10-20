@@ -1,0 +1,75 @@
+{
+ "noun": "SalesPlan",
+ "ko": "판매계획",
+ "clause": "7.4.3.2",
+ "table": "표 37",
+ "area": "판매관리",
+ "definition": "고객사 Forecast정보 및 수요예측정보를 토대로 작성된 판매계획을 의미한다.",
+ "layer": "core",
+ "identity": [
+  "SalesPlanID"
+ ],
+ "struct": null,
+ "physical": {
+  "SalesPlan": {
+   "uk": [
+    "EnterpriseID",
+    "SalesPlanID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "SalesPlanID",
+   "ko": "판매계획식별자",
+   "type": "ID",
+   "in": "SalesPlan",
+   "property": "ksx:salesPlanID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "SalesPlan",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemName",
+   "ko": "품목명",
+   "type": "string",
+   "in": "SalesPlan",
+   "property": "ksx:itemName",
+   "copyOf": "ItemMaster.ItemName"
+  },
+  {
+   "en": "SalesProjection",
+   "ko": "판매추정치",
+   "type": "float",
+   "in": "SalesPlan",
+   "property": "ksx:salesProjection"
+  },
+  {
+   "en": "ProjectionStartDate",
+   "ko": "예측시작일",
+   "type": "date",
+   "in": "SalesPlan",
+   "property": "ksx:projectionStartDate"
+  },
+  {
+   "en": "ProjectionEndDate",
+   "ko": "예측종료일",
+   "type": "date",
+   "in": "SalesPlan",
+   "property": "ksx:projectionEndDate"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "SalesPlan"
+  }
+ ],
+ "codes": []
+}

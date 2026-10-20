@@ -1,0 +1,68 @@
+{
+ "noun": "Inventory",
+ "ko": "재고",
+ "clause": "7.4.7.1",
+ "table": "표 68",
+ "area": "재고관리",
+ "definition": "저장위치에 있는 품목의 실제 보유(On-hand) 수량을 의미한다.",
+ "layer": "core",
+ "identity": [
+  "WarehouseID",
+  "ItemID"
+ ],
+ "struct": null,
+ "physical": {
+  "Inventory": {
+   "uk": [
+    "EnterpriseID",
+    "WarehouseID",
+    "ItemID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "WarehouseID",
+   "ko": "창고식별자",
+   "type": "IDREF",
+   "in": "Inventory",
+   "property": "ksx:warehouseID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "Inventory",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "InventoryQuantity",
+   "ko": "현재고수량",
+   "type": "float",
+   "in": "Inventory",
+   "property": "ksx:inventoryQuantity"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "Inventory",
+   "property": "ksx:itemUOMCode"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, WarehouseID",
+   "target": "WarehouseLocation",
+   "property": "ksx:refWarehouse",
+   "in": "Inventory"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "Inventory"
+  }
+ ],
+ "codes": []
+}

@@ -1,0 +1,211 @@
+{
+ "noun": "Line",
+ "ko": "라인",
+ "clause": "7.4.1.21",
+ "table": "표 32",
+ "area": "기준정보",
+ "definition": "같은 공장 안에서 공정과 설비를 일정한 흐름으로 배치하여 특정 품목 또는 품목군을 생산하는 생산 단위를 의미한다. 라인은 공장에 속하며, 하나 이상의 공정과 설비로 구성된다.",
+ "layer": "core",
+ "identity": [
+  "LineID"
+ ],
+ "struct": null,
+ "physical": {
+  "Line": {
+   "uk": [
+    "EnterpriseID",
+    "LineID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "LineID",
+   "ko": "라인식별자",
+   "type": "ID",
+   "in": "Line",
+   "property": "ksx:lineID"
+  },
+  {
+   "en": "LineName",
+   "ko": "라인명",
+   "type": "string",
+   "in": "Line",
+   "property": "ksx:lineName"
+  },
+  {
+   "en": "LineDescription",
+   "ko": "라인설명",
+   "type": "string",
+   "in": "Line",
+   "property": "ksx:lineDescription"
+  },
+  {
+   "en": "LineType",
+   "ko": "라인유형",
+   "type": "enum",
+   "in": "Line",
+   "property": "ksx:lineType"
+  },
+  {
+   "en": "ProductionMethodType",
+   "ko": "생산방식유형",
+   "type": "enum",
+   "in": "Line",
+   "property": "ksx:productionMethodType"
+  },
+  {
+   "en": "ParentLineID",
+   "ko": "상위라인식별자",
+   "type": "IDREF",
+   "in": "Line",
+   "property": "ksx:parentLineID"
+  },
+  {
+   "en": "DepartmentInChargeID",
+   "ko": "관리부서식별자",
+   "type": "IDREF",
+   "in": "Line",
+   "property": "ksx:departmentInChargeID"
+  },
+  {
+   "en": "PersonInChargeID",
+   "ko": "관리자식별자",
+   "type": "IDREF",
+   "in": "Line",
+   "property": "ksx:personInChargeID"
+  },
+  {
+   "en": "CalendarID",
+   "ko": "달력식별자",
+   "type": "IDREF",
+   "in": "Line",
+   "property": "ksx:calendarID"
+  },
+  {
+   "en": "IssueWarehouseID",
+   "ko": "출고창고식별자",
+   "type": "IDREF",
+   "in": "Line",
+   "property": "ksx:issueWarehouseID"
+  },
+  {
+   "en": "ReceiptWarehouseID",
+   "ko": "입고창고식별자",
+   "type": "IDREF",
+   "in": "Line",
+   "property": "ksx:receiptWarehouseID"
+  },
+  {
+   "en": "StandardCapacity",
+   "ko": "표준생산능력",
+   "type": "float",
+   "in": "Line",
+   "property": "ksx:standardCapacity"
+  },
+  {
+   "en": "CapacityUOMCode",
+   "ko": "생산능력단위코드",
+   "type": "enum",
+   "in": "Line",
+   "property": "ksx:capacityUOMCode"
+  },
+  {
+   "en": "StandardCycleTime",
+   "ko": "표준사이클타임",
+   "type": "duration",
+   "in": "Line",
+   "property": "ksx:standardCycleTime"
+  },
+  {
+   "en": "ShiftCount",
+   "ko": "작업조수",
+   "type": "int",
+   "in": "Line",
+   "property": "ksx:shiftCount"
+  },
+  {
+   "en": "StandardHeadcount",
+   "ko": "표준작업인원",
+   "type": "int",
+   "in": "Line",
+   "property": "ksx:standardHeadcount"
+  },
+  {
+   "en": "Location",
+   "ko": "위치",
+   "type": "string",
+   "in": "Line",
+   "property": "ksx:location"
+  },
+  {
+   "en": "UseIndicator",
+   "ko": "사용여부",
+   "type": "boolean",
+   "in": "Line",
+   "property": "ksx:useIndicator"
+  },
+  {
+   "en": "ValidStartDate",
+   "ko": "유효시작일",
+   "type": "date",
+   "in": "Line",
+   "property": "ksx:validStartDate"
+  },
+  {
+   "en": "ValidEndDate",
+   "ko": "유효종료일",
+   "type": "date",
+   "in": "Line",
+   "property": "ksx:validEndDate"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ParentLineID",
+   "target": "Line",
+   "property": "ksx:refParentLine",
+   "in": "Line"
+  },
+  {
+   "attr": "EnterpriseID, DepartmentInChargeID",
+   "target": "Department",
+   "property": "ksx:refDepartmentInCharge",
+   "in": "Line"
+  },
+  {
+   "attr": "EnterpriseID, PersonInChargeID",
+   "target": "Personnel",
+   "property": "ksx:refPersonInCharge",
+   "in": "Line"
+  },
+  {
+   "attr": "EnterpriseID, CalendarID",
+   "target": "WorkCalendar",
+   "property": "ksx:refCalendar",
+   "in": "Line"
+  },
+  {
+   "attr": "EnterpriseID, IssueWarehouseID",
+   "target": "WarehouseLocation",
+   "property": "ksx:refIssueWarehouse",
+   "in": "Line"
+  },
+  {
+   "attr": "EnterpriseID, ReceiptWarehouseID",
+   "target": "WarehouseLocation",
+   "property": "ksx:refReceiptWarehouse",
+   "in": "Line"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "LineType",
+   "group": "LineType"
+  },
+  {
+   "attr": "ProductionMethodType",
+   "group": "ProductionMethodType"
+  }
+ ]
+}

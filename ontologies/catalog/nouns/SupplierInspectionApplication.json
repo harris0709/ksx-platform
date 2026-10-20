@@ -1,0 +1,255 @@
+{
+ "noun": "SupplierInspectionApplication",
+ "ko": "협력업체품질검사신청",
+ "clause": "7.4.6.12",
+ "table": "표 55",
+ "area": "생산관리",
+ "definition": "품질검사계획에 따라 협력업체에 품질검사를 신청하는 것을 의미한다.",
+ "layer": "core",
+ "identity": [
+  "InspectionApplicationID"
+ ],
+ "struct": null,
+ "physical": {
+  "SupplierInspectionApplication": {
+   "uk": [
+    "EnterpriseID",
+    "InspectionApplicationID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "VendorID",
+   "ko": "공급사식별자",
+   "type": "IDREF",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:vendorID"
+  },
+  {
+   "en": "ProjectID",
+   "ko": "프로젝트식별자",
+   "type": "IDREF",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:projectID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemName",
+   "ko": "품목명",
+   "type": "string",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:itemName",
+   "copyOf": "ItemMaster.ItemName"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "PurchaseDocumentNumber",
+   "ko": "구매문서번호",
+   "type": "IDREF",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:purchaseDocumentNumber"
+  },
+  {
+   "en": "PurchaseDocumentSequence",
+   "ko": "구매문서순번",
+   "type": "int",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:purchaseDocumentSequence"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "BatchID",
+   "ko": "배치식별자",
+   "type": "IDREF",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:batchID"
+  },
+  {
+   "en": "InspectionPlanID",
+   "ko": "검사계획식별자",
+   "type": "IDREF",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:inspectionPlanID"
+  },
+  {
+   "en": "InspectionID",
+   "ko": "검사식별자",
+   "type": "IDREF",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:inspectionID"
+  },
+  {
+   "en": "InspectionApplicationID",
+   "ko": "검사신청식별자",
+   "type": "ID",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:inspectionApplicationID"
+  },
+  {
+   "en": "ApplicationPersonnelID",
+   "ko": "검사신청자",
+   "type": "IDREF",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:applicationPersonnelID"
+  },
+  {
+   "en": "InspectionName",
+   "ko": "검사명",
+   "type": "string",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:inspectionName",
+   "copyOf": "SupplierInspectionPlan.InspectionName"
+  },
+  {
+   "en": "InspectionLocation",
+   "ko": "검사위치",
+   "type": "string",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:inspectionLocation",
+   "copyOf": "SupplierInspectionPlan.InspectionLocation"
+  },
+  {
+   "en": "InspectionMethod",
+   "ko": "검사방법",
+   "type": "enum",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:inspectionMethod"
+  },
+  {
+   "en": "ExpectedInspectionDate",
+   "ko": "검사예정일",
+   "type": "date",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:expectedInspectionDate",
+   "copyOf": "SupplierInspectionPlan.ExpectedInspectionDate"
+  },
+  {
+   "en": "InspectionDate",
+   "ko": "검사일",
+   "type": "date",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:inspectionDate"
+  },
+  {
+   "en": "InspectionTimePeriod",
+   "ko": "검사기간",
+   "type": "int",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:inspectionTimePeriod"
+  },
+  {
+   "en": "InspectionQuantity",
+   "ko": "검사수량",
+   "type": "float",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:inspectionQuantity"
+  },
+  {
+   "en": "SelfCheckInspectionResultSheet",
+   "ko": "자체점검결과시트",
+   "type": "string",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:selfCheckInspectionResultSheet"
+  },
+  {
+   "en": "InspectionStatusCode",
+   "ko": "검사상태코드",
+   "type": "enum",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:inspectionStatusCode"
+  },
+  {
+   "en": "ReasonForApplication",
+   "ko": "검사신청사유",
+   "type": "string",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:reasonForApplication"
+  },
+  {
+   "en": "InspectionCancelReason",
+   "ko": "검사취소사유",
+   "type": "string",
+   "in": "SupplierInspectionApplication",
+   "property": "ksx:inspectionCancelReason"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, VendorID",
+   "target": "VendorPartyMaster",
+   "property": "ksx:refVendor",
+   "in": "SupplierInspectionApplication"
+  },
+  {
+   "attr": "EnterpriseID, ProjectID",
+   "target": "ProjectMaster",
+   "property": "ksx:refProject",
+   "in": "SupplierInspectionApplication"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "SupplierInspectionApplication"
+  },
+  {
+   "attr": "EnterpriseID, PurchaseDocumentNumber, PurchaseDocumentSequence",
+   "target": "PurchaseOrderLine",
+   "property": "ksx:refPurchaseOrderLine",
+   "in": "SupplierInspectionApplication"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "SupplierInspectionApplication"
+  },
+  {
+   "attr": "EnterpriseID, BatchID",
+   "target": "Batch",
+   "property": "ksx:refBatch",
+   "in": "SupplierInspectionApplication"
+  },
+  {
+   "attr": "EnterpriseID, InspectionPlanID, InspectionID",
+   "target": "SupplierInspectionPlan",
+   "property": "ksx:refInspectionPlan",
+   "in": "SupplierInspectionApplication"
+  },
+  {
+   "attr": "EnterpriseID, ApplicationPersonnelID",
+   "target": "Personnel",
+   "property": "ksx:refApplicationPersonnel",
+   "in": "SupplierInspectionApplication"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "InspectionMethod",
+   "group": "InspectionMethod"
+  },
+  {
+   "attr": "InspectionStatusCode",
+   "group": "InspectionStatusCode"
+  }
+ ]
+}

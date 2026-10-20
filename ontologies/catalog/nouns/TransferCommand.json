@@ -1,0 +1,126 @@
+{
+ "noun": "TransferCommand",
+ "ko": "이동지시",
+ "clause": "7.4.6.5",
+ "table": "표 48",
+ "area": "생산관리",
+ "definition": "현재 공정에서 다음 공정으로 작업할 Lot의 이동을 지시한다.",
+ "layer": "core",
+ "identity": [
+  "TransferCommandID"
+ ],
+ "struct": null,
+ "physical": {
+  "TransferCommand": {
+   "uk": [
+    "EnterpriseID",
+    "TransferCommandID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "TransferCommandID",
+   "ko": "이동지시식별자",
+   "type": "ID",
+   "in": "TransferCommand",
+   "property": "ksx:transferCommandID"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "TransferCommand",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "LotName",
+   "ko": "로트명",
+   "type": "string",
+   "in": "TransferCommand",
+   "property": "ksx:lotName",
+   "copyOf": "Lot.LotName"
+  },
+  {
+   "en": "LotDescription",
+   "ko": "로트설명",
+   "type": "string",
+   "in": "TransferCommand",
+   "property": "ksx:lotDescription",
+   "copyOf": "Lot.LotDescription"
+  },
+  {
+   "en": "CarrierID",
+   "ko": "캐리어식별자",
+   "type": "IDREF",
+   "in": "TransferCommand",
+   "property": "ksx:carrierID"
+  },
+  {
+   "en": "SourceID",
+   "ko": "출발지식별자",
+   "type": "IDREF",
+   "in": "TransferCommand",
+   "property": "ksx:sourceID"
+  },
+  {
+   "en": "SourceType",
+   "ko": "출발지유형",
+   "type": "enum",
+   "in": "TransferCommand",
+   "property": "ksx:sourceType"
+  },
+  {
+   "en": "SourceName",
+   "ko": "출발지명",
+   "type": "string",
+   "in": "TransferCommand",
+   "property": "ksx:sourceName"
+  },
+  {
+   "en": "DestinationID",
+   "ko": "목적지식별자",
+   "type": "IDREF",
+   "in": "TransferCommand",
+   "property": "ksx:destinationID"
+  },
+  {
+   "en": "DestinationType",
+   "ko": "목적지유형",
+   "type": "enum",
+   "in": "TransferCommand",
+   "property": "ksx:destinationType"
+  },
+  {
+   "en": "DestinationName",
+   "ko": "목적지명",
+   "type": "string",
+   "in": "TransferCommand",
+   "property": "ksx:destinationName"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "TransferCommand"
+  },
+  {
+   "attr": "EnterpriseID, CarrierID",
+   "target": "Carrier",
+   "property": "ksx:refCarrier",
+   "in": "TransferCommand"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "SourceType",
+   "group": "LocationType"
+  },
+  {
+   "attr": "DestinationType",
+   "group": "LocationType"
+  }
+ ]
+}

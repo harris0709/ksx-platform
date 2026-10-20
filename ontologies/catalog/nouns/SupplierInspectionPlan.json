@@ -1,0 +1,219 @@
+{
+ "noun": "SupplierInspectionPlan",
+ "ko": "협력업체품질검사계획",
+ "clause": "7.4.6.11",
+ "table": "표 54",
+ "area": "생산관리",
+ "definition": "수주산업에서 프로젝트성으로 추진하고 있는 협력업체 발주품에 대해 발주처 및 협력업체 품질부서에서 품질검사를 하기 위한 일정 계획을 의미한다.",
+ "layer": "core",
+ "identity": [
+  "InspectionPlanID",
+  "InspectionID"
+ ],
+ "struct": null,
+ "physical": {
+  "SupplierInspectionPlan": {
+   "uk": [
+    "EnterpriseID",
+    "InspectionPlanID",
+    "InspectionID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "VendorID",
+   "ko": "공급사식별자",
+   "type": "IDREF",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:vendorID"
+  },
+  {
+   "en": "ProjectID",
+   "ko": "프로젝트식별자",
+   "type": "IDREF",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:projectID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemName",
+   "ko": "품목명",
+   "type": "string",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:itemName",
+   "copyOf": "ItemMaster.ItemName"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "PurchaseDocumentNumber",
+   "ko": "구매문서번호",
+   "type": "IDREF",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:purchaseDocumentNumber"
+  },
+  {
+   "en": "PurchaseDocumentSequence",
+   "ko": "구매문서순번",
+   "type": "int",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:purchaseDocumentSequence"
+  },
+  {
+   "en": "PurchaseOrderQuantity",
+   "ko": "구매발주수량",
+   "type": "float",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:purchaseOrderQuantity",
+   "copyOf": "PurchaseOrder.PurchaseOrderQuantity"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "BatchID",
+   "ko": "배치식별자",
+   "type": "IDREF",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:batchID"
+  },
+  {
+   "en": "ExpectedDeliveryDate",
+   "ko": "납기예정일",
+   "type": "date",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:expectedDeliveryDate",
+   "copyOf": "PurchaseOrder.ExpectedDeliveryDate"
+  },
+  {
+   "en": "InspectionPlanID",
+   "ko": "검사계획식별자",
+   "type": "ID",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:inspectionPlanID"
+  },
+  {
+   "en": "InspectionID",
+   "ko": "검사식별자",
+   "type": "ID",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:inspectionID"
+  },
+  {
+   "en": "InspectionName",
+   "ko": "검사명",
+   "type": "string",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:inspectionName"
+  },
+  {
+   "en": "Inspector",
+   "ko": "검사자",
+   "type": "string",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:inspector"
+  },
+  {
+   "en": "InspectionLocation",
+   "ko": "검사위치",
+   "type": "string",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:inspectionLocation"
+  },
+  {
+   "en": "ExpectedInspectionDate",
+   "ko": "검사예정일",
+   "type": "date",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:expectedInspectionDate"
+  },
+  {
+   "en": "ExpectedInspectionTimePeriod",
+   "ko": "검사예정기간",
+   "type": "int",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:expectedInspectionTimePeriod"
+  },
+  {
+   "en": "InspectionMethod",
+   "ko": "검사방법",
+   "type": "enum",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:inspectionMethod"
+  },
+  {
+   "en": "InspectionPlanQuantity",
+   "ko": "검사계획수량",
+   "type": "float",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:inspectionPlanQuantity"
+  },
+  {
+   "en": "InspectionCheckSheet",
+   "ko": "검사체크시트",
+   "type": "string",
+   "in": "SupplierInspectionPlan",
+   "property": "ksx:inspectionCheckSheet"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, VendorID",
+   "target": "VendorPartyMaster",
+   "property": "ksx:refVendor",
+   "in": "SupplierInspectionPlan"
+  },
+  {
+   "attr": "EnterpriseID, ProjectID",
+   "target": "ProjectMaster",
+   "property": "ksx:refProject",
+   "in": "SupplierInspectionPlan"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "SupplierInspectionPlan"
+  },
+  {
+   "attr": "EnterpriseID, PurchaseDocumentNumber, PurchaseDocumentSequence",
+   "target": "PurchaseOrderLine",
+   "property": "ksx:refPurchaseOrderLine",
+   "in": "SupplierInspectionPlan"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "SupplierInspectionPlan"
+  },
+  {
+   "attr": "EnterpriseID, BatchID",
+   "target": "Batch",
+   "property": "ksx:refBatch",
+   "in": "SupplierInspectionPlan"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "InspectionMethod",
+   "group": "InspectionMethod"
+  }
+ ]
+}

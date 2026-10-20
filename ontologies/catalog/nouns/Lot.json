@@ -1,0 +1,265 @@
+{
+ "noun": "Lot",
+ "ko": "로트",
+ "clause": "7.4.1.12",
+ "table": "표 23",
+ "area": "기준정보",
+ "definition": "묶음 생산 단위의 정보를 의미한다.",
+ "layer": "core",
+ "identity": [
+  "LotID"
+ ],
+ "struct": null,
+ "physical": {
+  "Lot": {
+   "uk": [
+    "EnterpriseID",
+    "LotID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "ID",
+   "in": "Lot",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "LotName",
+   "ko": "로트명",
+   "type": "string",
+   "in": "Lot",
+   "property": "ksx:lotName"
+  },
+  {
+   "en": "LotDescription",
+   "ko": "로트설명",
+   "type": "string",
+   "in": "Lot",
+   "property": "ksx:lotDescription"
+  },
+  {
+   "en": "ParentLotID",
+   "ko": "모로트식별자",
+   "type": "IDREF",
+   "in": "Lot",
+   "property": "ksx:parentLotID"
+  },
+  {
+   "en": "ChildLotID",
+   "ko": "자로트식별자",
+   "type": "IDREF",
+   "in": "Lot",
+   "property": "ksx:childLotID"
+  },
+  {
+   "en": "LotType",
+   "ko": "로트유형",
+   "type": "enum",
+   "in": "Lot",
+   "property": "ksx:lotType"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "Lot",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "CarrierID",
+   "ko": "캐리어식별자",
+   "type": "IDREF",
+   "in": "Lot",
+   "property": "ksx:carrierID"
+  },
+  {
+   "en": "ProductionOrderID",
+   "ko": "생산지시식별자",
+   "type": "IDREF",
+   "in": "Lot",
+   "property": "ksx:productionOrderID"
+  },
+  {
+   "en": "ProductionOrderSequence",
+   "ko": "생산지시순번",
+   "type": "int",
+   "in": "Lot",
+   "property": "ksx:productionOrderSequence"
+  },
+  {
+   "en": "ScheduledDueDate",
+   "ko": "생산마감기한",
+   "type": "date",
+   "in": "Lot",
+   "property": "ksx:scheduledDueDate"
+  },
+  {
+   "en": "LotPriority",
+   "ko": "로트우선순위",
+   "type": "int",
+   "in": "Lot",
+   "property": "ksx:lotPriority"
+  },
+  {
+   "en": "CurrentOperationID",
+   "ko": "현재공정식별자",
+   "type": "IDREF",
+   "in": "Lot",
+   "property": "ksx:currentOperationID"
+  },
+  {
+   "en": "NextOperationID",
+   "ko": "다음공정식별자",
+   "type": "IDREF",
+   "in": "Lot",
+   "property": "ksx:nextOperationID"
+  },
+  {
+   "en": "LotState",
+   "ko": "로트상태",
+   "type": "enum",
+   "in": "Lot",
+   "property": "ksx:lotState"
+  },
+  {
+   "en": "HoldIndicator",
+   "ko": "보류여부",
+   "type": "boolean",
+   "in": "Lot",
+   "property": "ksx:holdIndicator"
+  },
+  {
+   "en": "HotIndicator",
+   "ko": "긴급여부",
+   "type": "boolean",
+   "in": "Lot",
+   "property": "ksx:hotIndicator"
+  },
+  {
+   "en": "ReworkIndicator",
+   "ko": "재작업여부",
+   "type": "boolean",
+   "in": "Lot",
+   "property": "ksx:reworkIndicator"
+  },
+  {
+   "en": "LotCreatedQuantity",
+   "ko": "로트수량",
+   "type": "float",
+   "in": "Lot",
+   "property": "ksx:lotCreatedQuantity"
+  },
+  {
+   "en": "ProducedQuantity",
+   "ko": "생산수량",
+   "type": "float",
+   "in": "Lot",
+   "property": "ksx:producedQuantity"
+  },
+  {
+   "en": "DefectQuantity",
+   "ko": "불량수량",
+   "type": "float",
+   "in": "Lot",
+   "property": "ksx:defectQuantity"
+  },
+  {
+   "en": "ReworkQuantity",
+   "ko": "재작업수량",
+   "type": "int",
+   "in": "Lot",
+   "property": "ksx:reworkQuantity"
+  },
+  {
+   "en": "ReworkCount",
+   "ko": "재작업횟수",
+   "type": "int",
+   "in": "Lot",
+   "property": "ksx:reworkCount"
+  },
+  {
+   "en": "TotalReworkCount",
+   "ko": "총재작업횟수",
+   "type": "int",
+   "in": "Lot",
+   "property": "ksx:totalReworkCount"
+  },
+  {
+   "en": "LotStartedDateTime",
+   "ko": "공정투입일시",
+   "type": "dateTime",
+   "in": "Lot",
+   "property": "ksx:lotStartedDateTime"
+  },
+  {
+   "en": "PersonnelID",
+   "ko": "사원식별자",
+   "type": "IDREF",
+   "in": "Lot",
+   "property": "ksx:personnelID"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ParentLotID",
+   "target": "Lot",
+   "property": "ksx:refParentLot",
+   "in": "Lot"
+  },
+  {
+   "attr": "EnterpriseID, ChildLotID",
+   "target": "Lot",
+   "property": "ksx:refChildLot",
+   "in": "Lot"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "Lot"
+  },
+  {
+   "attr": "EnterpriseID, CarrierID",
+   "target": "Carrier",
+   "property": "ksx:refCarrier",
+   "in": "Lot"
+  },
+  {
+   "attr": "EnterpriseID, ProductionOrderID, ProductionOrderSequence",
+   "target": "ProductionOrder",
+   "property": "ksx:refProductionOrder",
+   "in": "Lot"
+  },
+  {
+   "attr": "EnterpriseID, CurrentOperationID",
+   "target": "Operation",
+   "property": "ksx:refCurrentOperation",
+   "in": "Lot"
+  },
+  {
+   "attr": "EnterpriseID, NextOperationID",
+   "target": "Operation",
+   "property": "ksx:refNextOperation",
+   "in": "Lot"
+  },
+  {
+   "attr": "EnterpriseID, PersonnelID",
+   "target": "Personnel",
+   "property": "ksx:refPersonnel",
+   "in": "Lot"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "LotType",
+   "group": "LotType"
+  },
+  {
+   "attr": "LotState",
+   "group": "LotState"
+  }
+ ]
+}

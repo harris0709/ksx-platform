@@ -1,0 +1,83 @@
+{
+ "noun": "CommonCodeMaster",
+ "ko": "공통코드정보",
+ "clause": "7.4.1.7",
+ "table": "표 18",
+ "area": "기준정보",
+ "definition": "애플리케이션 내에서 사용되는 각종 코드를 모아 놓은 통합 코드를 의미한다.",
+ "layer": "core",
+ "identity": [
+  "CommonCodeGroup",
+  "CommonCodeID"
+ ],
+ "struct": null,
+ "physical": {
+  "CommonCodeMaster": {
+   "uk": [
+    "EnterpriseID",
+    "CommonCodeGroup",
+    "CommonCodeID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "CommonCodeID",
+   "ko": "공통코드식별자",
+   "type": "ID",
+   "in": "CommonCodeMaster",
+   "property": "ksx:commonCodeID"
+  },
+  {
+   "en": "CommonCodeName",
+   "ko": "공통코드명",
+   "type": "string",
+   "in": "CommonCodeMaster",
+   "property": "ksx:commonCodeName"
+  },
+  {
+   "en": "CommonCodeGroup",
+   "ko": "공통코드그룹",
+   "type": "enum",
+   "in": "CommonCodeMaster",
+   "property": "ksx:commonCodeGroup"
+  },
+  {
+   "en": "ParentCommonCodeGroup",
+   "ko": "상위공통코드그룹",
+   "type": "IDREF",
+   "in": "CommonCodeMaster",
+   "property": "ksx:parentCommonCodeGroup"
+  },
+  {
+   "en": "ParentCommonCodeID",
+   "ko": "상위공통코드식별자",
+   "type": "IDREF",
+   "in": "CommonCodeMaster",
+   "property": "ksx:parentCommonCodeID"
+  },
+  {
+   "en": "CommonCodeSequence",
+   "ko": "표시순번",
+   "type": "int",
+   "in": "CommonCodeMaster",
+   "property": "ksx:commonCodeSequence"
+  },
+  {
+   "en": "UseIndicator",
+   "ko": "사용여부",
+   "type": "boolean",
+   "in": "CommonCodeMaster",
+   "property": "ksx:useIndicator"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ParentCommonCodeGroup, ParentCommonCodeID",
+   "target": "CommonCodeMaster",
+   "property": "ksx:refCommonCodeMaster",
+   "in": "CommonCodeMaster"
+  }
+ ],
+ "codes": []
+}

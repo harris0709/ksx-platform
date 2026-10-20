@@ -1,0 +1,8 @@
+PREFIX ksx: <https://ontology.impix.co.kr/ksx9101/1.0/>
+PREFIX inf: <https://ontology.impix.co.kr/inference/>
+PREFIX ksxq: <https://ontology.impix.co.kr/quality/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+# R-002 자재명세서 직접 구성품: 모품목 → 자품목
+CONSTRUCT { ?parent inf:directComponent ?child }
+WHERE { ?bom a ksx:BOM ; ksx:refItem ?parent ; ksx:hasLine/ksx:refChildItem ?child .
+        FILTER NOT EXISTS { ?bom ksxq:violates ?v } }

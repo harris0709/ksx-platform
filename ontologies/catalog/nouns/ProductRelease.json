@@ -1,0 +1,225 @@
+{
+ "noun": "ProductRelease",
+ "ko": "제품출고",
+ "clause": "7.4.8.3",
+ "table": "표 74",
+ "area": "창고관리",
+ "definition": "수주된 품목을 고객에게 보내는 것을 의미한다.",
+ "layer": "core",
+ "identity": [
+  "ProductReleaseID",
+  "ProductReleaseSequence"
+ ],
+ "struct": null,
+ "physical": {
+  "ProductRelease": {
+   "uk": [
+    "EnterpriseID",
+    "ProductReleaseID",
+    "ProductReleaseSequence"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "ProductReleaseID",
+   "ko": "출고식별자",
+   "type": "ID",
+   "in": "ProductRelease",
+   "property": "ksx:productReleaseID"
+  },
+  {
+   "en": "ProductReleaseSequence",
+   "ko": "출고순번",
+   "type": "int",
+   "in": "ProductRelease",
+   "property": "ksx:productReleaseSequence"
+  },
+  {
+   "en": "ProductReleaseRequestID",
+   "ko": "출하요청식별자",
+   "type": "IDREF",
+   "in": "ProductRelease",
+   "property": "ksx:productReleaseRequestID"
+  },
+  {
+   "en": "SalesDocumentNumber",
+   "ko": "수주문서번호",
+   "type": "IDREF",
+   "in": "ProductRelease",
+   "property": "ksx:salesDocumentNumber"
+  },
+  {
+   "en": "SalesDocumentSequence",
+   "ko": "수주문서순번",
+   "type": "int",
+   "in": "ProductRelease",
+   "property": "ksx:salesDocumentSequence"
+  },
+  {
+   "en": "InventoryTransactionDate",
+   "ko": "수불일",
+   "type": "date",
+   "in": "ProductRelease",
+   "property": "ksx:inventoryTransactionDate"
+  },
+  {
+   "en": "LineID",
+   "ko": "라인식별자",
+   "type": "IDREF",
+   "in": "ProductRelease",
+   "property": "ksx:lineID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "ProductRelease",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemName",
+   "ko": "품목명",
+   "type": "string",
+   "in": "ProductRelease",
+   "property": "ksx:itemName",
+   "copyOf": "ItemMaster.ItemName"
+  },
+  {
+   "en": "OrderUOMCode",
+   "ko": "오더단위코드",
+   "type": "enum",
+   "in": "ProductRelease",
+   "property": "ksx:orderUOMCode"
+  },
+  {
+   "en": "OrderQuantity",
+   "ko": "오더수량",
+   "type": "float",
+   "in": "ProductRelease",
+   "property": "ksx:orderQuantity"
+  },
+  {
+   "en": "SellingUOMCode",
+   "ko": "판매단위코드",
+   "type": "enum",
+   "in": "ProductRelease",
+   "property": "ksx:sellingUOMCode"
+  },
+  {
+   "en": "SalesQuantity",
+   "ko": "매출수량",
+   "type": "float",
+   "in": "ProductRelease",
+   "property": "ksx:salesQuantity"
+  },
+  {
+   "en": "ReturnIndicator",
+   "ko": "반품여부",
+   "type": "boolean",
+   "in": "ProductRelease",
+   "property": "ksx:returnIndicator"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "ProductRelease",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "ItemUnitQuantity",
+   "ko": "기준단위수량",
+   "type": "float",
+   "in": "ProductRelease",
+   "property": "ksx:itemUnitQuantity"
+  },
+  {
+   "en": "SalesUnitQuantity",
+   "ko": "기준매출수량",
+   "type": "float",
+   "in": "ProductRelease",
+   "property": "ksx:salesUnitQuantity"
+  },
+  {
+   "en": "ReturnUnitQuantity",
+   "ko": "기준반품수량",
+   "type": "float",
+   "in": "ProductRelease",
+   "property": "ksx:returnUnitQuantity"
+  },
+  {
+   "en": "CustomerID",
+   "ko": "고객사식별자",
+   "type": "IDREF",
+   "in": "ProductRelease",
+   "property": "ksx:customerID"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "ProductRelease",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "SerialUseIndicator",
+   "ko": "시리얼사용여부",
+   "type": "boolean",
+   "in": "ProductRelease",
+   "property": "ksx:serialUseIndicator"
+  },
+  {
+   "en": "WarehouseID",
+   "ko": "창고식별자",
+   "type": "IDREF",
+   "in": "ProductRelease",
+   "property": "ksx:warehouseID"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ProductReleaseRequestID",
+   "target": "ProductReleaseRequest",
+   "property": "ksx:refProductReleaseRequest",
+   "in": "ProductRelease"
+  },
+  {
+   "attr": "EnterpriseID, SalesDocumentNumber, SalesDocumentSequence",
+   "target": "SalesOrderLine",
+   "property": "ksx:refSalesOrderLine",
+   "in": "ProductRelease"
+  },
+  {
+   "attr": "EnterpriseID, LineID",
+   "target": "Line",
+   "property": "ksx:refLine",
+   "in": "ProductRelease"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "ProductRelease"
+  },
+  {
+   "attr": "EnterpriseID, CustomerID",
+   "target": "CustomerPartyMaster",
+   "property": "ksx:refCustomer",
+   "in": "ProductRelease"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "ProductRelease"
+  },
+  {
+   "attr": "EnterpriseID, WarehouseID",
+   "target": "WarehouseLocation",
+   "property": "ksx:refWarehouse",
+   "in": "ProductRelease"
+  }
+ ],
+ "codes": []
+}

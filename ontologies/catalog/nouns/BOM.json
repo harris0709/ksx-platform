@@ -1,0 +1,184 @@
+{
+ "noun": "BOM",
+ "ko": "자재명세서",
+ "clause": "7.4.1.11",
+ "table": "표 22",
+ "area": "기준정보",
+ "definition": "자재명세서(BOM) 명사의 헤더 구조체(struct) 자재명세서 1건의 공통 정보(모품목, 버전, 유형, 공정경로) 자재명세서마다 1회 나타남",
+ "layer": "core",
+ "identity": [
+  "BOMID",
+  "BOMRevisionNumber"
+ ],
+ "struct": {
+  "header": "BOMHeader",
+  "line": "BOMLine",
+  "lineKey": [
+   "BOMLineSequence"
+  ]
+ },
+ "physical": {
+  "BOMHeader": {
+   "uk": [
+    "EnterpriseID",
+    "BOMID",
+    "BOMRevisionNumber"
+   ]
+  },
+  "BOMLine": {
+   "uk": [
+    "EnterpriseID",
+    "BOMID",
+    "BOMRevisionNumber",
+    "BOMLineSequence"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "BOMID",
+   "ko": "자재명세서식별자",
+   "type": "ID",
+   "in": "BOMHeader",
+   "property": "ksx:bomID"
+  },
+  {
+   "en": "BOMRevisionNumber",
+   "ko": "자재명세서버전",
+   "type": "int",
+   "in": "BOMHeader",
+   "property": "ksx:bomRevisionNumber"
+  },
+  {
+   "en": "BOMType",
+   "ko": "자재명세서유형",
+   "type": "enum",
+   "in": "BOMHeader",
+   "property": "ksx:bomType"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "BOMHeader",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "BOMQuantity",
+   "ko": "품목기준수량",
+   "type": "float",
+   "in": "BOMHeader",
+   "property": "ksx:bomQuantity"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "BOMHeader",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "RoutingID",
+   "ko": "공정경로식별자",
+   "type": "IDREF",
+   "in": "BOMHeader",
+   "property": "ksx:routingID"
+  },
+  {
+   "en": "BOMID",
+   "ko": "자재명세서식별자",
+   "type": "IDREF",
+   "in": "BOMLine",
+   "property": "ksx:bomID"
+  },
+  {
+   "en": "BOMRevisionNumber",
+   "ko": "자재명세서버전",
+   "type": "int",
+   "in": "BOMLine",
+   "property": "ksx:bomRevisionNumber"
+  },
+  {
+   "en": "BOMLineSequence",
+   "ko": "자재명세서라인순번",
+   "type": "int",
+   "in": "BOMLine",
+   "property": "ksx:bomLineSequence"
+  },
+  {
+   "en": "ChildItemID",
+   "ko": "자품목식별자",
+   "type": "IDREF",
+   "in": "BOMLine",
+   "property": "ksx:childItemID"
+  },
+  {
+   "en": "ChildItemUOMCode",
+   "ko": "자품목기준단위코드",
+   "type": "enum",
+   "in": "BOMLine",
+   "property": "ksx:childItemUOMCode"
+  },
+  {
+   "en": "ActualRequirementQuantity",
+   "ko": "실소요수량",
+   "type": "float",
+   "in": "BOMLine",
+   "property": "ksx:actualRequirementQuantity"
+  },
+  {
+   "en": "OperationSequence",
+   "ko": "공정순번",
+   "type": "int",
+   "in": "BOMLine",
+   "property": "ksx:operationSequence"
+  },
+  {
+   "en": "BackFlushedIndicator",
+   "ko": "백플러시여부",
+   "type": "boolean",
+   "in": "BOMLine",
+   "property": "ksx:backFlushedIndicator"
+  },
+  {
+   "en": "ValidStartDateTime",
+   "ko": "유효시작일시",
+   "type": "dateTime",
+   "in": "BOMLine",
+   "property": "ksx:validStartDateTime"
+  },
+  {
+   "en": "ValidEndDateTime",
+   "ko": "유효종료일시",
+   "type": "dateTime",
+   "in": "BOMLine",
+   "property": "ksx:validEndDateTime"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "BOMHeader"
+  },
+  {
+   "attr": "EnterpriseID, RoutingID",
+   "target": "Routing",
+   "property": "ksx:refRouting",
+   "in": "BOMHeader"
+  },
+  {
+   "attr": "EnterpriseID, ChildItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refChildItem",
+   "in": "BOMLine"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "BOMType",
+   "group": "BOMType"
+  }
+ ]
+}

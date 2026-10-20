@@ -1,0 +1,9 @@
+# 고객사 약어 사전 (정규화 일치용)
+CD: Code
+NM: Name
+NO: Number
+QTY: Quantity
+DT: Date
+DTM: DateTime
+SEQ: Sequence
+STAT: State

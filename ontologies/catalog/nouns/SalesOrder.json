@@ -1,0 +1,209 @@
+{
+ "noun": "SalesOrder",
+ "ko": "수주오더",
+ "clause": "7.4.3.1",
+ "table": "표 36",
+ "area": "판매관리",
+ "definition": "수주오더(SalesOrder) 명사의 헤더 구조체(struct) 수주문서 1건의 공통 정보(고객사, 수주일, 수주유형, 거래 조건) 수주문서마다 1회 나타남",
+ "layer": "core",
+ "identity": [
+  "SalesDocumentNumber"
+ ],
+ "struct": {
+  "header": "SalesOrderHeader",
+  "line": "SalesOrderLine",
+  "lineKey": [
+   "SalesDocumentSequence"
+  ]
+ },
+ "physical": {
+  "SalesOrderHeader": {
+   "uk": [
+    "EnterpriseID",
+    "SalesDocumentNumber"
+   ]
+  },
+  "SalesOrderLine": {
+   "uk": [
+    "EnterpriseID",
+    "SalesDocumentNumber",
+    "SalesDocumentSequence"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "SalesDocumentNumber",
+   "ko": "수주문서번호",
+   "type": "ID",
+   "in": "SalesOrderHeader",
+   "property": "ksx:salesDocumentNumber"
+  },
+  {
+   "en": "SalesOrderType",
+   "ko": "수주유형",
+   "type": "enum",
+   "in": "SalesOrderHeader",
+   "property": "ksx:salesOrderType"
+  },
+  {
+   "en": "CustomerID",
+   "ko": "고객사식별자",
+   "type": "IDREF",
+   "in": "SalesOrderHeader",
+   "property": "ksx:customerID"
+  },
+  {
+   "en": "SalesDate",
+   "ko": "수주일",
+   "type": "date",
+   "in": "SalesOrderHeader",
+   "property": "ksx:salesDate"
+  },
+  {
+   "en": "SalesStatus",
+   "ko": "수주상태",
+   "type": "enum",
+   "in": "SalesOrderHeader",
+   "property": "ksx:salesStatus"
+  },
+  {
+   "en": "ShipmentTermsCode",
+   "ko": "출하조건코드",
+   "type": "enum",
+   "in": "SalesOrderHeader",
+   "property": "ksx:shipmentTermsCode"
+  },
+  {
+   "en": "SalesTransactionType",
+   "ko": "거래유형",
+   "type": "enum",
+   "in": "SalesOrderHeader",
+   "property": "ksx:salesTransactionType"
+  },
+  {
+   "en": "ReturnIndicator",
+   "ko": "반품여부",
+   "type": "boolean",
+   "in": "SalesOrderHeader",
+   "property": "ksx:returnIndicator"
+  },
+  {
+   "en": "ExportIndicator",
+   "ko": "수출여부",
+   "type": "boolean",
+   "in": "SalesOrderHeader",
+   "property": "ksx:exportIndicator"
+  },
+  {
+   "en": "SalesAutomaticApprovalIndicator",
+   "ko": "수주자동승인여부",
+   "type": "boolean",
+   "in": "SalesOrderHeader",
+   "property": "ksx:salesAutomaticApprovalIndicator"
+  },
+  {
+   "en": "SalesDocumentNumber",
+   "ko": "수주문서번호",
+   "type": "IDREF",
+   "in": "SalesOrderLine",
+   "property": "ksx:salesDocumentNumber"
+  },
+  {
+   "en": "SalesDocumentSequence",
+   "ko": "수주문서순번",
+   "type": "int",
+   "in": "SalesOrderLine",
+   "property": "ksx:salesDocumentSequence"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "SalesOrderLine",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemName",
+   "ko": "품목명",
+   "type": "string",
+   "in": "SalesOrderLine",
+   "property": "ksx:itemName",
+   "copyOf": "ItemMaster.ItemName"
+  },
+  {
+   "en": "ItemQuantity",
+   "ko": "품목수량",
+   "type": "float",
+   "in": "SalesOrderLine",
+   "property": "ksx:itemQuantity"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "SalesOrderLine",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "SellingUOMCode",
+   "ko": "판매단위코드",
+   "type": "enum",
+   "in": "SalesOrderLine",
+   "property": "ksx:sellingUOMCode"
+  },
+  {
+   "en": "ConversionUnitQuantity",
+   "ko": "단위환산수량",
+   "type": "float",
+   "in": "SalesOrderLine",
+   "property": "ksx:conversionUnitQuantity"
+  },
+  {
+   "en": "ItemUnitQuantity",
+   "ko": "기준단위수량",
+   "type": "float",
+   "in": "SalesOrderLine",
+   "property": "ksx:itemUnitQuantity"
+  },
+  {
+   "en": "RequestedDeliveryDate",
+   "ko": "요청납기일",
+   "type": "date",
+   "in": "SalesOrderLine",
+   "property": "ksx:requestedDeliveryDate"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, CustomerID",
+   "target": "CustomerPartyMaster",
+   "property": "ksx:refCustomer",
+   "in": "SalesOrderHeader"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "SalesOrderLine"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "SalesOrderType",
+   "group": "SalesOrderType"
+  },
+  {
+   "attr": "SalesStatus",
+   "group": "SalesStatus"
+  },
+  {
+   "attr": "ShipmentTermsCode",
+   "group": "ShipmentTermsCode"
+  },
+  {
+   "attr": "SalesTransactionType",
+   "group": "SalesTransactionType"
+  }
+ ]
+}

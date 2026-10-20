@@ -1,0 +1,199 @@
+{
+ "noun": "ProductionPerformanceEquipment",
+ "ko": "설비활용실적",
+ "clause": "7.4.6.23",
+ "table": "표 66",
+ "area": "생산관리",
+ "definition": "생산 과정에서 사용된 설비의 활용실적 정보를 의미한다.",
+ "layer": "core",
+ "identity": [
+  "ProductionPerformanceID",
+  "ProductionPerformanceSequence",
+  "EquipmentID"
+ ],
+ "struct": null,
+ "physical": {
+  "ProductionPerformanceEquipment": {
+   "uk": [
+    "EnterpriseID",
+    "ProductionPerformanceID",
+    "ProductionPerformanceSequence",
+    "EquipmentID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "ProductionPerformanceID",
+   "ko": "생산실적식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:productionPerformanceID"
+  },
+  {
+   "en": "ProductionPerformanceSequence",
+   "ko": "생산실적순번",
+   "type": "int",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:productionPerformanceSequence"
+  },
+  {
+   "en": "ProductionOrderID",
+   "ko": "생산지시식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:productionOrderID"
+  },
+  {
+   "en": "ProductionOrderSequence",
+   "ko": "생산지시순번",
+   "type": "int",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:productionOrderSequence"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "ProducedQuantity",
+   "ko": "생산수량",
+   "type": "float",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:producedQuantity"
+  },
+  {
+   "en": "DefectQuantity",
+   "ko": "불량수량",
+   "type": "float",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:defectQuantity"
+  },
+  {
+   "en": "OperationID",
+   "ko": "공정식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:operationID"
+  },
+  {
+   "en": "RoutingID",
+   "ko": "공정경로식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:routingID"
+  },
+  {
+   "en": "OperationSequence",
+   "ko": "공정순번",
+   "type": "int",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:operationSequence"
+  },
+  {
+   "en": "PersonnelID",
+   "ko": "사원식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:personnelID"
+  },
+  {
+   "en": "ExecutionStartDateTime",
+   "ko": "생산시작일시",
+   "type": "dateTime",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:executionStartDateTime"
+  },
+  {
+   "en": "ExecutionEndDateTime",
+   "ko": "생산종료일시",
+   "type": "dateTime",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:executionEndDateTime"
+  },
+  {
+   "en": "CancelIndicator",
+   "ko": "취소여부",
+   "type": "boolean",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:cancelIndicator"
+  },
+  {
+   "en": "CancelDateTime",
+   "ko": "취소일시",
+   "type": "dateTime",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:cancelDateTime"
+  },
+  {
+   "en": "EquipmentID",
+   "ko": "설비식별자",
+   "type": "IDREF",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:equipmentID"
+  },
+  {
+   "en": "SetupTime",
+   "ko": "준비시간",
+   "type": "duration",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:setupTime"
+  },
+  {
+   "en": "RunTime",
+   "ko": "가동시간",
+   "type": "duration",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:runTime"
+  },
+  {
+   "en": "InspectionFinishedIndicator",
+   "ko": "공정검사여부",
+   "type": "boolean",
+   "in": "ProductionPerformanceEquipment",
+   "property": "ksx:inspectionFinishedIndicator"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ProductionPerformanceID, ProductionPerformanceSequence",
+   "target": "ProductionPerformance",
+   "property": "ksx:refProductionPerformance",
+   "in": "ProductionPerformanceEquipment"
+  },
+  {
+   "attr": "EnterpriseID, ProductionOrderID, ProductionOrderSequence",
+   "target": "ProductionOrder",
+   "property": "ksx:refProductionOrder",
+   "in": "ProductionPerformanceEquipment"
+  },
+  {
+   "attr": "EnterpriseID, OperationID",
+   "target": "Operation",
+   "property": "ksx:refOperation",
+   "in": "ProductionPerformanceEquipment"
+  },
+  {
+   "attr": "EnterpriseID, RoutingID, OperationSequence",
+   "target": "RoutingLine",
+   "property": "ksx:refRoutingToRoutingLine",
+   "in": "ProductionPerformanceEquipment"
+  },
+  {
+   "attr": "EnterpriseID, PersonnelID",
+   "target": "Personnel",
+   "property": "ksx:refPersonnel",
+   "in": "ProductionPerformanceEquipment"
+  },
+  {
+   "attr": "EnterpriseID, EquipmentID",
+   "target": "Equipment",
+   "property": "ksx:refEquipment",
+   "in": "ProductionPerformanceEquipment"
+  }
+ ],
+ "codes": []
+}

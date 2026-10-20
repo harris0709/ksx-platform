@@ -1,0 +1,116 @@
+{
+ "noun": "OperationStart",
+ "ko": "착공",
+ "clause": "7.4.6.3",
+ "table": "표 46",
+ "area": "생산관리",
+ "definition": "설비에 해당 공정의 생산을 지시한다.",
+ "layer": "core",
+ "identity": [
+  "OperationStartID"
+ ],
+ "struct": null,
+ "physical": {
+  "OperationStart": {
+   "uk": [
+    "EnterpriseID",
+    "OperationStartID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "OperationStartID",
+   "ko": "착공식별자",
+   "type": "ID",
+   "in": "OperationStart",
+   "property": "ksx:operationStartID"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "OperationStart",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "LotName",
+   "ko": "로트명",
+   "type": "string",
+   "in": "OperationStart",
+   "property": "ksx:lotName",
+   "copyOf": "Lot.LotName"
+  },
+  {
+   "en": "LotDescription",
+   "ko": "로트설명",
+   "type": "string",
+   "in": "OperationStart",
+   "property": "ksx:lotDescription",
+   "copyOf": "Lot.LotDescription"
+  },
+  {
+   "en": "LotCreatedQuantity",
+   "ko": "로트수량",
+   "type": "float",
+   "in": "OperationStart",
+   "property": "ksx:lotCreatedQuantity",
+   "copyOf": "Lot.LotCreatedQuantity"
+  },
+  {
+   "en": "OperationID",
+   "ko": "공정식별자",
+   "type": "IDREF",
+   "in": "OperationStart",
+   "property": "ksx:operationID"
+  },
+  {
+   "en": "EquipmentID",
+   "ko": "설비식별자",
+   "type": "IDREF",
+   "in": "OperationStart",
+   "property": "ksx:equipmentID"
+  },
+  {
+   "en": "OperationStartTime",
+   "ko": "착공시간",
+   "type": "dateTime",
+   "in": "OperationStart",
+   "property": "ksx:operationStartTime"
+  },
+  {
+   "en": "PersonnelID",
+   "ko": "사원식별자",
+   "type": "IDREF",
+   "in": "OperationStart",
+   "property": "ksx:personnelID"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "OperationStart"
+  },
+  {
+   "attr": "EnterpriseID, OperationID",
+   "target": "Operation",
+   "property": "ksx:refOperation",
+   "in": "OperationStart"
+  },
+  {
+   "attr": "EnterpriseID, EquipmentID",
+   "target": "Equipment",
+   "property": "ksx:refEquipment",
+   "in": "OperationStart"
+  },
+  {
+   "attr": "EnterpriseID, PersonnelID",
+   "target": "Personnel",
+   "property": "ksx:refPersonnel",
+   "in": "OperationStart"
+  }
+ ],
+ "codes": []
+}

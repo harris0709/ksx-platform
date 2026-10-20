@@ -1,0 +1,84 @@
+{
+ "noun": "Carrier",
+ "ko": "캐리어",
+ "clause": "7.4.1.17",
+ "table": "표 28",
+ "area": "기준정보",
+ "definition": "제조 공정 내 이동에 필요한 물리적 용기를 의미한다.",
+ "layer": "core",
+ "identity": [
+  "CarrierID"
+ ],
+ "struct": null,
+ "physical": {
+  "Carrier": {
+   "uk": [
+    "EnterpriseID",
+    "CarrierID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "CarrierID",
+   "ko": "캐리어식별자",
+   "type": "ID",
+   "in": "Carrier",
+   "property": "ksx:carrierID"
+  },
+  {
+   "en": "CarrierType",
+   "ko": "캐리어유형",
+   "type": "enum",
+   "in": "Carrier",
+   "property": "ksx:carrierType"
+  },
+  {
+   "en": "ItemType",
+   "ko": "품목유형",
+   "type": "enum",
+   "in": "Carrier",
+   "property": "ksx:itemType"
+  },
+  {
+   "en": "LoadState",
+   "ko": "적재상태",
+   "type": "enum",
+   "in": "Carrier",
+   "property": "ksx:loadState"
+  },
+  {
+   "en": "CarrierState",
+   "ko": "캐리어상태",
+   "type": "enum",
+   "in": "Carrier",
+   "property": "ksx:carrierState"
+  },
+  {
+   "en": "CurrentQuantity",
+   "ko": "적재수량",
+   "type": "float",
+   "in": "Carrier",
+   "property": "ksx:currentQuantity"
+  }
+ ],
+ "references": [],
+ "codes": [
+  {
+   "attr": "CarrierType",
+   "group": "CarrierType"
+  },
+  {
+   "attr": "ItemType",
+   "group": "ItemType"
+  },
+  {
+   "attr": "LoadState",
+   "group": "LoadState"
+  },
+  {
+   "attr": "CarrierState",
+   "group": "CarrierState"
+  }
+ ]
+}

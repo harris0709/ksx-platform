@@ -1,0 +1,173 @@
+{
+ "noun": "CorrectiveActionPlan",
+ "ko": "시정조치계획",
+ "clause": "7.4.6.15",
+ "table": "표 58",
+ "area": "생산관리",
+ "definition": "공급사에서 시정조치 사항을 기술하고, 시정조치 계획을 수립하여 고객사에게 전달하는 것을 의미한다.",
+ "layer": "core",
+ "identity": [
+  "CorrectiveActionPlanID"
+ ],
+ "struct": null,
+ "physical": {
+  "CorrectiveActionPlan": {
+   "uk": [
+    "EnterpriseID",
+    "CorrectiveActionPlanID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "VendorID",
+   "ko": "공급사식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionPlan",
+   "property": "ksx:vendorID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionPlan",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemName",
+   "ko": "품목명",
+   "type": "string",
+   "in": "CorrectiveActionPlan",
+   "property": "ksx:itemName",
+   "copyOf": "ItemMaster.ItemName"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionPlan",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "BatchID",
+   "ko": "배치식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionPlan",
+   "property": "ksx:batchID"
+  },
+  {
+   "en": "CorrectiveActionRequestID",
+   "ko": "시정조치요청식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionPlan",
+   "property": "ksx:correctiveActionRequestID"
+  },
+  {
+   "en": "CorrectiveActionPlanID",
+   "ko": "시정조치계획식별자",
+   "type": "ID",
+   "in": "CorrectiveActionPlan",
+   "property": "ksx:correctiveActionPlanID"
+  },
+  {
+   "en": "PersonInChargeID",
+   "ko": "시정조치담당자식별자",
+   "type": "IDREF",
+   "in": "CorrectiveActionPlan",
+   "property": "ksx:personInChargeID"
+  },
+  {
+   "en": "PersonInChargeEmail",
+   "ko": "시정조치담당자이메일명",
+   "type": "string",
+   "in": "CorrectiveActionPlan",
+   "property": "ksx:personInChargeEmail"
+  },
+  {
+   "en": "PersonInChargeDialNumber",
+   "ko": "시정조치담당자전화번호",
+   "type": "string",
+   "in": "CorrectiveActionPlan",
+   "property": "ksx:personInChargeDialNumber"
+  },
+  {
+   "en": "ExpectedCorrectiveActionDate",
+   "ko": "시정조치예정일",
+   "type": "date",
+   "in": "CorrectiveActionPlan",
+   "property": "ksx:expectedCorrectiveActionDate"
+  },
+  {
+   "en": "CorrectiveActionRequestDocumentReference",
+   "ko": "시정조치요청첨부자료",
+   "type": "string",
+   "in": "CorrectiveActionPlan",
+   "property": "ksx:correctiveActionRequestDocumentReference"
+  },
+  {
+   "en": "CorrectiveActionApprovalIndicator",
+   "ko": "시정조치접수여부",
+   "type": "boolean",
+   "in": "CorrectiveActionPlan",
+   "property": "ksx:correctiveActionApprovalIndicator"
+  },
+  {
+   "en": "CorrectiveActionStatusCode",
+   "ko": "시정조치상태코드",
+   "type": "enum",
+   "in": "CorrectiveActionPlan",
+   "property": "ksx:correctiveActionStatusCode"
+  },
+  {
+   "en": "ReasonForRejection",
+   "ko": "반려사유",
+   "type": "string",
+   "in": "CorrectiveActionPlan",
+   "property": "ksx:reasonForRejection"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, VendorID",
+   "target": "VendorPartyMaster",
+   "property": "ksx:refVendor",
+   "in": "CorrectiveActionPlan"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "CorrectiveActionPlan"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "CorrectiveActionPlan"
+  },
+  {
+   "attr": "EnterpriseID, BatchID",
+   "target": "Batch",
+   "property": "ksx:refBatch",
+   "in": "CorrectiveActionPlan"
+  },
+  {
+   "attr": "EnterpriseID, CorrectiveActionRequestID",
+   "target": "CorrectiveActionRequest",
+   "property": "ksx:refCorrectiveActionRequest",
+   "in": "CorrectiveActionPlan"
+  },
+  {
+   "attr": "EnterpriseID, PersonInChargeID",
+   "target": "Personnel",
+   "property": "ksx:refPersonInCharge",
+   "in": "CorrectiveActionPlan"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "CorrectiveActionStatusCode",
+   "group": "CorrectiveActionStatusCode"
+  }
+ ]
+}

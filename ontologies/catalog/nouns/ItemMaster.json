@@ -1,0 +1,357 @@
+{
+ "noun": "ItemMaster",
+ "ko": "품목마스터",
+ "clause": "7.4.1.10",
+ "table": "표 21",
+ "area": "기준정보",
+ "definition": "품목코드, 품목명, 규격 등과 각종 속성값을 관리하는 품목마스터를 의미한다. 단, 수량정보는 포함하지 않는다.",
+ "layer": "core",
+ "identity": [
+  "ItemID"
+ ],
+ "struct": null,
+ "physical": {
+  "ItemMaster": {
+   "uk": [
+    "EnterpriseID",
+    "ItemID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "ID",
+   "in": "ItemMaster",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemName",
+   "ko": "품목명",
+   "type": "string",
+   "in": "ItemMaster",
+   "property": "ksx:itemName"
+  },
+  {
+   "en": "ItemType",
+   "ko": "품목유형",
+   "type": "enum",
+   "in": "ItemMaster",
+   "property": "ksx:itemType"
+  },
+  {
+   "en": "PhantomIndicator",
+   "ko": "가상품목여부",
+   "type": "boolean",
+   "in": "ItemMaster",
+   "property": "ksx:phantomIndicator"
+  },
+  {
+   "en": "ItemLargeClass",
+   "ko": "품목대분류",
+   "type": "enum",
+   "in": "ItemMaster",
+   "property": "ksx:itemLargeClass"
+  },
+  {
+   "en": "ItemMediumClass",
+   "ko": "품목중분류",
+   "type": "enum",
+   "in": "ItemMaster",
+   "property": "ksx:itemMediumClass"
+  },
+  {
+   "en": "ItemSmallClass",
+   "ko": "품목소분류",
+   "type": "enum",
+   "in": "ItemMaster",
+   "property": "ksx:itemSmallClass"
+  },
+  {
+   "en": "ModelName",
+   "ko": "모델명",
+   "type": "string",
+   "in": "ItemMaster",
+   "property": "ksx:modelName"
+  },
+  {
+   "en": "ItemSpecification",
+   "ko": "품목사양",
+   "type": "string",
+   "in": "ItemMaster",
+   "property": "ksx:itemSpecification"
+  },
+  {
+   "en": "ItemDetailSpecification",
+   "ko": "품목상세사양",
+   "type": "string",
+   "in": "ItemMaster",
+   "property": "ksx:itemDetailSpecification"
+  },
+  {
+   "en": "UseIndicator",
+   "ko": "사용여부",
+   "type": "boolean",
+   "in": "ItemMaster",
+   "property": "ksx:useIndicator"
+  },
+  {
+   "en": "CountryOfOrigin",
+   "ko": "원산국가",
+   "type": "string",
+   "in": "ItemMaster",
+   "property": "ksx:countryOfOrigin"
+  },
+  {
+   "en": "PlaceOfOrigin",
+   "ko": "원산지역",
+   "type": "string",
+   "in": "ItemMaster",
+   "property": "ksx:placeOfOrigin"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "ItemMaster",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "Weight",
+   "ko": "중량",
+   "type": "float",
+   "in": "ItemMaster",
+   "property": "ksx:weight"
+  },
+  {
+   "en": "NetWeight",
+   "ko": "순중량",
+   "type": "float",
+   "in": "ItemMaster",
+   "property": "ksx:netWeight"
+  },
+  {
+   "en": "WeightUOMCode",
+   "ko": "중량단위코드",
+   "type": "enum",
+   "in": "ItemMaster",
+   "property": "ksx:weightUOMCode"
+  },
+  {
+   "en": "Volume",
+   "ko": "부피",
+   "type": "float",
+   "in": "ItemMaster",
+   "property": "ksx:volume"
+  },
+  {
+   "en": "VolumeUOMCode",
+   "ko": "부피단위코드",
+   "type": "enum",
+   "in": "ItemMaster",
+   "property": "ksx:volumeUOMCode"
+  },
+  {
+   "en": "Length",
+   "ko": "길이",
+   "type": "float",
+   "in": "ItemMaster",
+   "property": "ksx:length"
+  },
+  {
+   "en": "Width",
+   "ko": "너비",
+   "type": "float",
+   "in": "ItemMaster",
+   "property": "ksx:width"
+  },
+  {
+   "en": "Height",
+   "ko": "높이",
+   "type": "float",
+   "in": "ItemMaster",
+   "property": "ksx:height"
+  },
+  {
+   "en": "DimensionUOMCode",
+   "ko": "치수단위코드",
+   "type": "enum",
+   "in": "ItemMaster",
+   "property": "ksx:dimensionUOMCode"
+  },
+  {
+   "en": "ValidEndDate",
+   "ko": "유효종료일",
+   "type": "date",
+   "in": "ItemMaster",
+   "property": "ksx:validEndDate"
+  },
+  {
+   "en": "DrawingNumber",
+   "ko": "도면번호",
+   "type": "string",
+   "in": "ItemMaster",
+   "property": "ksx:drawingNumber"
+  },
+  {
+   "en": "LotControlIndicator",
+   "ko": "로트사용여부",
+   "type": "boolean",
+   "in": "ItemMaster",
+   "property": "ksx:lotControlIndicator"
+  },
+  {
+   "en": "PurchaseLeadTime",
+   "ko": "구매리드타임",
+   "type": "duration",
+   "in": "ItemMaster",
+   "property": "ksx:purchaseLeadTime"
+  },
+  {
+   "en": "ProductionLeadTime",
+   "ko": "생산리드타임",
+   "type": "duration",
+   "in": "ItemMaster",
+   "property": "ksx:productionLeadTime"
+  },
+  {
+   "en": "LotSize",
+   "ko": "로트사이즈",
+   "type": "float",
+   "in": "ItemMaster",
+   "property": "ksx:lotSize"
+  },
+  {
+   "en": "MainCustomerID",
+   "ko": "주요 고객사식별자",
+   "type": "IDREF",
+   "in": "ItemMaster",
+   "property": "ksx:mainCustomerID"
+  },
+  {
+   "en": "MainVendorID",
+   "ko": "주요 공급사식별자",
+   "type": "IDREF",
+   "in": "ItemMaster",
+   "property": "ksx:mainVendorID"
+  },
+  {
+   "en": "SafetyStock",
+   "ko": "안전재고",
+   "type": "float",
+   "in": "ItemMaster",
+   "property": "ksx:safetyStock"
+  },
+  {
+   "en": "MaximumStockLevel",
+   "ko": "최대재고수준",
+   "type": "float",
+   "in": "ItemMaster",
+   "property": "ksx:maximumStockLevel"
+  },
+  {
+   "en": "ReceiptWarehouseID",
+   "ko": "입고창고식별자",
+   "type": "IDREF",
+   "in": "ItemMaster",
+   "property": "ksx:receiptWarehouseID"
+  },
+  {
+   "en": "IssueWarehouseID",
+   "ko": "출고창고식별자",
+   "type": "IDREF",
+   "in": "ItemMaster",
+   "property": "ksx:issueWarehouseID"
+  },
+  {
+   "en": "ABCClass",
+   "ko": "에이비씨분류",
+   "type": "enum",
+   "in": "ItemMaster",
+   "property": "ksx:abcClass"
+  },
+  {
+   "en": "ReplacementItemID",
+   "ko": "대체품목식별자",
+   "type": "IDREF",
+   "in": "ItemMaster",
+   "property": "ksx:replacementItemID"
+  },
+  {
+   "en": "IncomingInspectionIndicator",
+   "ko": "수입검사여부",
+   "type": "boolean",
+   "in": "ItemMaster",
+   "property": "ksx:incomingInspectionIndicator"
+  },
+  {
+   "en": "FinalInspectionIndicator",
+   "ko": "생산입고(최종)검사여부",
+   "type": "boolean",
+   "in": "ItemMaster",
+   "property": "ksx:finalInspectionIndicator"
+  },
+  {
+   "en": "OutgoingInspectionIndicator",
+   "ko": "출하검사여부",
+   "type": "boolean",
+   "in": "ItemMaster",
+   "property": "ksx:outgoingInspectionIndicator"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, MainCustomerID",
+   "target": "CustomerPartyMaster",
+   "property": "ksx:refMainCustomer",
+   "in": "ItemMaster"
+  },
+  {
+   "attr": "EnterpriseID, MainVendorID",
+   "target": "VendorPartyMaster",
+   "property": "ksx:refMainVendor",
+   "in": "ItemMaster"
+  },
+  {
+   "attr": "EnterpriseID, ReceiptWarehouseID",
+   "target": "WarehouseLocation",
+   "property": "ksx:refReceiptWarehouse",
+   "in": "ItemMaster"
+  },
+  {
+   "attr": "EnterpriseID, IssueWarehouseID",
+   "target": "WarehouseLocation",
+   "property": "ksx:refIssueWarehouse",
+   "in": "ItemMaster"
+  },
+  {
+   "attr": "EnterpriseID, ReplacementItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refReplacementItem",
+   "in": "ItemMaster"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "ItemType",
+   "group": "ItemType"
+  },
+  {
+   "attr": "ItemLargeClass",
+   "group": "ItemLargeClass"
+  },
+  {
+   "attr": "ItemMediumClass",
+   "group": "ItemMediumClass"
+  },
+  {
+   "attr": "ItemSmallClass",
+   "group": "ItemSmallClass"
+  },
+  {
+   "attr": "ABCClass",
+   "group": "ABCClass"
+  }
+ ]
+}

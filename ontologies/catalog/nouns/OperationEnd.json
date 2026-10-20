@@ -1,0 +1,137 @@
+{
+ "noun": "OperationEnd",
+ "ko": "완공",
+ "clause": "7.4.6.4",
+ "table": "표 47",
+ "area": "생산관리",
+ "definition": "해당 공정의 생산 완료를 보고한다.",
+ "layer": "core",
+ "identity": [
+  "OperationEndID"
+ ],
+ "struct": null,
+ "physical": {
+  "OperationEnd": {
+   "uk": [
+    "EnterpriseID",
+    "OperationEndID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "OperationEndID",
+   "ko": "완공식별자",
+   "type": "ID",
+   "in": "OperationEnd",
+   "property": "ksx:operationEndID"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "OperationEnd",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "LotName",
+   "ko": "로트명",
+   "type": "string",
+   "in": "OperationEnd",
+   "property": "ksx:lotName",
+   "copyOf": "Lot.LotName"
+  },
+  {
+   "en": "LotDescription",
+   "ko": "로트설명",
+   "type": "string",
+   "in": "OperationEnd",
+   "property": "ksx:lotDescription",
+   "copyOf": "Lot.LotDescription"
+  },
+  {
+   "en": "LotCreatedQuantity",
+   "ko": "로트수량",
+   "type": "float",
+   "in": "OperationEnd",
+   "property": "ksx:lotCreatedQuantity",
+   "copyOf": "Lot.LotCreatedQuantity"
+  },
+  {
+   "en": "OperationID",
+   "ko": "공정식별자",
+   "type": "IDREF",
+   "in": "OperationEnd",
+   "property": "ksx:operationID"
+  },
+  {
+   "en": "EquipmentID",
+   "ko": "설비식별자",
+   "type": "IDREF",
+   "in": "OperationEnd",
+   "property": "ksx:equipmentID"
+  },
+  {
+   "en": "OperationEndTime",
+   "ko": "완공시간",
+   "type": "dateTime",
+   "in": "OperationEnd",
+   "property": "ksx:operationEndTime"
+  },
+  {
+   "en": "PersonnelID",
+   "ko": "사원식별자",
+   "type": "IDREF",
+   "in": "OperationEnd",
+   "property": "ksx:personnelID"
+  },
+  {
+   "en": "ProducedQuantity",
+   "ko": "생산수량",
+   "type": "float",
+   "in": "OperationEnd",
+   "property": "ksx:producedQuantity"
+  },
+  {
+   "en": "DefectQuantity",
+   "ko": "불량수량",
+   "type": "float",
+   "in": "OperationEnd",
+   "property": "ksx:defectQuantity"
+  },
+  {
+   "en": "ReworkCount",
+   "ko": "재작업횟수",
+   "type": "int",
+   "in": "OperationEnd",
+   "property": "ksx:reworkCount"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "OperationEnd"
+  },
+  {
+   "attr": "EnterpriseID, OperationID",
+   "target": "Operation",
+   "property": "ksx:refOperation",
+   "in": "OperationEnd"
+  },
+  {
+   "attr": "EnterpriseID, EquipmentID",
+   "target": "Equipment",
+   "property": "ksx:refEquipment",
+   "in": "OperationEnd"
+  },
+  {
+   "attr": "EnterpriseID, PersonnelID",
+   "target": "Personnel",
+   "property": "ksx:refPersonnel",
+   "in": "OperationEnd"
+  }
+ ],
+ "codes": []
+}

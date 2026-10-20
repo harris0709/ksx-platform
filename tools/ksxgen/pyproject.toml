@@ -1,0 +1,14 @@
+[project]
+name = "ksxgen"
+version = "0.1.0"
+description = "KS X 9101 표준 컴파일러: 테이블 정의서·공통코드 → T-Box, SHACL, OBDA, DDL, SKOS, 카탈로그"
+requires-python = ">=3.10"
+dependencies = ["openpyxl>=3.1"]
+[project.optional-dependencies]
+config = ["pyyaml>=6"]
+test = ["pytest>=7", "rdflib>=7", "pyshacl>=0.25"]
+[project.scripts]
+ksxgen = "ksxgen.cli:main"
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"

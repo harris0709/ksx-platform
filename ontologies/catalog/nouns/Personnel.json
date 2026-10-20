@@ -1,0 +1,79 @@
+{
+ "noun": "Personnel",
+ "ko": "사원",
+ "clause": "7.4.1.4",
+ "table": "표 15",
+ "area": "기준정보",
+ "definition": "사원코드, 사원명, 인적정보 등을 관리하는 사원 마스터를 의미한다. 일반적으로 HRMS(Human Resource Management System)에서 사용되지만 작업 스케줄링 또는 자원 할당에서 사용될 수도 있다.",
+ "layer": "core",
+ "identity": [
+  "PersonnelID"
+ ],
+ "struct": null,
+ "physical": {
+  "Personnel": {
+   "uk": [
+    "EnterpriseID",
+    "PersonnelID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "PersonnelID",
+   "ko": "사원식별자",
+   "type": "ID",
+   "in": "Personnel",
+   "property": "ksx:personnelID"
+  },
+  {
+   "en": "PersonnelName",
+   "ko": "사원명",
+   "type": "string",
+   "in": "Personnel",
+   "property": "ksx:personnelName"
+  },
+  {
+   "en": "DepartmentID",
+   "ko": "부서식별자",
+   "type": "IDREF",
+   "in": "Personnel",
+   "property": "ksx:departmentID"
+  },
+  {
+   "en": "EmploymentStatusType",
+   "ko": "재직유형",
+   "type": "enum",
+   "in": "Personnel",
+   "property": "ksx:employmentStatusType"
+  },
+  {
+   "en": "PersonInChargeEmail",
+   "ko": "담당자이메일명",
+   "type": "string",
+   "in": "Personnel",
+   "property": "ksx:personInChargeEmail"
+  },
+  {
+   "en": "PersonInChargeDialNumber",
+   "ko": "담당자전화번호",
+   "type": "string",
+   "in": "Personnel",
+   "property": "ksx:personInChargeDialNumber"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, DepartmentID",
+   "target": "Department",
+   "property": "ksx:refDepartment",
+   "in": "Personnel"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "EmploymentStatusType",
+   "group": "EmploymentStatusType"
+  }
+ ]
+}

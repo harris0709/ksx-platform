@@ -1,0 +1,98 @@
+{
+ "noun": "AfterSalesServiceRequest",
+ "ko": "사후서비스신청",
+ "clause": "7.4.9.3",
+ "table": "표 78",
+ "area": "서비스관리",
+ "definition": "고객에게 판매된 제품의 고장으로 제조자 혹은 대리점 등에 고장 접수 시 필요한 데이터를 의미한다.",
+ "layer": "core",
+ "identity": [
+  "RequestNumber"
+ ],
+ "struct": null,
+ "physical": {
+  "AfterSalesServiceRequest": {
+   "uk": [
+    "EnterpriseID",
+    "RequestNumber"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "AfterSalesServiceRequest",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "ItemName",
+   "ko": "품목명",
+   "type": "string",
+   "in": "AfterSalesServiceRequest",
+   "property": "ksx:itemName",
+   "copyOf": "ItemMaster.ItemName"
+  },
+  {
+   "en": "RequestNumber",
+   "ko": "신청번호",
+   "type": "ID",
+   "in": "AfterSalesServiceRequest",
+   "property": "ksx:requestNumber"
+  },
+  {
+   "en": "TransferSequence",
+   "ko": "이관순번",
+   "type": "int",
+   "in": "AfterSalesServiceRequest",
+   "property": "ksx:transferSequence"
+  },
+  {
+   "en": "BasicAcceptProcessCode",
+   "ko": "접수내용단순처리코드",
+   "type": "enum",
+   "in": "AfterSalesServiceRequest",
+   "property": "ksx:basicAcceptProcessCode"
+  },
+  {
+   "en": "PromisedVisitDateTime",
+   "ko": "약속방문일시",
+   "type": "dateTime",
+   "in": "AfterSalesServiceRequest",
+   "property": "ksx:promisedVisitDateTime"
+  },
+  {
+   "en": "TransferRegistrationCode",
+   "ko": "이관등록코드",
+   "type": "enum",
+   "in": "AfterSalesServiceRequest",
+   "property": "ksx:transferRegistrationCode"
+  },
+  {
+   "en": "SerialNumber",
+   "ko": "제조번호",
+   "type": "string",
+   "in": "AfterSalesServiceRequest",
+   "property": "ksx:serialNumber"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "AfterSalesServiceRequest"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "BasicAcceptProcessCode",
+   "group": "BasicAcceptProcessCode"
+  },
+  {
+   "attr": "TransferRegistrationCode",
+   "group": "TransferRegistrationCode"
+  }
+ ]
+}

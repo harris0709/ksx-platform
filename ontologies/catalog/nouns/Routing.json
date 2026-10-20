@@ -1,0 +1,128 @@
+{
+ "noun": "Routing",
+ "ko": "공정경로",
+ "clause": "7.4.1.13",
+ "table": "표 24",
+ "area": "기준정보",
+ "definition": "공정경로(Routing) 명사의 헤더 구조체(struct) 공정경로 1건의 공통 정보(공정경로명, 대상 품목, 사용 여부) 공정경로마다 1회 나타남",
+ "layer": "core",
+ "identity": [
+  "RoutingID"
+ ],
+ "struct": {
+  "header": "RoutingHeader",
+  "line": "RoutingLine",
+  "lineKey": [
+   "OperationSequence"
+  ]
+ },
+ "physical": {
+  "RoutingHeader": {
+   "uk": [
+    "EnterpriseID",
+    "RoutingID"
+   ]
+  },
+  "RoutingLine": {
+   "uk": [
+    "EnterpriseID",
+    "RoutingID",
+    "OperationSequence"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "RoutingID",
+   "ko": "공정경로식별자",
+   "type": "ID",
+   "in": "RoutingHeader",
+   "property": "ksx:routingID"
+  },
+  {
+   "en": "RoutingName",
+   "ko": "공정경로명",
+   "type": "string",
+   "in": "RoutingHeader",
+   "property": "ksx:routingName"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "RoutingHeader",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "UseIndicator",
+   "ko": "사용여부",
+   "type": "boolean",
+   "in": "RoutingHeader",
+   "property": "ksx:useIndicator"
+  },
+  {
+   "en": "RoutingID",
+   "ko": "공정경로식별자",
+   "type": "IDREF",
+   "in": "RoutingLine",
+   "property": "ksx:routingID"
+  },
+  {
+   "en": "OperationSequence",
+   "ko": "공정순번",
+   "type": "int",
+   "in": "RoutingLine",
+   "property": "ksx:operationSequence"
+  },
+  {
+   "en": "OperationID",
+   "ko": "공정식별자",
+   "type": "IDREF",
+   "in": "RoutingLine",
+   "property": "ksx:operationID"
+  },
+  {
+   "en": "LastOperationIndicator",
+   "ko": "최종공정여부",
+   "type": "boolean",
+   "in": "RoutingLine",
+   "property": "ksx:lastOperationIndicator"
+  },
+  {
+   "en": "SetupTime",
+   "ko": "준비시간",
+   "type": "duration",
+   "in": "RoutingLine",
+   "property": "ksx:setupTime"
+  },
+  {
+   "en": "RunTime",
+   "ko": "작업시간",
+   "type": "duration",
+   "in": "RoutingLine",
+   "property": "ksx:runTime"
+  },
+  {
+   "en": "MoveTime",
+   "ko": "이동시간",
+   "type": "duration",
+   "in": "RoutingLine",
+   "property": "ksx:moveTime"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "RoutingHeader"
+  },
+  {
+   "attr": "EnterpriseID, OperationID",
+   "target": "Operation",
+   "property": "ksx:refOperation",
+   "in": "RoutingLine"
+  }
+ ],
+ "codes": []
+}
