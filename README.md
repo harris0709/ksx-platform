@@ -17,6 +17,7 @@ KS X 9101 기반 제조 온톨로지 End-to-End 구현 저장소입니다. 구�
 | `dags/` | Airflow DAG (적재→물질화→검증→추론→동기화) | 데이터 엔지니어 | S3~S8 |
 | `infra/` | docker-compose, helm, keycloak realm, opa 정책, postgres 초기화 | 인프라·보안 | S0 |
 | `tests/` | 커버리지·회귀·E2E 인수 시나리오 | 전원 | S11 |
+| `web/` | 웹 콘솔(명사 브라우저·적합성·추론 결과). `tools/build_web.py`가 데이터 생성, Vercel로 배포 | 전원 | S9·E12 |
 
 ## 규칙
 
@@ -75,6 +76,13 @@ PostgreSQL은 첫 기동 때 `infra/postgres/init.sql`과 `ontologies/ddl/ksx.sq
 ```bash
 python services/rule-runner/runner.py --fuseki http://localhost:3030/ksx --ent ACME --site HQ
 ```
+
+### 5) 웹 콘솔 배포(Vercel)
+
+- `web/`이 그대로 정적 사이트입니다(`vercel.json`: 빌드 없음, 출력 폴더 `web`).
+- 생성물이 바뀌면 `python tools/build_web.py`로 `web/data/nouns.js`를 다시 만든 뒤 커밋합니다(CI가 최신 여부 검사).
+- Vercel 대시보드에서 이 저장소를 Import하면 `main`에 올릴 때마다 자동 배포, 병합 요청마다 미리보기 배포됩니다.
+- 공개 사이트에는 표준 생성물과 가상 시드 결과만 둡니다. 고객사 매핑·실데이터는 넣지 않습니다.
 
 ## IRI 규칙
 

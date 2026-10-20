@@ -20,6 +20,8 @@ jobs:
         run: pip install openpyxl pyyaml rdflib pyshacl
       - name: 생성물 최신 여부·커버리지 (ksxgen check)
         run: PYTHONPATH=tools/ksxgen python -m ksxgen check --std standards --out ontologies
+      - name: 웹 콘솔 데이터 최신 여부
+        run: python tools/build_web.py && git diff --exit-code web/
       - name: 생성기 회귀 시험
         run: python tests/coverage/test_ksxgen.py
       - name: E2E 최소 시험 (DDL → 시드 → OBDA → SHACL → 규칙)
