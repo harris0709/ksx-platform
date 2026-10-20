@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "options": { "env": { "PYTHONPATH": "${workspaceFolder}/tools/ksxgen" } },
+  "tasks": [
+    { "label": "ksxgen: 생성물 다시 만들기", "type": "shell", "command": "python -m ksxgen build --std standards --out ontologies && python tools/build_web.py", "group": "build", "problemMatcher": [] },
+    { "label": "ksxgen: 커버리지·최신 여부 검사", "type": "shell", "command": "python -m ksxgen check --std standards --out ontologies", "group": "test", "problemMatcher": [] },
+    { "label": "시험: 생성기 회귀", "type": "shell", "command": "python tests/coverage/test_ksxgen.py", "group": "test", "problemMatcher": [] },
+    { "label": "웹 콘솔: 로컬 미리보기(http://localhost:8000)", "type": "shell", "command": "python -m http.server 8000 --directory web", "isBackground": true, "problemMatcher": [] },
+    { "label": "개발 스택: 기동", "type": "shell", "command": "docker compose -f infra/docker/docker-compose.yml --env-file .env up -d --build", "problemMatcher": [] },
+    { "label": "개발 스택: 중지", "type": "shell", "command": "docker compose -f infra/docker/docker-compose.yml down", "problemMatcher": [] }
+  ]
+}

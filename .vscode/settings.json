@@ -1,0 +1,10 @@
+{
+  "files.eol": "\n",
+  "files.associations": { "*.obda": "plaintext", "*.rq": "sparql" },
+  "files.readonlyInclude": { "ontologies/**": true, "web/data/**": true },
+  "files.readonlyExclude": { "ontologies/rules/**": true },
+  "python.analysis.extraPaths": ["tools/ksxgen"],
+  "terminal.integrated.env.windows": { "PYTHONPATH": "${workspaceFolder}/tools/ksxgen" },
+  "terminal.integrated.env.osx": { "PYTHONPATH": "${workspaceFolder}/tools/ksxgen" },
+  "terminal.integrated.env.linux": { "PYTHONPATH": "${workspaceFolder}/tools/ksxgen" }
+}

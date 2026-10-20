@@ -22,7 +22,6 @@ models/
 # OS·에디터
 .DS_Store
 .idea/
-.vscode/
 ~$*
 
 # Vercel 빌드 출력(web/ 복사본)

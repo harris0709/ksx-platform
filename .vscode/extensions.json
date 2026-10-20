@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "redhat.vscode-yaml",
+    "stardog-union.stardog-rdf-grammars",
+    "ms-azuretools.vscode-docker",
+    "github.vscode-github-actions",
+    "ms-ossdata.vscode-pgsql",
+    "anthropic.claude-code"
+  ]
+}
