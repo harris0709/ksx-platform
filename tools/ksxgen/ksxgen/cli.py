@@ -25,9 +25,23 @@ DEFAULTS = {
 def _cfg(path: str | None) -> dict:
     cfg = dict(DEFAULTS)
     if path and os.path.exists(path):
-        import yaml  # 선택 의존성
-        cfg.update(yaml.safe_load(open(path, encoding="utf-8")) or {})
+        try:
+            import yaml  # 있으면 사용(선택 의존성)
+            cfg.update(yaml.safe_load(open(path, encoding="utf-8")) or {})
+        except ImportError:
+            cfg.update(_simple_yaml(path))
     return cfg
+
+
+def _simple_yaml(path: str) -> dict:
+    """PyYAML이 없을 때: 'key: value' 한 줄 형식만 읽는다(ksxgen.yaml 형식)."""
+    out = {}
+    for line in open(path, encoding="utf-8"):
+        line = line.split("#", 1)[0].strip() if not line.lstrip().startswith("#") else ""
+        if ":" in line:
+            k, v = line.split(":", 1)
+            out[k.strip()] = v.strip().strip('"').strip("'")
+    return out
 
 
 def build(std: str, out: str, cfg: dict, quiet: bool = False) -> bool:
