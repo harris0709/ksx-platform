@@ -73,7 +73,8 @@ def _digest(root: str) -> dict[str, str]:
             if f == ".gitkeep":
                 continue
             p = os.path.join(base, f)
-            d[os.path.relpath(p, root)] = hashlib.sha256(open(p, "rb").read()).hexdigest()
+            data = open(p, "rb").read().replace(b"\r\n", b"\n")   # 윈도우 CRLF 체크아웃도 같은 내용으로 본다
+            d[os.path.relpath(p, root).replace(os.sep, "/")] = hashlib.sha256(data).hexdigest()
     return d
 
 
