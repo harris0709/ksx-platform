@@ -79,7 +79,7 @@ python services/rule-runner/runner.py --fuseki http://localhost:3030/ksx --ent A
 
 ### 5) 웹 콘솔 배포(Vercel)
 
-- `web/`이 그대로 정적 사이트입니다(`vercel.json`: 빌드 없음, 출력 폴더 `web`).
+- `web/`이 그대로 정적 사이트입니다(`vercel.json`: 빌드 시 `web/`을 `public/`으로 복사해 배포).
 - 생성물이 바뀌면 `python tools/build_web.py`로 `web/data/nouns.js`를 다시 만든 뒤 커밋합니다(CI가 최신 여부 검사).
 - Vercel 대시보드에서 이 저장소를 Import하면 `main`에 올릴 때마다 자동 배포, 병합 요청마다 미리보기 배포됩니다.
 - 공개 사이트에는 표준 생성물과 가상 시드 결과만 둡니다. 고객사 매핑·실데이터는 넣지 않습니다.

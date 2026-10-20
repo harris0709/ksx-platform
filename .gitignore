@@ -24,3 +24,6 @@ models/
 .idea/
 .vscode/
 ~$*
+
+# Vercel 빌드 출력(web/ 복사본)
+public/
