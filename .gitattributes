@@ -11,3 +11,4 @@
 *.png  binary
 # 대용량 바이너리(도면·영상·모델 가중치 등)가 생기면 Git LFS로 전환:
 #   *.pdf filter=lfs diff=lfs merge=lfs -text
+*.sh    text eol=lf
