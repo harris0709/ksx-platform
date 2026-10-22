@@ -1,0 +1,239 @@
+# =====================================================================
+# IMPIX 1차 업무 시나리오 정의 + 업무 질의서 (S1 절차 1~3)
+#   시나리오의 대상 명사·원천 공백은 s1_config.yaml 의 scenarios 와 같은 ID(SC01~SC07)를 쓴다.
+#   scenarios.<ID>.kpi: KPI 정의서에 없는 보조 관리지표만 적는다(정식 KPI는 kpi_catalog.yaml 의 scenarios 로 연결).
+#   questions[].kpi: 질의가 검증하는 KPI ID(kpi_catalog.yaml). answer 의 수치는 s1profiler kpi 산출값과 같다.
+#   질의서는 S7 추론 규칙과 S9 AI 평가의 기준이 된다. answer 는 실습 데이터 기준 정답(검증용).
+#   생성: python -m s1profiler scenarios --config mapping/impix/s1/s1_config.yaml
+# =====================================================================
+company:
+  name: IMPIX (가상 기업, 실습용)
+  product: 전동식 워터펌프(EWP) A100(12V)·B200(24V)과 알루미늄 펌프 하우징
+  site: HQ(본사 사업장, ERP 1000)
+  plants:
+    - P1 제1공장(주조·가공) — ERP 1100 / MES IMP1 — 다이캐스팅 4대, CNC 6대, 세척기 1대
+    - P2 제2공장(조립·검사) — ERP 1200 / MES IMP2 — 조립기 2대, 누설시험기 2대, 비전검사기 1대, 포장기 1대
+  flow: 하우징 주조(P100) → CNC 가공(P200) → 세척·외관(P300) → 조립(A100) → 누설시험(A200) → 최종검사(A300) → 포장(A400)
+  systems:
+    - ERP(impix_erp.erp) — 기준정보·제조오더 + 영업(수요예측·판매계획·수주·출하)·구매·입고·재고·원가. FK 일부 선언
+    - MES(impix_mes.mes) — LOT·착공·완공·설비·파라미터·품질. FK 미선언, 일시 문자열, 상태 하드코딩
+    - QMS(impix_qms.qms) — 고객 클레임·수입검사·협력업체 부적합(CAR)·폐기·품질비용(Q-COST)
+  period: "MES·QMS 2026-09-21 ~ 10-20, ERP 영업·구매·재고 2026-08-01 ~ 10-20 (일요일 휴무), 제조오더는 10-25까지. KPI 기준 일시 2026-10-20 17:00"
+  approval: 시나리오별 대상 명사 목록을 도메인(PI) 컨설턴트·고객사 현업 검수자가 승인(S1 완료 기준)
+
+scenarios:
+  SC01:
+    purpose: ERP·MES에 흩어진 기준정보(회사·공장·라인·품목·BOM·라우팅·공정·설비·코드)를 표준 명사로 일원화한다.
+    flow: [ERP 기준정보 등록·변경, MES 동기화(품목 사본·공정·설비), 코드·단위 대응표 확정, 표준 원장 적재]
+    scope: 사용(use_yn=Y) 기준정보 + 단종 품목은 이력 보존용으로 포함
+    kpi: [기준정보 불일치 건수, 중복·고아 코드 0건, 단위 표준화율]
+  SC02:
+    purpose: 제조오더에서 LOT 생성, 공정별 착공·완공, 생산실적까지의 흐름을 추적해 진행·납기를 판단한다.
+    flow: [ERP 제조오더 확정(MO_STAT 20), MES LOT 생성(하우징 → 조립 LOT 소비), 공정별 착공·완공, 일별 실적 집계 → ERP 반영]
+    scope: 2026-09-21 ~ 10-20 제조오더와 LOT 전체
+    kpi: [오더 달성률, 공정 대기시간]
+  SC03:
+    purpose: 설비 파라미터 수집값을 규격·관리한계로 검증하고 LOT·품질과 연결해 이상 원인을 찾는다.
+    flow: [파라미터 정의(규격 LSL/USL, 관리한계 LCL/UCL), 10분 주기 수집, 규격 판정(검증결과코드), LOT 연결(시간 구간)]
+    scope: 사용 설비 17대의 파라미터 31종, 30일
+    kpi: [규격 이탈 건수, 수집 누락률, 이상 탐지 리드타임]
+  SC04:
+    purpose: 설비 상태 변경과 알람으로 가동률·고장·보전을 관리하고 고장 징후를 미리 잡는다.
+    flow: [상태 변경(가동·대기·고장·보전·비가동), 알람 발생·해제, 고장 조치, 계획보전(토요일)]
+    scope: 사용 설비 17대, 30일
+    kpi: [미해제 알람 수, 고장 징후 선행 탐지 시간]
+  SC05:
+    purpose: 공정검사·누설검사·최종검사 실적과 불량 유형을 표준화해 불량률을 관리하고 근본 원인을 추적한다.
+    flow: [공정검사(P200·P300), 누설검사(A200), 최종검사(A300), 불량 유형 기록, 보류·판정]
+    scope: 검사 실적 전체, 불량 코드 9종
+    kpi: [보류 LOT 수]
+  SC06:
+    purpose: 고객 클레임·수입검사·협력업체 부적합과 품질비용을 표준 명사로 연결해 고객 품질 리스크와 협력사 관리 우선순위를 판단한다.
+    flow: [고객 클레임 접수(부적합·라인 중단·필드 반송), LOT 추적(출하 → 완제품 → 하우징 → 주조 설비), 대책서 회신(기한 관리), 수입검사(시료·판정), 협력업체 부적합·시정조치(CAR), 폐기·Q-COST 월 집계]
+    scope: 2026-08 ~ 10월 클레임 7건, 수입검사 109건, 협력업체 부적합 5건, 폐기 361건, Q-COST 3개월
+    kpi: [CAR 완료 지연 건수]
+  SC07:
+    purpose: 수요예측·판매계획(Sales), 생산계획·자재(Production), 재고(Inventory)를 한 흐름(PSI)으로 보고 고객 납기·품절을 관리한다.
+    flow: [월 수요예측·판매계획 수립, 수주 접수(요청 납기), 일 생산계획·제조오더, 착수 전 자재 가용성 점검, 구매발주·입고, 생산입고, 출하(선입선출 LOT), 재고 실사·조정]
+    scope: 2026-08-01 ~ 10-20 수주 161건, 출하 304건, 발주 166건, 일 재고 1,701건, 9월 말 실사
+    kpi: [납기 지연 일수]
+
+# 실습 데이터에 심어 둔 사건(정답지) — S7 규칙·S9 평가 검증에 사용
+events:
+  - { id: EV1, name: DCM-02 금형온도 상승, when: "2026-10-02 06:10 ~ 10-06 18:00", detail: "USL 240℃ 초과 574회, 최대 267.2℃. 알람 A101 시간당 1건, 고장 E03 2건(10-04, 10-05)" }
+  - { id: EV2, name: 하우징 기공 → 조립 후 누설 불량·보류, when: "주조 10-02·03·05·06", detail: "하우징 H261003A1·H261005A1·H261006A1·H261007A1 기공(D-PORO) 6~7EA → 조립 LOT E261003A1·E261005A1·E261006A1·E261007A1 누설 불량 6.8~9.5%로 보류(H)" }
+  - { id: EV3, name: 납기 리스크, when: "MO261003001 ~ MO261007001", detail: "보류 LOT 때문에 A100 오더 4건 미완료. 그중 MO261005001·06001·07001은 긴급 납기(1일 단축)" }
+  - { id: EV4, name: CNC-03 공구 마모 징후, when: "2026-10-14 ~ 10-16", detail: "진동 평균 +0.9mm/s, UCL 3.5 초과 71회 → 10-16 10:15 공구마모 고장(E07), 미해제 진동 경고 1건" }
+  - { id: EV5, name: DCM-03 통신 끊김, when: "2026-10-10 02:00 ~ 06:00", detail: "파라미터 수집 공백 4시간, 알람 A900" }
+  - { id: EV6, name: LKT-02 단위 오류 스파이크, when: "2026-10-11 09:00 ~ 10:00", detail: "누설량 값 ×1000(7건) — 단위 오류" }
+  - { id: EV7, name: 보류 LOT 특채 출하 → 고객 라인 중단, when: "2026-10-08 ~ 10-13", detail: "MES 보류(H) LOT E261003A1 179EA를 ERP에서 수기 특채 입고(PR261008SP1, src=MAN) → 10-08 C001 출하(SO260928001) → 10-12 고객 라인 40분 중단 클레임 CL2610-001(1,500만원), 10-13 선별 누수 9EA(CL2610-002, 회신 기한 10-19 미회신)" }
+  - { id: EV8, name: 제품 A100 품절·납기 지연, when: "2026-10-06 ~ 10-12", detail: "보류 LOT 4개로 10-03·05·06·07 포장 양품이 절반(193~195EA) → 제품 재고 소진(품절 6일) → 납기 지연 6라인(C001 5, C003 1), 결품 496EA. OE(C001) 우선 출하로 AM(C003)이 더 늦음" }
+  - { id: EV9, name: 자재 결품, when: "2026-10-05 ~ 10-12", detail: "10-05 PCB-EWP24 수입검사 불합격(V003 납땜 불량 5EA) → 10-06 오후 대체 납품 → MO261006002 착수 점검 24EA 부족. 10-12 MTR-24V(V002) 분할 납품(오전 60EA) → MO261012002 40EA 부족" }
+  - { id: EV10, name: 협력업체 V003 커넥터 연쇄 부적합, when: "2026-09-21 ~ 10-05", detail: "9-21 CON-3P 수입검사 특채(S, 외관 2EA) → 9-27 라인 발견 6EA → 9-29 C002 커넥터 접촉불량 클레임(CL2609-003)·고객 발견 NCR2609902(CAR 미완료). 10-05 PCB-EWP24 불합격까지 V003 부적합 4건" }
+  - { id: EV11, name: 재고 실사 차이·장기 체화, when: "2026-09-30 실사, 10-20 기준", detail: "실사 차이 3품목(ORG-45 −120, BLT-M5X16 −300, EWP-B200 −4) → 10-01 조정 출고(ADJ). 장기 체화: PCB-EWP12 격리 LOT V003-250920Q 300EA, 단종 EWP-A090 150EA·HSG-A090 300EA(2024-02 입고) = 1,206만원(6.31%)" }
+
+types: [조회, 집계, 추적, 진단, 판단, 요약]
+
+questions:
+  # ---------------- SC01 생산 기준정보 동기화 ----------------
+  - { id: Q-SC01-01, sc: SC01, type: 조회, q: "EWP-A100의 현재 유효한 BOM 버전과 자품목 목록은?", criteria: "valid_fr ≤ 기준일 ≤ valid_to 인 BOM 라인", nouns: [BOMHeader, BOMLine, ItemMaster], answer: "버전 002(2026-07-01~), 자품목 9종(하우징·임펠러·모터·PCB·씰·O-링 2·볼트 4·커넥터·포장박스 0.1)" }
+  - { id: Q-SC01-02, sc: SC01, type: 조회, q: "하우징 A100의 공정 순서와 공정별 표준 작업시간은?", criteria: "라우팅 공정순번 순, 개당 작업시간(초)", nouns: [RoutingHeader, RoutingLine, Operation], answer: "주조 45초 → CNC 95초 → 세척 20초" }
+  - { id: Q-SC01-03, sc: SC01, type: 조회, q: "CNC 가공 공정에 배정된 사용 중 설비와 대수는?", criteria: "공정설비(공정 P200, 사용여부 Y)", nouns: [OperationEquipment, Equipment, Operation], answer: "CNC-01~06 6대(CNC-06 사용여부 값 '1' 정규화 필요)" }
+  - { id: Q-SC01-04, sc: SC01, type: 조회, q: "사용 중인 다이캐스팅기 목록과 제조사·도입일은?", criteria: "설비그룹 DCM, 사용여부 Y", nouns: [Equipment], answer: "DCM-01~04(도시바기계 2, LK 2), 구0호 DCM-00은 미사용" }
+  - { id: Q-SC01-05, sc: SC01, type: 집계, q: "품목유형별(제품·반제품·원자재·부자재·포장재·소모품) 사용 품목 수는?", criteria: "ItemType 표준 코드로 대응 후 집계(시험·중복 품목 제외)", nouns: [ItemMaster, CommonCodeMaster] }
+  - { id: Q-SC01-06, sc: SC01, type: 진단, q: "ERP 품목과 MES 품목 사본의 이름·단위가 다른 품목은?", criteria: "item_cd 기준 비교", nouns: [ItemMaster] }
+  - { id: Q-SC01-07, sc: SC01, type: 조회, q: "공장별 생산라인과 일 표준 생산능력은?", criteria: "Line.StandardCapacity", nouns: [Plant, Line], answer: "P1 ML01 800EA, P2 AL01 600EA·AL02 300EA" }
+  - { id: Q-SC01-08, sc: SC01, type: 추적, q: "EWP-B200 1대 생산에 필요한 알루미늄 잉곳(ALDC12) 양은?", criteria: "BOM 다단 전개(제품 → 하우징 → 원재료)", nouns: [BOMHeader, BOMLine, ItemMaster], answer: "1.02kg (B200 → HSG-B200 1EA → ALDC12 1.02kg)" }
+  - { id: Q-SC01-09, sc: SC01, type: 진단, q: "단종(사용 중지) 품목이 BOM·라우팅에 남아 있는가?", criteria: "UseIndicator=N 품목의 BOM·라우팅 참조", nouns: [ItemMaster, BOMLine, RoutingHeader] }
+  - { id: Q-SC01-10, sc: SC01, type: 진단, q: "품목마스터에 없는 자품목을 쓰는 BOM 라인은?", criteria: "BOMLine.ChildItemID 참조 무결성", nouns: [BOMLine, ItemMaster], answer: "EWP-B200 BOM 001 라인 9: IMP-B300" }
+  - { id: Q-SC01-11, sc: SC01, type: 진단, q: "대소문자나 공백만 다른 중복 품목코드는?", criteria: "upper(trim(코드)) 중복", nouns: [ItemMaster], answer: "'EWP-A100 '(끝 공백), 'ewp-b200'(소문자)" }
+  - { id: Q-SC01-12, sc: SC01, type: 조회, q: "설비별 관리자와 소속 부서는?", criteria: "Equipment.PersonInChargeID → Personnel → Department", nouns: [Equipment, Personnel, Department] }
+  - { id: Q-SC01-13, sc: SC01, type: 조회, q: "LOT 관리 대상 품목은?", criteria: "LotControlIndicator=Y", nouns: [ItemMaster] }
+  - { id: Q-SC01-14, sc: SC01, type: 조회, q: "수입검사 대상 부품 목록은?", criteria: "IncomingInspectionIndicator=Y", nouns: [ItemMaster] }
+  - { id: Q-SC01-15, sc: SC01, type: 조회, q: "MES 공정 코드와 ERP 작업장 코드의 대응은?", criteria: "tm_proc.erp_wc_cd 대응", nouns: [Operation], answer: "P100↔WDC10, P200↔WMC20, P300↔WWS30, A100↔WAS40, A200↔WLT50, A300↔WFI60, A400↔WPK70" }
+  - { id: Q-SC01-16, sc: SC01, type: 진단, q: "기준단위가 표준(EA·KG·L)과 다르게 등록된 품목은?", criteria: "단위 대응표 미등록 표기", nouns: [ItemMaster, UOMGroupLine], answer: "IMP-B200 'ea', MTR-24V '개'" }
+  - { id: Q-SC01-17, sc: SC01, type: 조회, q: "각 공정의 공정유형(생산·검사·포장)은?", criteria: "OperationType 표준 코드 대응", nouns: [Operation, CommonCodeMaster] }
+  - { id: Q-SC01-18, sc: SC01, type: 진단, q: "퇴직자가 설비 관리자나 작업자로 남아 있는가?", criteria: "EmploymentStatusType=퇴직 사원의 참조 여부", nouns: [Personnel, Equipment, OperationStart] }
+  - { id: Q-SC01-19, sc: SC01, type: 추적, q: "EWP-A100 BOM이 001에서 002로 바뀌며 추가된 자품목은?", criteria: "두 버전 라인 차집합", nouns: [BOMHeader, BOMLine], answer: "CON-3P(커넥터), BOX-EWP(포장박스)" }
+  - { id: Q-SC01-20, sc: SC01, type: 조회, q: "ERP·MES 공장 코드를 표준 공장 ID로 대응하면?", criteria: "공장 코드 대응표", nouns: [Plant], answer: "1100·IMP1 → P1, 1200·IMP2 → P2" }
+  # ---------------- SC02 착공·완공 ----------------
+  - { id: Q-SC02-01, sc: SC02, type: 조회, q: "지금(10-20 기준) 진행 중인 LOT과 다음 공정은?", criteria: "LotState 진행·대기", nouns: [Lot, Operation], answer: "E261020A2·E261020B1, 누설시험 완료 후 최종검사 대기" }
+  - { id: Q-SC02-02, sc: SC02, type: 추적, q: "제조오더 MO261005001의 LOT별 진행과 누적 양품은?", criteria: "생산지시 → LOT → 공정별 완공", nouns: [ProductionOrder, Lot, OperationEnd] }
+  - { id: Q-SC02-03, sc: SC02, type: 집계, q: "10-05~10-10 일별 EWP-A100 완성(포장 완공) 수량은?", criteria: "공정 A400 완공 양품, 일자별", nouns: [OperationEnd, ProductionPerformance] }
+  - { id: Q-SC02-04, sc: SC02, type: 판단, q: "납기 안에 완료되지 못했거나 위험한 제조오더는?", criteria: "생산완료기한 대비 완성 수량 < 지시 수량", nouns: [ProductionOrder, Lot, OperationEnd], answer: "MO261003001·05001·06001·07001: 보류 LOT으로 완성 193~195/400EA. MO260925001(193/400)·MO261008002(0/200)는 LOT 오더번호 오류(MO260999001)로 미완성처럼 보임 → 원천 정정 필요" }
+  - { id: Q-SC02-05, sc: SC02, type: 집계, q: "공정별 평균 처리시간(착공~완공)과 표준시간 대비 편차는?", criteria: "완공-착공, 라우팅 RunTime×수량", nouns: [OperationStart, OperationEnd, RoutingLine] }
+  - { id: Q-SC02-06, sc: SC02, type: 추적, q: "완제품 LOT E261007A1에 들어간 하우징 LOT과 주조 설비는?", criteria: "LOT 계보(모LOT) → 주조 착공 설비", nouns: [Lot, OperationStart, Equipment], answer: "H261007A1, DCM-02(10-06 07:00 주조)" }
+  - { id: Q-SC02-07, sc: SC02, type: 진단, q: "보류된 LOT과 보류 직전 공정의 불량률은?", criteria: "LotState=HOLD, 직전 공정 불량수량/투입", nouns: [Lot, OperationEnd, ProductionPerformanceQuality], answer: "E261003A1 6.8%, E261005A1 8.9%, E261006A1 9.5%, E261007A1 9.4%(모두 누설시험)" }
+  - { id: Q-SC02-08, sc: SC02, type: 집계, q: "작업자별 10월 처리 LOT 수는?", criteria: "착공 사원 기준", nouns: [OperationStart, Personnel] }
+  - { id: Q-SC02-09, sc: SC02, type: 집계, q: "제조오더별 지시 수량 대비 완성 수량 달성률은?", criteria: "A400 완공 양품 / 생산지시수량", nouns: [ProductionOrder, OperationEnd] }
+  - { id: Q-SC02-10, sc: SC02, type: 진단, q: "착공은 있는데 완공이 없는 공정 이력은?", criteria: "착공-완공 짝 맞춤", nouns: [OperationStart, OperationEnd], answer: "없음(진행 중 LOT은 다음 공정 착공 전)" }
+  - { id: Q-SC02-11, sc: SC02, type: 진단, q: "완공 시각이 착공보다 빠른 등 시간 오류가 있는 이력은?", criteria: "OperationEndTime < OperationStartTime", nouns: [OperationStart, OperationEnd], answer: "E261009A2 누설시험(완공 14:52 < 착공 14:57)" }
+  - { id: Q-SC02-12, sc: SC02, type: 진단, q: "투입 수량과 양품+불량이 맞지 않는 완공 실적은?", criteria: "투입 ≠ 생산수량+불량수량", nouns: [OperationStart, OperationEnd], answer: "E260925B1 조립·누설시험 2건" }
+  - { id: Q-SC02-13, sc: SC02, type: 진단, q: "ERP에 없는 제조오더 번호를 가진 LOT은?", criteria: "Lot.ProductionOrderID 참조 무결성", nouns: [Lot, ProductionOrder], answer: "H260925A2·E260925A2·E261008B1(MO260999001)" }
+  - { id: Q-SC02-14, sc: SC02, type: 집계, q: "B200 라인(AL02)의 일 평균 생산량과 표준능력 대비 비율은?", criteria: "라인별 A400 완공 / StandardCapacity", nouns: [Line, OperationEnd, ProductionPerformance] }
+  - { id: Q-SC02-15, sc: SC02, type: 진단, q: "공정 간 대기시간(이전 완공~다음 착공)이 가장 긴 구간은?", criteria: "LOT별 공정 순서 기준", nouns: [OperationStart, OperationEnd, RoutingLine] }
+  - { id: Q-SC02-16, sc: SC02, type: 집계, q: "설비별 10월 처리 LOT 수와 처리 수량은?", criteria: "착공 설비 기준", nouns: [OperationStart, Equipment] }
+  - { id: Q-SC02-17, sc: SC02, type: 추적, q: "취소된 제조오더 MO260930002에 연결된 LOT은 어떻게 처리됐나?", criteria: "생산지시 → LOT 상태", nouns: [ProductionOrder, Lot], answer: "H260930B1 폐기(SCRAP)" }
+  - { id: Q-SC02-18, sc: SC02, type: 집계, q: "하우징 LOT 200EA가 최종 포장까지 가는 평균 수율은?", criteria: "포장 완공 양품 / 주조 투입", nouns: [Lot, OperationEnd] }
+  - { id: Q-SC02-19, sc: SC02, type: 진단, q: "계획 시작일보다 첫 착공이 늦은 제조오더는?", criteria: "ScheduleStartDateTime vs 최초 OperationStartTime", nouns: [ProductionOrder, OperationStart] }
+  - { id: Q-SC02-20, sc: SC02, type: 조회, q: "확정 상태로 착수 대기 중인 제조오더와 수량은?", criteria: "생산지시 상태 확정", nouns: [ProductionOrder], answer: "10-21~10-25 오더 8건(A100 400·B200 200씩)" }
+  - { id: Q-SC02-21, sc: SC02, type: 집계, q: "10월(1~20일) 공정별 완공 양품 수량은?", criteria: "공정별 Σ 완공 양품(완공일 기준)", nouns: [OperationEnd, ProductionPerformance], answer: "P100 9,570 · P200 9,524 · P300 9,414 · A100 9,995 · A200 9,865 · A300 8,740 · A400 8,740EA", kpi: [PR01] }
+  - { id: Q-SC02-22, sc: SC02, type: 조회, q: "기준 시점(10-20 17:00) 재공 LOT과 수량·금액은?", criteria: "LOT 상태 W·R·H, 수량 × 표준원가", nouns: [Lot], answer: "6 LOT 1,086EA 61,542,000원 — 보류 4 LOT(E261003A1·05A1·06A1·07A1) 698EA, 대기 2 LOT(E261020A2·B1) 388EA", kpi: [PR02] }
+  - { id: Q-SC02-23, sc: SC02, type: 진단, q: "MES에서는 보류(H)인데 ERP에서 입고·출하된 LOT은?", criteria: "MES LotState=H ∩ ERP 생산입고·출하 LOT", nouns: [Lot, ProductIncoming, ProductRelease], answer: "E261003A1 179EA — 10-08 ERP 수기 특채 입고(PR261008SP1) 후 같은 날 C001 출하(SO260928001). 시스템 간 상태 불일치", kpi: [PR02, QM03] }
+  - { id: Q-SC02-24, sc: SC02, type: 집계, q: "월별 제품 생산계획준수율은? 10월이 낮은 이유는?", criteria: "Σ min(일 입고, 일 계획) / Σ 일 계획", nouns: [ProductionPlanning, ProductIncoming], answer: "8월 93.10%, 9월 94.51%, 10월 89.11%(A100 85.08% — 보류 LOT으로 10-03~07 포장 양품 절반)", kpi: [SC03] }
+  - { id: Q-SC02-25, sc: SC02, type: 집계, q: "10월 완제품 제조 리드타임(조립~포장, 주조~포장)은?", criteria: "FG LOT 조립 착공 → 포장 완공, 연결 하우징 주조 착공 → 포장 완공", nouns: [Lot, OperationStart, OperationEnd], answer: "A100 6.91h / 37.80h, B200 8.42h / 37.25h", kpi: [SC05] }
+  # ---------------- SC03 설비 파라미터 수집 ----------------
+  - { id: Q-SC03-01, sc: SC03, type: 진단, q: "DCM-02 금형온도가 규격 상한(240℃)을 넘은 기간과 최대값은?", criteria: "TraceParameter > USL", nouns: [TraceParameter, EquipmentParameter], answer: "2026-10-02 06:10 ~ 10-06 18:00, 574회, 최대 267.2℃" }
+  - { id: Q-SC03-02, sc: SC03, type: 추적, q: "금형온도 규격 이탈 중에 주조된 하우징 LOT은?", criteria: "이탈 시각이 주조 착공~완공 사이", nouns: [TraceParameter, OperationStart, OperationEnd, Lot], answer: "H261003A1·H261005A1·H261006A1·H261007A1" }
+  - { id: Q-SC03-03, sc: SC03, type: 조회, q: "핵심(A등급) 파라미터와 규격은?", criteria: "ParameterGrade=CRITICAL", nouns: [EquipmentParameter], answer: "금형온도 180~240℃, 사출압력 600~900bar, 누설량 0~2.0cc/min" }
+  - { id: Q-SC03-04, sc: SC03, type: 집계, q: "설비별 파라미터 수집 누락률은?", criteria: "NULL·공백 구간 / 기대 수집 건수", nouns: [TraceParameter, EquipmentParameter] }
+  - { id: Q-SC03-05, sc: SC03, type: 진단, q: "10-10 DCM-03 데이터 공백 구간과 원인은?", criteria: "수집 간격 > 30분, 같은 시각 알람", nouns: [TraceParameter, Alarm], answer: "02:00~06:00, PLC 통신 끊김(A900)" }
+  - { id: Q-SC03-06, sc: SC03, type: 진단, q: "CNC-03 진동이 관리상한(3.5mm/s)을 넘기 시작한 시점과 횟수는?", criteria: "TraceParameter > UCL", nouns: [TraceParameter, EquipmentParameter], answer: "2026-10-14 00:10부터, 71회" }
+  - { id: Q-SC03-07, sc: SC03, type: 진단, q: "LKT-02 누설량의 비정상 스파이크와 원인은?", criteria: "규격의 10배 초과 값", nouns: [TraceParameter], answer: "10-11 09:00~10:00 7건, 단위 오류(×1000)" }
+  - { id: Q-SC03-08, sc: SC03, type: 진단, q: "LOT별 평균 금형온도와 해당 하우징 기공 불량률의 관계는?", criteria: "주조 구간 평균 vs D-PORO 비율", nouns: [TraceParameter, Lot, ProductionPerformanceQuality] }
+  - { id: Q-SC03-09, sc: SC03, type: 집계, q: "다이캐스팅기 4대의 일평균 금형온도 추이는?", criteria: "설비·일자별 평균", nouns: [TraceParameter, Equipment] }
+  - { id: Q-SC03-10, sc: SC03, type: 진단, q: "같은 파라미터인데 단위 표기가 다른 항목은?", criteria: "ParameterUOMCode 표준화", nouns: [EquipmentParameter, UOMGroupLine], answer: "DCM-04 금형온도 'degC', CNC-06 진동 'mm/sec'" }
+  - { id: Q-SC03-11, sc: SC03, type: 집계, q: "관리한계(UCL·LCL) 이탈이 가장 많은 파라미터는?", criteria: "UCL/LCL 이탈 건수", nouns: [TraceParameter, EquipmentParameter] }
+  - { id: Q-SC03-12, sc: SC03, type: 진단, q: "누설량 평균이 높은 날과 누설 불량률은 같이 움직이는가?", criteria: "일별 LEAK_RATE 평균 vs A200 불량률", nouns: [TraceParameter, ProductionPerformanceQuality] }
+  - { id: Q-SC03-13, sc: SC03, type: 집계, q: "세척수 온도가 규격(50~70℃)을 벗어난 건수는?", criteria: "TraceParameter 규격 판정", nouns: [TraceParameter] }
+  - { id: Q-SC03-14, sc: SC03, type: 추적, q: "완제품 LOT E261006A1의 하우징이 주조될 때 금형온도 평균은?", criteria: "LOT 계보 → 주조 구간 → 파라미터 평균", nouns: [Lot, OperationStart, TraceParameter] }
+  - { id: Q-SC03-15, sc: SC03, type: 진단, q: "수집 주기(600초)와 실제 수집 간격이 다른 설비는?", criteria: "연속 수집 간격 분포", nouns: [TraceParameter, EquipmentParameter] }
+  - { id: Q-SC03-16, sc: SC03, type: 추적, q: "체결토크가 규격 하한 미만인 시점과 해당 조립 LOT은?", criteria: "토크 < LSL, 조립 구간 LOT", nouns: [TraceParameter, OperationStart, Lot] }
+  - { id: Q-SC03-17, sc: SC03, type: 집계, q: "다이캐스팅 사이클타임 평균은 표준(라우팅)과 어떻게 다른가?", criteria: "CYCLE_T 평균 vs RunTime", nouns: [TraceParameter, RoutingLine] }
+  - { id: Q-SC03-18, sc: SC03, type: 진단, q: "최근 7일 연속 상승 추세를 보이는 파라미터는?", criteria: "일평균 기울기·런 규칙", nouns: [TraceParameter] }
+  - { id: Q-SC03-19, sc: SC03, type: 집계, q: "규격 이탈 측정값을 검증결과코드로 분류하면 몇 건씩인가?", criteria: "OVER_USL / UNDER_LSL / NO_DATA", nouns: [TraceParameter, CommonCodeMaster] }
+  - { id: Q-SC03-20, sc: SC03, type: 진단, q: "금형온도 이상 전 24시간에 점진 상승 징후가 있었나?", criteria: "이상 시작 전 구간 추세", nouns: [TraceParameter], answer: "징후 없음: 직전 24시간 평균 210℃·최대 225℃(정상), 10-02 06:00에 237℃로 급등 후 계속 상승" }
+  # ---------------- SC04 설비 상태 변경 ----------------
+  - { id: Q-SC04-01, sc: SC04, type: 집계, q: "10월 설비별 가동률(가동시간/계획시간)은?", criteria: "상태 가동 / (전체 - 비가동 계획)", nouns: [EquipmentState, Equipment] }
+  - { id: Q-SC04-02, sc: SC04, type: 집계, q: "고장 건수와 정지시간이 가장 많은 설비는?", criteria: "상태 고장 구간 합", nouns: [EquipmentState, Equipment], answer: "정지시간 DCM-02 4시간 38분(4건). 건수는 WSH-01·CNC-05도 4건" }
+  - { id: Q-SC04-03, sc: SC04, type: 진단, q: "DCM-02 고장의 원인 코드와 정지시간은?", criteria: "고장 구간의 오류코드", nouns: [EquipmentState, Alarm], answer: "E03 온도이상 2건(10-04 1.5h, 10-05 1h10m), E06·E01 각 1건" }
+  - { id: Q-SC04-04, sc: SC04, type: 조회, q: "현재 설비 상태와 미해제 알람은?", criteria: "최신 상태, 해제 일시 없음", nouns: [EquipmentState, Alarm], answer: "미해제 알람: CNC-03 진동 경고(A202, 10-15 14:20)" }
+  - { id: Q-SC04-05, sc: SC04, type: 집계, q: "오류코드별 고장 건수는?", criteria: "EquipmentErrorCode 표준 대응 후 집계", nouns: [EquipmentState, CommonCodeMaster] }
+  - { id: Q-SC04-06, sc: SC04, type: 조회, q: "계획보전 실시 주기와 1회 시간은?", criteria: "상태 보전 구간", nouns: [EquipmentState], answer: "매주 토요일 19:00~21:00(2시간)" }
+  - { id: Q-SC04-07, sc: SC04, type: 진단, q: "고장 직전 30분 안에 발생한 알람 유형은?", criteria: "고장 시작 - 30분 ~ 고장 시작", nouns: [EquipmentState, Alarm] }
+  - { id: Q-SC04-08, sc: SC04, type: 집계, q: "금형온도 상한 초과 알람(A101)의 발생 횟수와 시간대 분포는?", criteria: "알람 코드·시간대별 집계", nouns: [Alarm] }
+  - { id: Q-SC04-09, sc: SC04, type: 집계, q: "설비별 MTBF·MTTR은?", criteria: "가동시간/고장횟수, 고장시간/고장횟수", nouns: [EquipmentState] }
+  - { id: Q-SC04-10, sc: SC04, type: 진단, q: "대기시간이 긴 설비와 대기가 생기는 시간대는?", criteria: "상태 대기 구간", nouns: [EquipmentState] }
+  - { id: Q-SC04-11, sc: SC04, type: 진단, q: "상태 구간이 겹치는 기록은?", criteria: "같은 설비의 구간 교차", nouns: [EquipmentState], answer: "5건: WSH-01 토요일 가동·보전 겹침 4건, CNC-03 10-16 고장·가동 겹침 1건" }
+  - { id: Q-SC04-12, sc: SC04, type: 추적, q: "고장 중에 처리되던 LOT은?", criteria: "고장 구간과 착공~완공 교차", nouns: [EquipmentState, OperationStart, Lot] }
+  - { id: Q-SC04-13, sc: SC04, type: 집계, q: "알람이 가장 많은 공정은?", criteria: "알람 설비의 공정", nouns: [Alarm, Equipment, Operation] }
+  - { id: Q-SC04-14, sc: SC04, type: 집계, q: "제어모드(원격·로컬)별 운전 비율은?", criteria: "EquipmentControlMode 대응", nouns: [EquipmentState] }
+  - { id: Q-SC04-15, sc: SC04, type: 집계, q: "비가동 계획을 뺀 실가동률은?", criteria: "가동 / (전체 - 비가동 계획 - 보전)", nouns: [EquipmentState] }
+  - { id: Q-SC04-16, sc: SC04, type: 추적, q: "CNC-03 진동 상승 이후 공구마모 고장까지 얼마나 걸렸나?", criteria: "진동 UCL 초과 시작 → 고장 E07", nouns: [TraceParameter, EquipmentState], answer: "약 58시간(10-14 00:10 → 10-16 10:15)" }
+  - { id: Q-SC04-17, sc: SC04, type: 집계, q: "중대(H) 알람의 평균 해제 시간은?", criteria: "해제-발생 평균", nouns: [Alarm] }
+  - { id: Q-SC04-18, sc: SC04, type: 진단, q: "셋업 상태 기록이 있는가? 없다면 무엇으로 대신하나?", criteria: "상태 셋업 존재 여부", nouns: [EquipmentState], answer: "셋업(5) 기록 없음 → 원천 공백, 대기로 기록됨" }
+  - { id: Q-SC04-19, sc: SC04, type: 집계, q: "설비 그룹별(DCM·CNC·…) 고장 빈도는?", criteria: "설비 소분류별 고장 건수", nouns: [EquipmentState, Equipment] }
+  - { id: Q-SC04-20, sc: SC04, type: 진단, q: "고장이 잦은 설비가 처리한 LOT의 불량률이 더 높은가?", criteria: "설비별 고장 건수 vs 처리 LOT 불량률", nouns: [EquipmentState, OperationEnd, ProductionPerformanceQuality] }
+  - { id: Q-SC04-21, sc: SC04, type: 집계, q: "10월 설비별 OEE 하위 3대는?", criteria: "시간가동율 × 성능가동율 × 양품율", nouns: [EquipmentState, OperationEnd, RoutingLine], answer: "WSH-01 88.52%(양품율 98.85%), LKT-02 89.08%, DCM-02 89.28% — 공장 전체 96.18%", kpi: [EQ08, EQ02, EQ06, EQ07] }
+  - { id: Q-SC04-22, sc: SC04, type: 집계, q: "10월 DCM-02의 시간가동율·MTBF·MTTR은?", criteria: "상태 구간(고장 3) 기준", nouns: [EquipmentState], answer: "시간가동율 89.62%, MTBF 10.0시간(고장 4건), MTTR 69.5분(E03 2건·E06·E01)", kpi: [EQ06, EQ04, EQ05] }
+  - { id: Q-SC04-23, sc: SC04, type: 진단, q: "성능가동율이 100%를 넘는 설비와 그 의미는?", criteria: "Σ(처리수량 × 표준시간) / 가동시간 > 100%", nouns: [RoutingLine, EquipmentState], answer: "LKT-01 102.72%, CNC-01 100.95%, CNC-04 100.69% — 표준 작업시간이 실제보다 느슨함(기준 재설정 대상)", kpi: [EQ07] }
+  - { id: Q-SC04-24, sc: SC04, type: 집계, q: "10월 LKT-02의 표준 UPM 대비 분당 생산성은?", criteria: "실제 UPM(처리수량 / LOT 처리시간) ÷ 표준 UPM(60/표준초)", nouns: [OperationStart, OperationEnd, RoutingLine], answer: "93.26%(실제 1.60 / 표준 1.71 UPM)", kpi: [EQ01] }
+  - { id: Q-SC04-25, sc: SC04, type: 집계, q: "10월 설비별 작업시간(가동시간) 상위 3대는?", criteria: "상태 1(가동) 시간 합계", nouns: [EquipmentState], answer: "ASM-01 110.9시간, ASM-02 69.7시간, WSH-01 60.8시간", kpi: [EQ03] }
+  # ---------------- SC05 품질 실적 ----------------
+  - { id: Q-SC05-01, sc: SC05, type: 집계, q: "MES 기간(9-21~10-20) 검사 기준 공정별 불량률(PPM)은?", criteria: "검사 실적 불량수량/검사수량 × 10⁶(월별 완공 기준은 KPI QM05)", nouns: [ProductionPerformanceQuality], answer: "세척·외관 11,125, 누설시험 10,991, CNC 4,819, 최종검사 4,693" }
+  - { id: Q-SC05-02, sc: SC05, type: 집계, q: "불량 유형별 수량 순위는?", criteria: "불량유형코드별 합계", nouns: [ProductionPerformanceQuality], answer: "누설 166, 스크래치 126, 치수 74, 이음 63, 기공 26, 버 18, 작동 2" }
+  - { id: Q-SC05-03, sc: SC05, type: 진단, q: "누설 불량이 급증한 날과 영향 LOT은?", criteria: "일별 누설 불량률 > 3% 또는 LOT별 > 5%", nouns: [ProductionPerformanceQuality, Lot], answer: "일별 3% 초과: 10-05·06·07. LOT별 5% 초과: E261003A1·E261005A1·E261006A1·E261007A1" }
+  - { id: Q-SC05-04, sc: SC05, type: 진단, q: "누설 불량 급증의 근본 원인은?", criteria: "LOT 계보 → 주조 설비 → 파라미터 이상 연결", nouns: [ProductionPerformanceQuality, Lot, OperationStart, TraceParameter, Alarm], answer: "DCM-02 금형온도 상승(10-02~06) → 하우징 기공 → 조립 후 누설" }
+  - { id: Q-SC05-05, sc: SC05, type: 추적, q: "기공 불량이 난 하우징 LOT과 주조 설비는?", criteria: "D-PORO 검사 LOT → 주조 착공 설비", nouns: [ProductionPerformanceQuality, Lot, OperationStart], answer: "H261003A1·H261005A1(6EA), H261006A1·H261007A1(7EA), 모두 DCM-02" }
+  - { id: Q-SC05-06, sc: SC05, type: 판단, q: "보류 LOT이 속한 제조오더와 납기 영향은?", criteria: "LOT → 생산지시 → 생산완료기한", nouns: [Lot, ProductionOrder], answer: "MO261003001·05001·06001·07001, 05~07은 긴급 납기 단축 오더" }
+  - { id: Q-SC05-07, sc: SC05, type: 조회, q: "판정이 NG인 검사와 LOT은?", criteria: "검사 판정 NG(불량률 3% 초과)", nouns: [ProductionPerformanceQuality, Lot] }
+  - { id: Q-SC05-08, sc: SC05, type: 집계, q: "품목별(A100·B200) 종합 수율은?", criteria: "포장 양품 / 주조 투입", nouns: [ProductionPerformance, ItemMaster] }
+  - { id: Q-SC05-09, sc: SC05, type: 집계, q: "CNC 공정 치수불량 추이는?", criteria: "P200 D-DIM 일별", nouns: [ProductionPerformanceQuality] }
+  - { id: Q-SC05-10, sc: SC05, type: 진단, q: "표준 불량유형코드로 대응되지 않는 불량 코드는?", criteria: "DefectTypeCode/DetailCode 대응표", nouns: [ProductionPerformanceQuality, CommonCodeMaster], answer: "D-PORO(기공), D-SHORT(미성형) → Extension 후보" }
+  - { id: Q-SC05-11, sc: SC05, type: 집계, q: "일별 불량 PPM 추이는?", criteria: "검사일 기준", nouns: [ProductionPerformanceQuality] }
+  - { id: Q-SC05-12, sc: SC05, type: 집계, q: "불량률 3%를 넘은 검사 건수는?", criteria: "검사별 불량률", nouns: [ProductionPerformanceQuality] }
+  - { id: Q-SC05-13, sc: SC05, type: 집계, q: "검사자별 검사 건수와 불량 검출률은?", criteria: "검사자 기준", nouns: [ProductionPerformanceQuality, Personnel] }
+  - { id: Q-SC05-14, sc: SC05, type: 진단, q: "같은 날 만든 A100 완제품 LOT 두 개의 불량률 차이는 왜 생기나?", criteria: "LOT별 하우징·설비 비교", nouns: [Lot, OperationStart, ProductionPerformanceQuality] }
+  - { id: Q-SC05-15, sc: SC05, type: 집계, q: "최종검사의 이음(소음) 불량 비율은?", criteria: "A300 D-NOISE / 검사수량", nouns: [ProductionPerformanceQuality] }
+  - { id: Q-SC05-16, sc: SC05, type: 추적, q: "하우징 기공 불량이 조립 후 누설로 이어진 비율은?", criteria: "기공 발생 하우징 LOT의 하위 LOT 누설률", nouns: [Lot, ProductionPerformanceQuality] }
+  - { id: Q-SC05-17, sc: SC05, type: 진단, q: "DCM-02에서 주조한 하우징과 다른 설비 하우징의 누설 불량률 비교는?", criteria: "주조 설비별 하위 LOT 누설률", nouns: [Lot, OperationStart, ProductionPerformanceQuality], answer: "DCM-02 1.93% vs 기타 0.68%" }
+  - { id: Q-SC05-18, sc: SC05, type: 진단, q: "B200의 누설 불량률이 A100보다 낮은 이유는?", criteria: "품목별 주조 설비 배분", nouns: [Lot, OperationStart, Equipment], answer: "B200 하우징은 DCM-02에서 주조하지 않음" }
+  - { id: Q-SC05-19, sc: SC05, type: 조회, q: "폐기된 LOT과 수량은?", criteria: "LotState=SCRAP", nouns: [Lot], answer: "H260930B1 200EA(취소 오더)" }
+  - { id: Q-SC05-20, sc: SC05, type: 요약, q: "10월 품질 실적을 공정별 불량률과 주요 원인 3가지로 요약해 줘", criteria: "SC05-01·02·04 종합", nouns: [ProductionPerformanceQuality, Lot, TraceParameter] }
+  - { id: Q-SC05-21, sc: SC05, type: 집계, q: "10월 공정 PPM 상위 3개 공정은?", criteria: "완공 기준 Σ 불량 / Σ 처리수량 × 10⁶", nouns: [OperationEnd, ProductionPerformanceQuality], answer: "A200 13,006, P300 11,550, P200 4,807 PPM", kpi: [QM05] }
+  - { id: Q-SC05-22, sc: SC05, type: 집계, q: "직행률(FPY)은 9월과 10월에 각각 얼마인가?", criteria: "공정 양품율의 곱", nouns: [OperationEnd], answer: "9월 96.96%, 10월 96.32%", kpi: [PR03] }
+  - { id: Q-SC05-23, sc: SC05, type: 집계, q: "10월 공정별 불량금액 1위 공정과 금액은?", criteria: "Σ 폐기수량 × 공정 단계 단위원가", nouns: [ProductionPerformanceQuality, GoodsIssue], answer: "A200(누설시험) 6,110,000원 — 전체 10,350,000원의 59%", kpi: [PR04] }
+  - { id: Q-SC05-24, sc: SC05, type: 집계, q: "10월 불량 유형별 폐기 금액 Top3는?", criteria: "불량유형별 Σ 폐기금액", nouns: [ProductionPerformanceQuality], answer: "D-LEAK 130EA 6,110,000원, D-NOISE 38EA 2,340,000원, D-SCR 73EA 804,200원", kpi: [QM06] }
+  - { id: Q-SC05-25, sc: SC05, type: 추적, q: "10월 누설 불량 폐기 금액이 9월보다 크게 늘어난 원인은?", criteria: "QM06 누설 증가 → LOT 계보 → 주조 설비·파라미터", nouns: [ProductionPerformanceQuality, Lot, TraceParameter], answer: "9월 1,692,000원 → 10월 6,110,000원. DCM-02 금형온도 상승(EV1) → 하우징 기공(EV2) → 조립 후 누설", kpi: [QM06, PR04] }
+  # ---------------- SC06 고객·협력사 품질 ----------------
+  - { id: Q-SC06-01, sc: SC06, type: 집계, q: "9월·10월 고객 부적합 건수는?", criteria: "클레임 발생일 기준 건수", nouns: [Return, AfterSalesServiceRequest, CustomerPartyMaster], answer: "9월 3건(C001·C002·C003 각 1), 10월 4건(C001 2, C002 1, C003 1)", kpi: [QM01] }
+  - { id: Q-SC06-02, sc: SC06, type: 조회, q: "10월 고객 라인 중단 클레임의 고객·LOT·손실금액은?", criteria: "클레임 유형 LS", nouns: [Return, Lot], answer: "CL2610-001 — C001, LOT E261003A1, 누수 6EA, 라인 40분 중단, 15,000,000원", kpi: [QM03] }
+  - { id: Q-SC06-03, sc: SC06, type: 추적, q: "CL2610-001 클레임 LOT의 생산 이력(하우징·주조 설비)은?", criteria: "출하 LOT → LOT 계보 → 주조 착공 설비", nouns: [Lot, OperationStart, ProductRelease], answer: "E261003A1(10-03 조립 ASM-01) ← 하우징 H261003A1(10-02 07:00 DCM-02 주조, 기공) → MES 보류 후 ERP 특채 출하(10-08)", kpi: [QM03, PR02] }
+  - { id: Q-SC06-04, sc: SC06, type: 집계, q: "10월 고객 부적합 일정 준수율과 미준수 건은?", criteria: "회신 기한 도래 건 중 기한 내 회신 비율", nouns: [CorrectiveActionRequest, CorrectiveActionResult], answer: "66.67%(4/6). 미준수: CL2609-002(기한 10-05, 회신 10-07), CL2610-002(기한 10-19, 미회신)", kpi: [QM02] }
+  - { id: Q-SC06-05, sc: SC06, type: 집계, q: "월별 필드 반송 건수는?", criteria: "클레임 유형 FR", nouns: [Return, AfterSalesServiceRequest], answer: "9월 1건(CL2609-002, LOT 미상), 10월 1건(CL2610-003, E261005A2)", kpi: [QM03] }
+  - { id: Q-SC06-06, sc: SC06, type: 진단, q: "LOT 추적이 안 되는 고객 클레임은?", criteria: "클레임 LOT NULL 또는 MES LOT 없음", nouns: [Return, Lot], answer: "CL2609-002(LOT 미기록), CL2609-001(E260915A1 — MES 도입 전 LOT, MES에 없음)", kpi: [QM01] }
+  - { id: Q-SC06-07, sc: SC06, type: 집계, q: "10월 Q-COST와 매출 대비 비율은?", criteria: "Σ P+A+IF+EF / 매출액(출하 × 판매단가)", nouns: [ProductRelease, SalesOrderLine], answer: "44,500,000원, 매출 713,346,000원 대비 6.24%(9월 2.56%)", kpi: [QM04] }
+  - { id: Q-SC06-08, sc: SC06, type: 집계, q: "10월 Q-COST 구성(P·A·IF·EF)은?", criteria: "비용 구분별 합계", nouns: [ProductRelease], answer: "예방 2,000,000 · 평가 14,100,000 · 내부실패 11,700,000 · 외부실패 16,700,000원", kpi: [QM04] }
+  - { id: Q-SC06-09, sc: SC06, type: 판단, q: "10월 Q-COST가 급증한 주된 요인은?", criteria: "비용 구분별 전월 대비 증가", nouns: [Return, Lot], answer: "외부실패 1,570,000 → 16,700,000원. 클레임 16,390,000원 중 CL2610-001 라인 중단 15,000,000원(특채 출하 LOT)", kpi: [QM04, PR05] }
+  - { id: Q-SC06-10, sc: SC06, type: 집계, q: "10월 실패비용(내부·외부) 합계는?", criteria: "IF + EF", nouns: [Return], answer: "28,400,000원(내부 11,700,000, 외부 16,700,000)", kpi: [PR05] }
+  - { id: Q-SC06-11, sc: SC06, type: 집계, q: "10월 불량 손실액은?", criteria: "Σ 폐기금액 + Σ 클레임 금액", nouns: [ProductionPerformanceQuality, Return], answer: "26,740,000원(사내 폐기 10,350,000 + 고객 클레임 16,390,000)", kpi: [QM07] }
+  - { id: Q-SC06-12, sc: SC06, type: 집계, q: "협력업체별 부적합 건수(9월·10월)는?", criteria: "부적합 발생일 기준 건수", nouns: [CorrectiveActionRequest, VendorPartyMaster], answer: "9월 V001 1건·V003 3건, 10월 V003 1건", kpi: [QM08] }
+  - { id: Q-SC06-13, sc: SC06, type: 진단, q: "시정조치(CAR)가 완료되지 않은 협력업체 부적합은?", criteria: "CAR 완료일 NULL", nouns: [CorrectiveActionRequest, CorrectiveActionResult], answer: "NCR2609902(V003 CON-3P 고객 발견), NCR2610003(V003 PCB-EWP24 수입검사)", kpi: [QM08] }
+  - { id: Q-SC06-14, sc: SC06, type: 집계, q: "10월 수입검사 PPM과 LOT 불합격률은?", criteria: "Σ 시료 불량 / Σ 시료 × 10⁶", nouns: [SupplierInspectionResult, GoodsReceipt], answer: "3,942 PPM(6/1,522), LOT 불합격 1/29(3.4%)", kpi: [QM09] }
+  - { id: Q-SC06-15, sc: SC06, type: 조회, q: "10월 수입검사 불합격 LOT과 처리는?", criteria: "판정 R", nouns: [SupplierInspectionResult, GoodsReceipt], answer: "PCB-EWP24(V003, 10-05 입고 980EA) 납땜 불량 5EA → 10-06 오후 대체 납품", kpi: [QM09] }
+  - { id: Q-SC06-16, sc: SC06, type: 추적, q: "PCB-EWP24 수입검사 불합격이 생산에 준 영향은?", criteria: "불합격 → 가용재고 → 착수 점검", nouns: [SupplierInspectionResult, AvailableInventory, ProductionOrder], answer: "MO261006002 착수 점검에서 PCB-EWP24 24EA 부족(10월 자재충족율 94.12%의 원인 중 하나)", kpi: [QM09, SC04] }
+  - { id: Q-SC06-17, sc: SC06, type: 추적, q: "CL2609-003(커넥터 접촉불량) 클레임과 연결되는 협력업체 이력은?", criteria: "고객 불량 → 부품 → 협력업체 부적합·수입검사", nouns: [Return, CorrectiveActionRequest, SupplierInspectionResult], answer: "V003 CON-3P: 9-21 수입검사 특채(S, 외관 2EA) → 9-27 라인 발견 6EA → 9-29 고객 발견 4EA(NCR2609902, CAR 미완료)", kpi: [QM08, QM01] }
+  - { id: Q-SC06-18, sc: SC06, type: 집계, q: "9월 협력업체별 수입검사 PPM 상위는?", criteria: "협력업체별 시료 PPM", nouns: [SupplierInspectionResult], answer: "V001 6,667, V003 5,000, V005 5,000 PPM", kpi: [QM09] }
+  - { id: Q-SC06-19, sc: SC06, type: 판단, q: "협력업체 관리 우선순위 1위와 근거는?", criteria: "부적합 건수·수입검사 PPM·CAR 미완료 종합", nouns: [CorrectiveActionRequest, SupplierInspectionResult, VendorPartyMaster], answer: "V003 하늘전자 — 9~10월 부적합 4건, 10월 수입검사 10,000 PPM, CAR 미완료 2건, 고객 클레임 연결", kpi: [QM08, QM09] }
+  - { id: Q-SC06-20, sc: SC06, type: 진단, q: "클레임·품질비용 데이터는 KS X 9101 표준 명사에 어떻게 대응하나?", criteria: "표준 명사 속성 대응표", nouns: [Return, AfterSalesServiceRequest, CorrectiveActionRequest], answer: "반품(Return)·사후서비스신청에 일부 대응, 클레임 유형·회신 기한·금액은 Extension CustomerComplaint, Q-COST는 Extension QualityCost", kpi: [QM01, QM04] }
+  # ---------------- SC07 PSI·고객서비스 ----------------
+  - { id: Q-SC07-01, sc: SC07, type: 집계, q: "8·9월 수요예측 정확도(전체·고객별)는?", criteria: "(1 − Σ|실수주 − 예측| / Σ 실수주) × 100", nouns: [SalesPlan, SalesOrderLine], answer: "8월 94.45%, 9월 94.51%. C001 96.05/96.47, C002 92.10/91.89, C003 79.17/75.00%", kpi: [SC01] }
+  - { id: Q-SC07-02, sc: SC07, type: 판단, q: "수요예측 정확도가 가장 낮은 고객과 원인은?", criteria: "고객별 정확도·수주 패턴", nouns: [SalesPlan, SalesOrderHeader, CustomerPartyMaster], answer: "C003(보수용 AM) 75~79% — 주 1회 소량·수량 변동", kpi: [SC01] }
+  - { id: Q-SC07-03, sc: SC07, type: 집계, q: "10월(1~20일) 판매계획준수율은?", criteria: "Σ 출하 / (계획 × 경과 영업일/월 영업일)", nouns: [SalesPlan, ProductRelease], answer: "94.05%(C001 93.82, C002 95.75, C003 77.14%)", kpi: [SC02] }
+  - { id: Q-SC07-04, sc: SC07, type: 집계, q: "월별 생산계획준수율은?", criteria: "Σ min(일 입고, 일 계획) / Σ 일 계획", nouns: [ProductionPlanning, ProductIncoming], answer: "8월 93.10%, 9월 94.51%, 10월 89.11%", kpi: [SC03] }
+  - { id: Q-SC07-05, sc: SC07, type: 집계, q: "10월 자재충족율과 결품 제조오더는?", criteria: "착수 점검에서 결품 없는 오더 / 점검 오더", nouns: [AvailableInventory, ProductionOrder], answer: "94.12%(32/34). MO261006002 PCB-EWP24 24EA, MO261012002 MTR-24V 40EA 부족", kpi: [SC04] }
+  - { id: Q-SC07-06, sc: SC07, type: 추적, q: "MO261012002 자재 결품의 원인은?", criteria: "결품 자품목 → 구매발주·입고", nouns: [AvailableInventory, PurchaseOrderLine, GoodsReceipt], answer: "MTR-24V(V002 세진모터) 10-12 분할 납품 — 오전 60EA만 입고, 잔량 오후", kpi: [SC04] }
+  - { id: Q-SC07-07, sc: SC07, type: 집계, q: "10월 재고 보유일수(제품·자재·전체)는?", criteria: "월말 재고금액 / 일평균 출고금액", nouns: [Inventory, GoodsIssue], answer: "제품 1.69일, 자재·반제품 5.65일, 전체 3.59일", kpi: [SC06] }
+  - { id: Q-SC07-08, sc: SC07, type: 집계, q: "10월 재고회전율(연환산)은?", criteria: "연환산 출고금액 / 평균 재고금액", nouns: [Inventory, GoodsIssue], answer: "전체 117.4회(제품 168.7, 자재·반제품 88.3)", kpi: [SC07] }
+  - { id: Q-SC07-09, sc: SC07, type: 집계, q: "9월 재고실사 정확도와 차이 품목은?", criteria: "장부 = 실사 품목 비율, 수량 정확도", nouns: [InventoryCount], answer: "품목 85.71%(18/21), 수량 98.92%. ORG-45 −120, BLT-M5X16 −300, EWP-B200 −4", kpi: [SC08] }
+  - { id: Q-SC07-10, sc: SC07, type: 진단, q: "실사 차이는 언제 어떻게 장부에 반영됐나?", criteria: "실사 후 조정 출고", nouns: [InventoryCount, GoodsIssue], answer: "10-01 조정 출고(ADJ, 비고 '9월 실사 차이 조정') 3건", kpi: [SC08] }
+  - { id: Q-SC07-11, sc: SC07, type: 집계, q: "10-20 기준 장기 체화 재고 비율과 대상은?", criteria: "입고 후 180일 초과 재고금액 / 총 재고금액", nouns: [Inventory, Lot, GoodsReceipt], answer: "6.31%(12,060,000원): EWP-A090 150EA, HSG-A090 300EA(2024-02 입고), PCB-EWP12 격리 LOT V003-250920Q 300EA", kpi: [SC09] }
+  - { id: Q-SC07-12, sc: SC07, type: 판단, q: "장기 체화 재고 처리 우선순위는?", criteria: "금액 기준", nouns: [Inventory, ItemMaster], answer: "EWP-A090 7,350,000원(61%) → HSG-A090 2,760,000원 → PCB-EWP12 1,950,000원", kpi: [SC09] }
+  - { id: Q-SC07-13, sc: SC07, type: 집계, q: "10월 납기이행율과 지연 수주는?", criteria: "요청일까지 전량 출하된 라인 / 요청일 도래 라인", nouns: [SalesOrderLine, ProductRelease, DeliveryLine], answer: "82.35%(28/34). C001 68.75% — SO260926001·0928001·0929001·0930001·1001001 각 1~2일 지연, C003 SO261007003 1일 지연", kpi: [CS01] }
+  - { id: Q-SC07-14, sc: SC07, type: 집계, q: "10월 제품 품절율과 품절일은?", criteria: "영업일 마감 재고 0 이하 비율", nouns: [Inventory], answer: "EWP-A100 37.5%(6/16일: 10-06~10-10, 10-12), EWP-B200 0%", kpi: [CS02] }
+  - { id: Q-SC07-15, sc: SC07, type: 집계, q: "10월 결품율은?", criteria: "Σ 요청일 미출하 수량 / Σ 요청 수량", nouns: [SalesOrderLine, DeliveryLine], answer: "5.70%(496/8,705EA). C001 8.12%, C003 16.47%, C002 0%", kpi: [CS03] }
+  - { id: Q-SC07-16, sc: SC07, type: 추적, q: "10월 6~12일 A100 품절·납기 지연의 근본 원인은?", criteria: "품절 → 생산입고 감소 → 보류 LOT → 품질 원인", nouns: [Inventory, ProductIncoming, Lot, ProductionPerformanceQuality], answer: "보류 LOT 4개(누설, EV2)로 10-03~07 포장 양품 절반 → 제품 재고 소진 → OE 우선 출하로 C003까지 지연", kpi: [CS02, CS01, SC03] }
+  - { id: Q-SC07-17, sc: SC07, type: 판단, q: "보류 LOT E261003A1을 특채 출하한 결정의 결과는?", criteria: "특채 출하 이후 클레임·비용", nouns: [Lot, ProductRelease, Return], answer: "10-08 C001 출하로 납기 1건은 맞췄으나 10-12 라인 중단(15,000,000원)·10-13 누수 9EA 클레임 발생 → 10월 Q-COST 6.24%", kpi: [CS01, QM03, QM04] }
+  - { id: Q-SC07-18, sc: SC07, type: 조회, q: "MES 도입 전(8월) 생산 실적은 어디에서 확인하나?", criteria: "ERP 생산입고 이력", nouns: [ProductIncoming], answer: "ERP 생산입고(src=HIST) — A100 9,670EA, B200 4,854EA", kpi: [PR01] }
+  - { id: Q-SC07-19, sc: SC07, type: 집계, q: "월 매출액(출하 × 판매단가)은?", criteria: "출하일 기준", nouns: [ProductRelease, SalesOrderLine], answer: "8월 1,125,860,000원, 9월 1,127,360,000원, 10월(1~20일) 713,346,000원", kpi: [QM04] }
+  - { id: Q-SC07-20, sc: SC07, type: 진단, q: "PSI KPI 산출에 필요하지만 KS X 9101 Core에 없는 속성은?", criteria: "KPI 산식 속성 vs 표준 속성", nouns: [SalesPlan, SalesOrderLine, Inventory, AvailableInventory], answer: "SalesPlan 계획유형·고객·버전, SalesOrderLine 판매단가, Inventory 기준일·LOT·입고일, AvailableInventory 제조오더·점검일, 표준원가(StandardCost)", kpi: [SC01, SC06, SC09, SC04, QM04] }

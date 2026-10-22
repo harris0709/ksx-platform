@@ -72,3 +72,38 @@ RLS는 S3에서 표준 테이블을 만든 뒤 `SELECT ksx.enable_site_rls('ksx.
 - `.env` 의 키 이름을 그대로 Vault/Kubernetes Secret 에 등록하고 Pod 환경변수로 주입
 - Keycloak: `KC_HTTP_ENABLED` 제거, TLS·hostname 고정, realm 에서 ksx-cli 와 dev-* 사용자 제거
 - Openllet 등 AGPL 컴포넌트는 런타임 이미지에 넣지 않음(안내서 2.1)
+
+## [S1~S3 실습] IMPIX 가상 원천 시스템 (profile: sim / tools)
+
+| 서비스 | 주소 | 내용 |
+|---|---|---|
+| impix-src | localhost:5433 | 레거시 ERP(`impix_erp.erp`)·MES(`impix_mes.mes`)·QMS(`impix_qms.qms`), 분석 계정 `s1_reader`(읽기 전용) |
+| s1-tools | (일회성 실행) | S1 원천 분석 도구 `tools/s1profiler` |
+
+```bash
+../scripts/gen-secrets.sh --add-missing        # 기존 .env 유지, IMPIX_SRC_* 키만 추가
+docker compose --profile sim up -d impix-src
+docker compose --profile tools run --rm s1-tools all --config mapping/impix/s1/s1_config.yaml
+```
+
+기본 `docker compose up -d`에는 포함되지 않습니다(프로필 지정 시에만 기동).
+
+초기화 스크립트(`impix-src/init/`)는 **볼륨이 비어 있을 때 한 번만** 실행됩니다. 스크립트가 바뀌면 볼륨을 지우고 다시 띄웁니다.
+
+```bash
+docker compose --profile sim stop impix-src && docker compose --profile sim rm -f impix-src
+docker volume rm ksx_impix-src-data            # 이름은 docker volume ls | grep impix 로 확인
+docker compose --profile sim up -d impix-src
+```
+
+| 스크립트 | 내용 |
+|---|---|
+| `00-databases.sh` | 분석 계정, DB 3개(impix_erp·impix_mes·impix_qms) |
+| `10·15·20-erp-*` | ERP 기준정보·제조오더 / 영업·구매·재고·원가 테이블 / 기준정보 시드 |
+| `30·40-mes-*` | MES 스키마 / 30일 실적 시드(결정적 생성) |
+| `45-erp-scm-seed.sql` | ERP 영업·구매·재고 데이터(2026-08-01~) — **생성 파일** |
+| `60-qms-schema.sql`, `70-qms-seed.sql` | QMS 스키마 / 클레임·수입검사·부적합·폐기·Q-COST — **시드는 생성 파일** |
+| `90-grants.sql` | `s1_reader` 읽기 권한 |
+
+생성 파일(45·70)은 `tools/sim/gen_impix_ext.py`가 MES 실적을 읽어 만듭니다. 손으로 고치지 말고 생성기를 고친 뒤
+00~40·60만 적재한 DB에서 다시 생성합니다(`python tools/sim/gen_impix_ext.py --host … --port …`).
