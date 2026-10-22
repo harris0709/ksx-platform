@@ -1,0 +1,279 @@
+# =====================================================================
+# ksx-platform  S0 개발 환경 (구현안내서 3.1 절차 2)
+#   PostgreSQL(+AGE) · Kafka · Airflow · Fuseki · Ontop · Qdrant · Keycloak · OPA
+#
+#   실행 위치: infra/docker-compose/
+#   사전 준비: ../scripts/gen-secrets.sh  → .env 생성 (Git 제외)
+#   기동:      docker compose up -d --build
+#   확인:      ../scripts/healthcheck.sh
+#
+#   - 모든 포트는 127.0.0.1에만 바인딩한다(개발 PC 외부 노출 금지).
+#   - 이미지 버전은 착수 시점 최신 안정 버전으로 .env에서 고정한다(안내서 2.1).
+#   - 접속 정보·비밀번호는 .env(비밀 저장소 대용)에서 환경변수로만 주입한다(절차 6).
+# =====================================================================
+name: ksx
+
+x-airflow-env: &airflow-common-env
+  AIRFLOW__CORE__EXECUTOR: LocalExecutor
+  AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+  AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
+  AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:${AIRFLOW_DB_PASSWORD}@postgres:5432/airflow
+  # DAG에서 쓰는 원장 접속은 Airflow Connection 환경변수로만 전달
+  AIRFLOW_CONN_KSX_LEDGER: postgresql://ksx_loader:${KSX_LOADER_PASSWORD}@postgres:5432/ksx
+
+x-airflow-common: &airflow-common
+  image: apache/airflow:${AIRFLOW_VERSION}
+  environment: *airflow-common-env
+  volumes:
+    - ../../dags:/opt/airflow/dags
+    - airflow-logs:/opt/airflow/logs
+  user: "50000:0"
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  # ---------------------------------------------------------------
+  # 표준 원장: PostgreSQL 16 + Apache AGE (S8 속성 그래프용)
+  #   DB: ksx(원장: stg·ksx·ext·audit), airflow, keycloak
+  # ---------------------------------------------------------------
+  postgres:
+    image: apache/age:${AGE_IMAGE_TAG}
+    # AGE 를 서버 전체에 미리 로드하지 않는다(shared_preload_libraries 비움).
+    #  - 미리 로드하면 AGE 확장이 없는 DB(keycloak 등)의 DDL 이 "schema ag_catalog does not exist" 로 실패
+    #  - S8 에서 AGE 를 쓰는 세션은  LOAD 'age'; SET search_path = ag_catalog, "$$user", public;  로 시작
+    command: ["postgres", "-c", "shared_preload_libraries="]
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+      POSTGRES_DB: ksx
+      # init 스크립트가 읽는 서비스 계정 비밀번호
+      KSX_OWNER_PASSWORD: ${KSX_OWNER_PASSWORD}
+      KSX_LOADER_PASSWORD: ${KSX_LOADER_PASSWORD}
+      KSX_READER_PASSWORD: ${KSX_READER_PASSWORD}
+      KSX_BOD_PASSWORD: ${KSX_BOD_PASSWORD}
+      KSX_AUDIT_PASSWORD: ${KSX_AUDIT_PASSWORD}
+      AIRFLOW_DB_PASSWORD: ${AIRFLOW_DB_PASSWORD}
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    ports: ["127.0.0.1:5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ksx"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ---------------------------------------------------------------
+  # Kafka (KRaft 단일 노드) — S3 CDC, S8 pg-sync, S10 BOD 이벤트
+  # ---------------------------------------------------------------
+  kafka-volume-init:                 # 데이터 볼륨 소유자를 kafka 실행 계정(appuser)으로 맞춤
+    image: apache/kafka:${KAFKA_VERSION}
+    user: root
+    entrypoint: ["sh", "-c", "chown -R appuser /var/lib/kafka/data"]
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    restart: "no"
+
+  kafka:
+    image: apache/kafka:${KAFKA_VERSION}
+    depends_on:
+      kafka-volume-init:
+        condition: service_completed_successfully
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,HOST://:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,HOST:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    ports: ["127.0.0.1:29092:29092"]
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  # ---------------------------------------------------------------
+  # Airflow — 적재·물질화·추론·검증 배치
+  # ---------------------------------------------------------------
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate &&
+        airflow users create --role Admin --username "$${AIRFLOW_ADMIN_USER}" \
+          --password "$${AIRFLOW_ADMIN_PASSWORD}" --firstname ksx --lastname admin \
+          --email admin@ksx.local || true
+    environment:
+      <<: *airflow-common-env
+      AIRFLOW_ADMIN_USER: ${AIRFLOW_ADMIN_USER}
+      AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD}
+    restart: "no"
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8974/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    environment:
+      <<: *airflow-common-env
+      AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
+
+  # ---------------------------------------------------------------
+  # Apache Jena Fuseki (TDB2) — 물질화 A-Box, 추론 그래프, Named Graph
+  # ---------------------------------------------------------------
+  fuseki:
+    build:
+      context: ./fuseki
+      args:
+        JENA_VERSION: ${JENA_VERSION}
+    image: ksx/fuseki:${JENA_VERSION}
+    command: ["--config=/fuseki/config.ttl"]
+    volumes:
+      - fuseki-data:/fuseki/databases
+      - ./fuseki/config.ttl:/fuseki/config.ttl:ro
+    ports: ["127.0.0.1:3030:3030"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS 'http://localhost:3030/ksx/query?query=ASK%7B%7D' >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  # ---------------------------------------------------------------
+  # Ontop — 원장 가상 그래프(SPARQL → SQL)
+  #   S0~S3: bootstrap 매핑(audit.healthcheck)으로 기동만 확인
+  #   S4 이후: .env의 ONTOP_*_FILE을 ontologies/ 생성물로 교체
+  # ---------------------------------------------------------------
+  ontop:
+    build:
+      context: ./ontop
+      args:
+        ONTOP_VERSION: ${ONTOP_VERSION}
+        PG_JDBC_VERSION: ${PG_JDBC_VERSION}
+    image: ksx/ontop:${ONTOP_VERSION}
+    environment:
+      ONTOP_ONTOLOGY_FILE: ${ONTOP_ONTOLOGY_FILE}
+      ONTOP_MAPPING_FILE: ${ONTOP_MAPPING_FILE}
+      ONTOP_DB_URL: jdbc:postgresql://postgres:5432/ksx
+      ONTOP_DB_USER: ksx_reader
+      ONTOP_DB_PASSWORD: ${KSX_READER_PASSWORD}
+      ONTOP_DB_DRIVER: org.postgresql.Driver
+      ONTOP_LAZY_INIT: "false"
+    volumes:
+      - ../../ontologies:/opt/onto:ro
+      - ./ontop/bootstrap:/opt/bootstrap:ro
+    ports: ["127.0.0.1:8081:8080"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS 'http://localhost:8080/sparql?query=ASK%7B%3Fs%20%3Fp%20%3Fo%7D' >/dev/null || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 15
+
+  # ---------------------------------------------------------------
+  # Qdrant — 벡터 인덱스(payload에 노드 IRI)
+  # ---------------------------------------------------------------
+  qdrant:
+    image: qdrant/qdrant:${QDRANT_VERSION}
+    environment:
+      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY}
+    volumes:
+      - qdrant-data:/qdrant/storage
+    ports: ["127.0.0.1:6333:6333"]
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  # ---------------------------------------------------------------
+  # Keycloak — OIDC, 클레임 enterpriseId·siteId·plantId·plants·roles
+  # ---------------------------------------------------------------
+  keycloak:
+    image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
+    command: ["start", "--import-realm"]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      KC_DB_SCHEMA: public             # apache/age 이미지의 search_path(ag_catalog 우선) 영향 차단
+      KC_HTTP_ENABLED: "true"          # 개발 전용. 운영은 TLS 종단 + hostname 고정
+      KC_HOSTNAME: http://localhost:8180
+      KC_HEALTH_ENABLED: "true"
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      # realm-ksx.json 의 ${...} 자리표시자로 치환되는 값
+      KSX_MCP_CLIENT_SECRET: ${KSX_MCP_CLIENT_SECRET}
+      KSX_BOD_CLIENT_SECRET: ${KSX_BOD_CLIENT_SECRET}
+      KSX_DEV_USER_PASSWORD: ${KSX_DEV_USER_PASSWORD}
+    volumes:
+      - ./keycloak/realm-ksx.json:/opt/keycloak/data/import/realm-ksx.json:ro
+    ports:
+      - "127.0.0.1:8180:8080"
+      - "127.0.0.1:9000:9000"          # /health/ready
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q '\"UP\"' <&3"]
+      interval: 20s
+      timeout: 10s
+      retries: 15
+
+  # ---------------------------------------------------------------
+  # Open Policy Agent — 사업장 경계 정책(Named Graph·원장 세션)
+  # ---------------------------------------------------------------
+  opa:
+    image: openpolicyagent/opa:${OPA_VERSION}
+    command: ["run", "--server", "--addr=0.0.0.0:8181", "--log-level=info", "/policies"]
+    volumes:
+      - ./opa/policies:/policies:ro
+    ports: ["127.0.0.1:8181:8181"]
+    healthcheck:
+      test: ["CMD", "/opa", "eval", "--fail", "-d", "/policies", "data.ksx.authz.ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pg-data:
+  kafka-data:
+  airflow-logs:
+  fuseki-data:
+  qdrant-data:

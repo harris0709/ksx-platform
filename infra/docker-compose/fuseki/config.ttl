@@ -1,0 +1,25 @@
+# Fuseki 설정 — 데이터셋 /ksx (TDB2)
+#   Named Graph 규칙은 안내서 8.2 (graph:tbox/..., graph:{Ent}/{Site}/{Plant}, graph:inferred/..., graph:bod/...)
+#   기본 그래프는 비워 두고 모든 데이터는 Named Graph로 적재한다.
+PREFIX :        <#>
+PREFIX fuseki:  <http://jena.apache.org/fuseki#>
+PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX ja:      <http://jena.hpl.hp.com/2005/11/Assembler#>
+PREFIX tdb2:    <http://jena.apache.org/2016/tdb#>
+
+[] rdf:type fuseki:Server .
+
+:service rdf:type fuseki:Service ;
+    fuseki:name "ksx" ;
+    fuseki:endpoint [ fuseki:operation fuseki:query ;  fuseki:name "query" ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:query ;  fuseki:name "sparql" ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:update ; fuseki:name "update" ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:gsp-rw ; fuseki:name "data" ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:upload ; fuseki:name "upload" ] ;
+    fuseki:dataset :dataset .
+
+:dataset rdf:type tdb2:DatasetTDB2 ;
+    tdb2:location "/fuseki/databases/ksx" ;
+    # SPARQL에서 FROM 없이 질의하면 모든 Named Graph의 합집합이 보이지 않도록 false 유지
+    # (사업장 격리는 도구가 FROM NAMED 로 강제 — 안내서 15장)
+    tdb2:unionDefaultGraph false .

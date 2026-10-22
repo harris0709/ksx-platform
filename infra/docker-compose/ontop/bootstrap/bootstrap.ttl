@@ -1,0 +1,10 @@
+# S0 부트스트랩 온톨로지 — Ontop 기동 확인용. S4에서 ontologies/tbox/ksx9101_core.ttl 로 교체.
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ksxa: <https://ontology.acme.example/ksx9101/audit/> .
+
+<https://ontology.acme.example/ksx9101/audit> a owl:Ontology ;
+    rdfs:comment "S0 bootstrap (Ontop healthcheck)" .
+
+ksxa:HealthCheck a owl:Class ; rdfs:label "HealthCheck"@en .
+ksxa:checkedAt   a owl:DatatypeProperty ; rdfs:domain ksxa:HealthCheck .

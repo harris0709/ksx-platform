@@ -1,0 +1,639 @@
+{
+  "realm": "ksx",
+  "displayName": "KSX Platform",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "passwordPolicy": "length(12) and notUsername",
+  "roles": {
+    "realm": [
+      {
+        "name": "pm",
+        "description": "PM — 범위·일정·관문 판정"
+      },
+      {
+        "name": "pi-consultant",
+        "description": "도메인(PI) 컨설턴트 — 시나리오·매핑 승인·업무 규칙"
+      },
+      {
+        "name": "data-engineer",
+        "description": "데이터 엔지니어 — 원천 추출·dbt·적재·CDC"
+      },
+      {
+        "name": "ontology-engineer",
+        "description": "온톨로지 엔지니어 — 생성기·매핑·SHACL·추론 규칙"
+      },
+      {
+        "name": "ai-engineer",
+        "description": "AI 엔지니어 — 모델 서빙·MCP 도구·GraphRAG"
+      },
+      {
+        "name": "backend-engineer",
+        "description": "백엔드 엔지니어 — Decision Engine·BOD Gateway"
+      },
+      {
+        "name": "infra-security",
+        "description": "인프라·보안 엔지니어 — 환경·인증·인가·CI"
+      },
+      {
+        "name": "customer-reviewer",
+        "description": "고객사 현업 검수자 — 매핑·코드·규칙·답변 검수"
+      },
+      {
+        "name": "auditor",
+        "description": "감사 — BOD 원장(graph:bod/*) 열람"
+      },
+      {
+        "name": "svc-mcp-tools",
+        "description": "서비스: MCP 도구 서버(읽기 전용)"
+      },
+      {
+        "name": "svc-bod-gateway",
+        "description": "서비스: BOD Gateway(원장 쓰기)"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "protocol": "openid-connect",
+      "enabled": true,
+      "fullScopeAllowed": true,
+      "protocolMappers": [
+        {
+          "name": "enterpriseId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "enterpriseId",
+            "claim.name": "enterpriseId",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "siteId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "siteId",
+            "claim.name": "siteId",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "plantId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "plantId",
+            "claim.name": "plantId",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "plants",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "plantId",
+            "claim.name": "plants",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ],
+      "clientId": "ksx-portal",
+      "name": "KSX 포털(사용자 로그인)",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:*"
+      ],
+      "webOrigins": [
+        "+"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "+"
+      }
+    },
+    {
+      "protocol": "openid-connect",
+      "enabled": true,
+      "fullScopeAllowed": true,
+      "protocolMappers": [
+        {
+          "name": "enterpriseId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "enterpriseId",
+            "claim.name": "enterpriseId",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "siteId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "siteId",
+            "claim.name": "siteId",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "plantId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "plantId",
+            "claim.name": "plantId",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "plants",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "plantId",
+            "claim.name": "plants",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ],
+      "clientId": "ksx-cli",
+      "name": "개발 전용 CLI(비밀번호 grant) — 운영 realm에서 삭제",
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false
+    },
+    {
+      "protocol": "openid-connect",
+      "enabled": true,
+      "fullScopeAllowed": true,
+      "protocolMappers": [
+        {
+          "name": "enterpriseId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "enterpriseId",
+            "claim.name": "enterpriseId",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "siteId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "siteId",
+            "claim.name": "siteId",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "plantId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "plantId",
+            "claim.name": "plantId",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "plants",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "plantId",
+            "claim.name": "plants",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ],
+      "clientId": "ksx-mcp",
+      "name": "MCP 도구 서버",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${KSX_MCP_CLIENT_SECRET}",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true
+    },
+    {
+      "protocol": "openid-connect",
+      "enabled": true,
+      "fullScopeAllowed": true,
+      "protocolMappers": [
+        {
+          "name": "enterpriseId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "enterpriseId",
+            "claim.name": "enterpriseId",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "siteId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "siteId",
+            "claim.name": "siteId",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "plantId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "plantId",
+            "claim.name": "plantId",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "plants",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "plantId",
+            "claim.name": "plants",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ],
+      "clientId": "ksx-bod-gateway",
+      "name": "BOD Gateway",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${KSX_BOD_CLIENT_SECRET}",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true
+    }
+  ],
+  "users": [
+    {
+      "username": "dev-pm",
+      "enabled": true,
+      "email": "dev-pm@ksx.local",
+      "emailVerified": true,
+      "firstName": "PM",
+      "lastName": "개발",
+      "attributes": {
+        "enterpriseId": [
+          "ACME"
+        ],
+        "siteId": [
+          "HQ"
+        ],
+        "plantId": [
+          "P1"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KSX_DEV_USER_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "pm"
+      ]
+    },
+    {
+      "username": "dev-data",
+      "enabled": true,
+      "email": "dev-data@ksx.local",
+      "emailVerified": true,
+      "firstName": "데이터",
+      "lastName": "엔지니어",
+      "attributes": {
+        "enterpriseId": [
+          "ACME"
+        ],
+        "siteId": [
+          "HQ"
+        ],
+        "plantId": [
+          "P1"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KSX_DEV_USER_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "data-engineer"
+      ]
+    },
+    {
+      "username": "dev-onto",
+      "enabled": true,
+      "email": "dev-onto@ksx.local",
+      "emailVerified": true,
+      "firstName": "온톨로지",
+      "lastName": "엔지니어",
+      "attributes": {
+        "enterpriseId": [
+          "ACME"
+        ],
+        "siteId": [
+          "HQ"
+        ],
+        "plantId": [
+          "P1",
+          "P2"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KSX_DEV_USER_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "ontology-engineer"
+      ]
+    },
+    {
+      "username": "dev-reviewer",
+      "enabled": true,
+      "email": "dev-reviewer@ksx.local",
+      "emailVerified": true,
+      "firstName": "현업",
+      "lastName": "검수자",
+      "attributes": {
+        "enterpriseId": [
+          "ACME"
+        ],
+        "siteId": [
+          "HQ"
+        ],
+        "plantId": [
+          "P1"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KSX_DEV_USER_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "customer-reviewer"
+      ]
+    },
+    {
+      "username": "dev-auditor",
+      "enabled": true,
+      "email": "dev-auditor@ksx.local",
+      "emailVerified": true,
+      "firstName": "감사",
+      "lastName": "담당",
+      "attributes": {
+        "enterpriseId": [
+          "ACME"
+        ],
+        "siteId": [
+          "HQ"
+        ],
+        "plantId": [
+          "P1"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KSX_DEV_USER_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "auditor"
+      ]
+    },
+    {
+      "username": "service-account-ksx-mcp",
+      "enabled": true,
+      "serviceAccountClientId": "ksx-mcp",
+      "attributes": {
+        "enterpriseId": [
+          "ACME"
+        ],
+        "siteId": [
+          "HQ"
+        ],
+        "plantId": [
+          "P1"
+        ]
+      },
+      "realmRoles": [
+        "svc-mcp-tools"
+      ]
+    },
+    {
+      "username": "service-account-ksx-bod-gateway",
+      "enabled": true,
+      "serviceAccountClientId": "ksx-bod-gateway",
+      "attributes": {
+        "enterpriseId": [
+          "ACME"
+        ],
+        "siteId": [
+          "HQ"
+        ],
+        "plantId": [
+          "P1"
+        ]
+      },
+      "realmRoles": [
+        "svc-bod-gateway"
+      ]
+    }
+  ],
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "providerId": "declarative-user-profile",
+        "subComponents": {},
+        "config": {
+          "kc.user.profile.config": [
+            "{\"unmanagedAttributePolicy\": \"ADMIN_VIEW\", \"attributes\": [{\"name\": \"username\", \"displayName\": \"${username}\", \"validations\": {\"length\": {\"min\": 3, \"max\": 255}, \"username-prohibited-characters\": {}, \"up-username-not-idn-homograph\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"multivalued\": false}, {\"name\": \"email\", \"displayName\": \"${email}\", \"validations\": {\"email\": {}, \"length\": {\"max\": 255}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"firstName\", \"displayName\": \"${firstName}\", \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"lastName\", \"displayName\": \"${lastName}\", \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"enterpriseId\", \"displayName\": \"회사 ID (EnterpriseID)\", \"validations\": {\"length\": {\"max\": 50}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"multivalued\": false, \"group\": \"tenant\"}, {\"name\": \"siteId\", \"displayName\": \"사업장 ID (SiteID)\", \"validations\": {\"length\": {\"max\": 50}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"multivalued\": false, \"group\": \"tenant\"}, {\"name\": \"plantId\", \"displayName\": \"공장 ID (PlantID, 복수 가능)\", \"validations\": {\"length\": {\"max\": 50}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"multivalued\": true, \"group\": \"tenant\"}], \"groups\": [{\"name\": \"user-metadata\", \"displayHeader\": \"User metadata\", \"displayDescription\": \"Attributes, which refer to user metadata\"}, {\"name\": \"tenant\", \"displayHeader\": \"사업장 경계\", \"displayDescription\": \"토큰 클레임 enterpriseId·siteId·plantId — 사업장 격리 키(안내서 15장)\"}]}"
+          ]
+        }
+      }
+    ]
+  }
+}

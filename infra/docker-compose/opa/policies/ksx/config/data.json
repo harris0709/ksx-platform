@@ -1,0 +1,4 @@
+{
+  "graph_base": "https://data.acme.example/graph/",
+  "auditor_role": "auditor"
+}

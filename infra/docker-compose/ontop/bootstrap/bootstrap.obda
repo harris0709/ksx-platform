@@ -1,0 +1,9 @@
+[PrefixDeclaration]
+ksxa:		https://ontology.acme.example/ksx9101/audit/
+xsd:		http://www.w3.org/2001/XMLSchema#
+
+[MappingDeclaration] @collection [[
+mappingId	healthcheck
+target		<https://data.acme.example/audit/healthcheck/{id}> a ksxa:HealthCheck ; ksxa:checkedAt {checked_at}^^xsd:dateTime .
+source		SELECT id, checked_at FROM audit.healthcheck
+]]
