@@ -116,6 +116,14 @@ def build(cfg_path, repo):
     for i in ext.get("issues", []):
         issues_by_table[i["table"]].append(i)
     qs = sd["questions"]
+    # KPI 정의서(kpi_catalog.yaml)와 산출값(s1_kpi_{ent}.json) — 있으면 시나리오별 KPI 절을 만든다
+    cat_path, kv_path = os.path.join(base, "kpi_catalog.yaml"), os.path.join(base, f"s1_kpi_{ent}.json")
+    kcat = yaml.safe_load(open(cat_path, encoding="utf-8")) if os.path.exists(cat_path) else {"kpis": [], "months": []}
+    kval = {k["id"]: k["values"] for k in json.load(open(kv_path, encoding="utf-8"))["kpis"]} if os.path.exists(kv_path) else {}
+    kpis_by_sc = defaultdict(list)
+    for k in kcat["kpis"]:
+        for sid in k.get("scenarios", []):
+            kpis_by_sc[sid].append(k)
 
     # ---------------- 업무 질의서 xlsx ----------------
     wb = Workbook()
@@ -177,8 +185,11 @@ def build(cfg_path, repo):
     for sid, s in scen.items():
         tabs = [h["table"] for h in hints if sid in h.get("scenarios", [])]
         summ.append((sid, s["name"], sd["scenarios"][sid]["purpose"], len(s["nouns"]), len(tabs),
-                     sum(1 for q in qs if q["sc"] == sid)))
-    _table(doc, ["ID", "시나리오", "목적", "대상 명사", "원천 테이블", "질의"], summ, [1.3, 2.8, 8.5, 1.5, 1.6, 1.3])
+                     len(kpis_by_sc.get(sid, [])), sum(1 for q in qs if q["sc"] == sid)))
+    _table(doc, ["ID", "시나리오", "목적", "대상 명사", "원천 테이블", "KPI", "질의"], summ, [1.3, 2.6, 7.7, 1.5, 1.6, 1.1, 1.2])
+    if kcat["kpis"]:
+        _p(doc, f"KPI는 KPI 정의서(S1_KPI정의서_{ent}.xlsx, {len(kcat['kpis'])}종)의 시나리오 연결을 따른다. "
+                f"한 KPI가 두 시나리오에 걸칠 수 있다(예: 생산계획준수율은 SC02·SC07). 수치 기준 일시 {kcat.get('as_of', '')}.")
 
     for n, (sid, s) in enumerate(scen.items(), 3):
         d = sd["scenarios"][sid]
@@ -187,8 +198,21 @@ def build(cfg_path, repo):
         _h(doc, "업무 흐름", 2)
         for i, step in enumerate(d["flow"], 1):
             _p(doc, f"{i}) {step}")
-        _h(doc, "범위와 KPI", 2)
-        _table(doc, ["항목", "내용"], [("범위", d["scope"]), ("KPI", ", ".join(d["kpi"]))], [3, 14])
+        _h(doc, "범위와 관리지표", 2)
+        sk = kpis_by_sc.get(sid, [])
+        _table(doc, ["항목", "내용"], [("범위", d["scope"]),
+                                      ("KPI(정의서)", ", ".join(f"{k['id']} {k['name']}" for k in sk) or "없음(기준정보·데이터 품질 시나리오)"),
+                                      ("보조 관리지표", ", ".join(d.get("kpi", [])) or "—")], [3, 14])
+        if sk:
+            from .kpi import _fmt, _headline
+            ms = [m for m in kcat["months"] if m >= "2026-09"] or kcat["months"]
+            _h(doc, f"관련 KPI({len(sk)}종)", 2)
+            _table(doc, ["ID", "KPI", "산식", "단위"] + ms,
+                   [(k["id"], k["name"], k["formula"], k["unit"]) +
+                    tuple("" if (v := _fmt(_headline(kval.get(k["id"], []), m, k.get("headline")), k["unit"])) is None
+                          else f"{v:,}" for m in ms) for k in sk],
+                   [1.6, 3.4, 6.5, 1.3] + [2.05] * len(ms))
+            _p(doc, "값은 대표 차원(전체·합계 등) 기준이며 차원별 값은 KPI 정의서 'KPI산출값' 시트에 있다. 빈칸은 원천 기간 밖이거나 해당 없음.", 9)
         _h(doc, "대상 명사와 원천 대응(1차)", 2)
         rows = []
         for noun in s["nouns"] + s.get("ref_nouns", []):

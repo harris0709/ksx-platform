@@ -184,7 +184,7 @@ noun_hints:
   - { table: mes.tb_lot,        meaning: LOT,                nouns: [Lot],                        scenarios: [SC02, SC05], business_key: [lot_no] }
   - { table: mes.tb_lot_link,   meaning: LOT 계보(소비),     nouns: [Lot, ProductionPerformanceItem], scenarios: [SC02], note: "ParentLotID·투입품목" }
   - { table: mes.tb_trk_in,     meaning: 착공(Track-In),     nouns: [OperationStart],             scenarios: [SC02] }
-  - { table: mes.tb_trk_out,    meaning: 완공(Track-Out),    nouns: [OperationEnd],               scenarios: [SC02, SC05] }
+  - { table: mes.tb_trk_out,    meaning: 완공(Track-Out),    nouns: [OperationEnd, ProductionPerformanceEquipment], scenarios: [SC02, SC04, SC05], note: "설비활용실적은 완공(설비별)에서 파생" }
   - { table: mes.tb_eqp_stat,   meaning: 설비 상태 이력,     nouns: [EquipmentState],             scenarios: [SC04] }
   - { table: mes.tb_alarm,      meaning: 설비 알람,          nouns: [Alarm],                      scenarios: [SC04] }
   - { table: mes.tb_param_val,  meaning: 파라미터 수집값,    nouns: [TraceParameter],             scenarios: [SC03] }
@@ -228,8 +228,9 @@ scenarios:
   - id: SC02
     name: 착공·완공
     nouns: [ProductionOrder, Lot, OperationStart, OperationEnd, ProductionPerformance, ProductionPerformanceItem]
-    ref_nouns: [ItemMaster, Operation, Equipment, Personnel, Line, RoutingLine, BOMHeader]
-    gap: "착공·완공 식별자 없음 → trk_in_id 사용. LOT 계보는 tb_lot_link. 생산실적 단위(일 집계 vs 건) 결정 필요"
+    ref_nouns: [ItemMaster, Operation, Equipment, Personnel, Line, RoutingLine, BOMHeader, ProductIncoming, ProductionPlanning,
+                StockerInventory, StandardCost*]
+    gap: "착공·완공 식별자 없음 → trk_in_id 사용. LOT 계보는 tb_lot_link. 생산실적 단위(일 집계 vs 건) 결정 필요. KPI(PR01·PR02·SC03): ERP 생산입고와 MES 완공 대사 필요, 재공(WIP)은 현재 상태만 있어 일별 스냅샷 적재 필요, 재공 금액에 표준원가 Extension 필요"
   - id: SC03
     name: 설비 파라미터 수집
     nouns: [EquipmentParameter, TraceParameter]
@@ -238,13 +239,13 @@ scenarios:
   - id: SC04
     name: 설비 상태 변경
     nouns: [EquipmentState, Alarm]
-    ref_nouns: [Equipment, Lot, Operation]
-    gap: "원천은 구간 이력, 표준은 상태 변경 이벤트 → 시작 시점 이벤트로 변환. 제어·운영 모드 코드 대응 필요"
+    ref_nouns: [Equipment, Lot, Operation, OperationStart, OperationEnd, RoutingLine, ProductionPerformanceEquipment]
+    gap: "원천은 구간 이력, 표준은 상태 변경 이벤트 → 시작 시점 이벤트로 변환. 제어·운영 모드 코드 대응 필요. KPI(EQ01~EQ08): 시간가동율·MTBF·MTTR은 상태 구간을 재구성해 산출, 성능가동율·UPM은 라우팅 표준시간(RoutingLine.RunTime)과 완공 수량으로 산출. 설비별 표준 UPM 없음(공정 표준 사용), 셋업(5) 기록 없음, 대기 사유 없음 → Extension 후보. ProductionPerformanceEquipment는 완공·상태 이력에서 파생"
   - id: SC05
     name: 품질 실적
     nouns: [ProductionPerformanceQuality, ProductionPerformance]
-    ref_nouns: [Lot, OperationEnd, ItemMaster, Operation]
-    gap: "D-PORO(기공) 표준 상세코드 없음 → Extension 후보. 검사 판정(judge) 표준 속성 없음 → Extension 후보"
+    ref_nouns: [Lot, OperationEnd, ItemMaster, Operation, GoodsIssue, StandardCost*]
+    gap: "D-PORO(기공) 표준 상세코드 없음 → Extension 후보. 검사 판정(judge) 표준 속성 없음 → Extension 후보. KPI(PR04·QM06): 불량금액은 QMS 폐기 × 공정 단계 원가로 산출 → 공정 단계 원가(StandardCost) Extension 필요"
   - id: SC06
     name: 고객·협력사 품질
     nouns: [Return, AfterSalesServiceRequest, SupplierInspectionResult, CorrectiveActionRequest, CorrectiveActionResult,
