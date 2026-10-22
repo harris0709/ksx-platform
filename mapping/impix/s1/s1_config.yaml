@@ -195,13 +195,13 @@ noun_hints:
   - { table: erp.tb_sd_cust,      meaning: 고객 마스터,        nouns: [CustomerPartyMaster],        scenarios: [SC06, SC07], business_key: [cust_cd] }
   - { table: erp.tb_mm_vend,      meaning: 협력업체 마스터,    nouns: [VendorPartyMaster],          scenarios: [SC06, SC07], business_key: [vend_cd] }
   - { table: erp.tb_mm_wh,        meaning: 창고,               nouns: [WarehouseLocationHeader],    scenarios: [SC07], business_key: [wh_cd] }
-  - { table: erp.tb_co_std_cost,  meaning: 월 표준원가,        nouns: [StandardCost*],              scenarios: [SC05, SC06, SC07], note: "* Extension 후보(표준 명사 없음)" }
+  - { table: erp.tb_co_std_cost,  meaning: 월 표준원가,        nouns: [StandardCost*],              scenarios: [SC02, SC05, SC06, SC07], note: "* Extension 후보(표준 명사 없음)" }
   - { table: erp.tb_mm_price,     meaning: 구매 단가,          nouns: [BasePrice],                  scenarios: [SC07] }
   - { table: erp.tb_sd_plan,      meaning: 수요예측·판매계획,  nouns: [SalesPlan],                  scenarios: [SC07], note: "계획유형·고객·버전은 Extension" }
   - { table: erp.tb_sd_so_h,      meaning: 수주 헤더,          nouns: [SalesOrderHeader],           scenarios: [SC07], business_key: [so_no] }
   - { table: erp.tb_sd_so_d,      meaning: 수주 상세,          nouns: [SalesOrderLine],             scenarios: [SC07], business_key: [so_no, so_seq] }
   - { table: erp.tb_sd_dlv,       meaning: 출하(납품),         nouns: [ProductRelease, DeliveryLine], scenarios: [SC07, SC06], business_key: [dlv_no] }
-  - { table: erp.tb_pp_plan,      meaning: 일 생산계획,        nouns: [ProductionPlanning],         scenarios: [SC07] }
+  - { table: erp.tb_pp_plan,      meaning: 일 생산계획,        nouns: [ProductionPlanning],         scenarios: [SC07, SC02] }
   - { table: erp.tb_pp_rcpt,      meaning: 생산입고,           nouns: [ProductIncoming],            scenarios: [SC07, SC02], business_key: [rcpt_no] }
   - { table: erp.tb_pp_mat_chk,   meaning: 자재 가용성 점검,   nouns: [AvailableInventory],         scenarios: [SC07] }
   - { table: erp.tb_mm_po_h,      meaning: 구매발주 헤더,      nouns: [PurchaseOrderHeader],        scenarios: [SC07], business_key: [po_no] }
