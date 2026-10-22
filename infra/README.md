@@ -72,3 +72,18 @@ RLS는 S3에서 표준 테이블을 만든 뒤 `SELECT ksx.enable_site_rls('ksx.
 - `.env` 의 키 이름을 그대로 Vault/Kubernetes Secret 에 등록하고 Pod 환경변수로 주입
 - Keycloak: `KC_HTTP_ENABLED` 제거, TLS·hostname 고정, realm 에서 ksx-cli 와 dev-* 사용자 제거
 - Openllet 등 AGPL 컴포넌트는 런타임 이미지에 넣지 않음(안내서 2.1)
+
+## [S1~S3 실습] IMPIX 가상 원천 시스템 (profile: sim / tools)
+
+| 서비스 | 주소 | 내용 |
+|---|---|---|
+| impix-src | localhost:5433 | 레거시 ERP(`impix_erp.erp`)·MES(`impix_mes.mes`), 분석 계정 `s1_reader`(읽기 전용) |
+| s1-tools | (일회성 실행) | S1 원천 분석 도구 `tools/s1profiler` |
+
+```bash
+../scripts/gen-secrets.sh --add-missing        # 기존 .env 유지, IMPIX_SRC_* 키만 추가
+docker compose --profile sim up -d impix-src
+docker compose --profile tools run --rm s1-tools all --config mapping/impix/s1/s1_config.yaml
+```
+
+기본 `docker compose up -d`에는 포함되지 않습니다(프로필 지정 시에만 기동).

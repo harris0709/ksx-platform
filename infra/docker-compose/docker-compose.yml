@@ -271,9 +271,56 @@ services:
       timeout: 5s
       retries: 10
 
+  # ---------------------------------------------------------------
+  # [S1~S3 실습] IMPIX 가상 원천 시스템(레거시 ERP·MES) — profile: sim
+  #   docker compose --profile sim up -d impix-src
+  #   DB: impix_erp(스키마 erp), impix_mes(스키마 mes) / 분석 계정 s1_reader(읽기 전용)
+  # ---------------------------------------------------------------
+  impix-src:
+    profiles: ["sim"]
+    image: apache/age:${AGE_IMAGE_TAG}
+    command: ["postgres", "-c", "shared_preload_libraries="]
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${IMPIX_SRC_ADMIN_PASSWORD}
+      POSTGRES_DB: postgres
+      IMPIX_SRC_READER_PASSWORD: ${IMPIX_SRC_READER_PASSWORD}
+      PGPASSWORD: ${IMPIX_SRC_READER_PASSWORD}        # healthcheck(s1_reader TCP 접속)용
+    volumes:
+      - impix-src-data:/var/lib/postgresql/data
+      - ./impix-src/init:/docker-entrypoint-initdb.d:ro
+    ports: ["127.0.0.1:5433:5432"]
+    healthcheck:
+      # 초기화(시드 생성·권한 부여)가 끝나 s1_reader로 실적 테이블을 읽을 수 있을 때 healthy
+      test: ["CMD-SHELL", "psql -h 127.0.0.1 -U s1_reader -d impix_mes -tAc 'select 1 from mes.tb_prod_rslt limit 1' | grep -q 1"]
+      start_period: 120s
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  # ---------------------------------------------------------------
+  # [S1] 원천 분석 도구(스키마 추출·프로파일·코드·암묵 관계 → 인벤토리) — profile: tools
+  #   docker compose --profile tools run --rm s1-tools all --config mapping/impix/s1/s1_config.yaml
+  # ---------------------------------------------------------------
+  s1-tools:
+    profiles: ["tools"]
+    build: ../../tools/s1profiler
+    image: ksx/s1profiler:0.1
+    working_dir: /repo
+    environment:
+      IMPIX_SRC_HOST: impix-src
+      IMPIX_SRC_PORT: "5432"
+      IMPIX_SRC_READER_PASSWORD: ${IMPIX_SRC_READER_PASSWORD}
+    volumes:
+      - ../..:/repo
+    depends_on:
+      impix-src:
+        condition: service_healthy
+
 volumes:
   pg-data:
   kafka-data:
   airflow-logs:
   fuseki-data:
   qdrant-data:
+  impix-src-data:

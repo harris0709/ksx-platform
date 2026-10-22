@@ -1,0 +1,196 @@
+# =====================================================================
+# S1 원천 분석 설정 — IMPIX (가상 기업, 실습용)
+#   실행: docker compose --profile tools run --rm s1-tools all --config mapping/impix/s1/s1_config.yaml
+#   ${VAR:-기본값} 은 환경변수로 치환된다(비밀번호는 .env 에서 주입).
+# =====================================================================
+enterprise: IMPIX
+site: HQ
+plants: { "1100": P1, "1200": P2, IMP1: P1, IMP2: P2 }   # ERP 플랜트·MES 공장 코드 → 표준 PlantID (S2 codes.csv로 이관)
+output_dir: mapping/impix/s1
+
+sources:
+  - system: ERP
+    owner: ERP 운영 담당(생산관리팀, 가상)
+    schemas: [erp]
+    dsn: { host: "${IMPIX_SRC_HOST:-localhost}", port: "${IMPIX_SRC_PORT:-5433}", dbname: impix_erp,
+           user: s1_reader, password: "${IMPIX_SRC_READER_PASSWORD}" }
+  - system: MES
+    owner: MES 운영 담당(생산기술팀, 가상)
+    schemas: [mes]
+    dsn: { host: "${IMPIX_SRC_HOST:-localhost}", port: "${IMPIX_SRC_PORT:-5433}", dbname: impix_mes,
+           user: s1_reader, password: "${IMPIX_SRC_READER_PASSWORD}" }
+
+profile:
+  top_n: 5               # 컬럼별 상위 값 개수
+  pattern_sample: 5000   # 값 패턴·일시 형식 판정 표본 수
+  daily_cols: []         # 일 증가량 기준 컬럼 지정(없으면 crt_dtm·reg_dt·trk_in_dtm… 순으로 자동 선택)
+
+codes:
+  masters:
+    - { system: ERP, table: erp.tb_cm_code, group: code_grp, code: code, name: code_nm }
+    - { system: MES, table: mes.tm_code,    group: grp_cd,   code: cd,   name: cd_nm }
+  candidate_max_distinct: 30
+  exclude_columns: []
+
+relations:
+  sql_files: [mapping/impix/s1/source/legacy_queries.sql]   # 리포트·인터페이스 SQL(조인 조건 추출)
+  name_match_inclusion: 0.9                                  # 이름 일치 후보의 최소 포함률
+  manual:                                                    # 인터뷰·인터페이스 정의서로 확인한 관계
+    - { child: mes.tb_lot.mo_no,          parent: erp.tb_pp_mo.mo_no,     note: "MES LOT은 ERP 제조오더로 생성(IF-ERP-02)" }
+    - { child: mes.tb_lot.item_cd,        parent: erp.tb_mm_item.item_cd, note: "품목 원장은 ERP. mes.tm_item은 동기화 사본" }
+    - { child: mes.tb_trk_in.oper_emp_no, parent: erp.tb_hr_emp.emp_no,   note: "작업자 ID = ERP 사번(현장 인터뷰)" }
+    - { child: mes.tb_trk_out.oper_emp_no, parent: erp.tb_hr_emp.emp_no,  note: "작업자 ID = ERP 사번" }
+    - { child: mes.tb_qc_insp.insp_emp_no, parent: erp.tb_hr_emp.emp_no,  note: "검사자 ID = ERP 사번" }
+    - { child: mes.tm_eqp.mgr_emp_no,     parent: erp.tb_hr_emp.emp_no,   note: "설비 관리자" }
+    - { child: erp.tb_pp_bom_d.chld_item_cd, parent: erp.tb_mm_item.item_cd, note: "자품목 FK 미선언" }
+    - { child: mes.tb_qc_defect.defect_cd, parent: mes.tm_code.cd, parent_filter: { grp_cd: DEFECT_CD }, note: "불량코드" }
+  non_key:                                                   # 키가 아닌 관계(시간 구간 등)
+    - { child: mes.tb_param_val, parent: mes.tb_trk_in / mes.tb_trk_out, child_system: MES, parent_system: MES,
+        note: "eqp_id 같고 coll_dtm이 착공~완공 사이인 LOT에 연결(시간 구간 조인). lot_no는 다이캐스팅기만 기록" }
+    - { child: mes.tb_eqp_stat, parent: mes.tb_trk_in / mes.tb_trk_out, child_system: MES, parent_system: MES,
+        note: "가동(1) 구간은 착공~완공과 일치. 상태 이력 → 표준 EquipmentState 이벤트로 변환 시 기준" }
+
+checks:
+  unit_aliases: { EA: EA, "개": EA, KG: KG, L: L, DEGC: "℃", "℃": "℃", "MM/S": "MM/S", "MM/SEC": "MM/S" }
+  expect_not_null:
+    erp.tb_pp_mo:    [due_dt]
+    erp.tb_mm_item:  [item_spec, unit, item_tp]
+    erp.tb_hr_emp:   [email]
+    mes.tb_lot:      [lot_qty, mo_no]
+    mes.tb_param_val: [val]
+  custom:
+    - system: MES
+      table: mes.tb_trk_out
+      column: good_qty
+      issue: 완공 수량 불일치(양품+불량 ≠ 착공 투입)
+      severity: 상
+      action: 원천 확인. S3 대사 규칙에서 차이 허용 범위 결정
+      sql: |
+        SELECT o.lot_no, o.proc_cd, i.in_qty, o.good_qty, o.ng_qty
+        FROM mes.tb_trk_out o JOIN mes.tb_trk_in i ON i.trk_in_id = o.trk_in_id
+        WHERE o.good_qty + o.ng_qty <> i.in_qty
+    - system: MES
+      table: mes.tb_trk_out
+      column: trk_out_dtm
+      issue: 완공 일시가 착공 일시보다 빠름
+      severity: 상
+      action: 설비 PC 시각 동기화 확인, 적재 시 위반 표식
+      sql: |
+        SELECT o.lot_no, o.proc_cd, i.trk_in_dtm, o.trk_out_dtm
+        FROM mes.tb_trk_out o JOIN mes.tb_trk_in i ON i.trk_in_id = o.trk_in_id
+        WHERE o.trk_out_dtm < i.trk_in_dtm
+    - system: MES
+      table: mes.tb_eqp_stat
+      column: st_dtm
+      issue: 설비 상태 구간 겹침
+      severity: 중
+      action: 겹침 해소 규칙(나중 이벤트 우선) 정의
+      sql: |
+        SELECT a.eqp_id, a.stat_cd, a.st_dtm, b.stat_cd, b.st_dtm
+        FROM mes.tb_eqp_stat a JOIN mes.tb_eqp_stat b
+          ON a.eqp_id = b.eqp_id AND a.stat_seq < b.stat_seq
+         AND a.st_dtm < coalesce(b.ed_dtm, 'infinity') AND b.st_dtm < coalesce(a.ed_dtm, 'infinity')
+    - system: MES
+      table: mes.tb_param_val
+      column: coll_dtm
+      issue: 파라미터 수집 공백(30분 초과)
+      severity: 중
+      action: 공백 구간은 NO_DATA로 표식(ValidationResultCode)
+      sql: |
+        SELECT param_id, coll_dtm, nx FROM (
+          SELECT param_id, coll_dtm, lead(coll_dtm) OVER (PARTITION BY param_id ORDER BY coll_dtm) nx
+          FROM mes.tb_param_val) s WHERE nx - coll_dtm > interval '30 minutes'
+    - system: MES
+      table: mes.tb_param_val
+      column: val
+      issue: 규격(USL) 10배 초과 값 — 단위 오류 의심
+      severity: 상
+      action: 단위 확인 후 환산 또는 제외
+      sql: |
+        SELECT v.param_id, v.coll_dtm, v.val, p.usl
+        FROM mes.tb_param_val v JOIN mes.tm_param p ON p.param_id = v.param_id
+        WHERE p.usl > 0 AND v.val > p.usl * 10
+    - system: MES
+      table: mes.tb_param_val
+      column: val
+      issue: 규격 이탈 측정값(USL 초과·LSL 미달)
+      severity: 하
+      action: 정상 데이터(공정 이상 신호). S3 검증결과코드 OVER_USL/UNDER_LSL로 변환
+      sql: |
+        SELECT count(*)::int FROM mes.tb_param_val v JOIN mes.tm_param p ON p.param_id = v.param_id
+        WHERE (v.val > p.usl OR v.val < p.lsl) AND v.val <= p.usl * 10
+    - system: MES
+      table: mes.tb_alarm
+      column: clear_dtm
+      issue: 미해제 알람
+      severity: 하
+      action: 현재 알람으로 적재(AlarmState=ALARM)
+      sql: SELECT eqp_id, alm_cd, occur_dtm FROM mes.tb_alarm WHERE clear_dtm IS NULL
+    - system: ERP
+      table: erp.tb_mm_item
+      column: item_cd
+      issue: 시험용 품목 잔존
+      severity: 하
+      action: 제외 사유 기록 후 이관 제외
+      sql: SELECT item_cd, item_nm FROM erp.tb_mm_item WHERE item_cd LIKE 'TEST%'
+
+# 테이블별 1차 추정(분석자 판단) — S2 매핑에서 확정
+noun_hints:
+  - { table: erp.tb_cm_comp,    meaning: 회사,               nouns: [Enterprise],                 scenarios: [SC01] }
+  - { table: erp.tb_cm_bizarea, meaning: 사업장,             nouns: [Site],                       scenarios: [SC01] }
+  - { table: erp.tb_cm_plant,   meaning: 공장(플랜트),       nouns: [Plant],                      scenarios: [SC01] }
+  - { table: erp.tb_cm_dept,    meaning: 부서,               nouns: [Department],                 scenarios: [SC01] }
+  - { table: erp.tb_hr_emp,     meaning: 사원,               nouns: [Personnel],                  scenarios: [SC01, SC02], business_key: [emp_no] }
+  - { table: erp.tb_cm_code,    meaning: ERP 공통코드,       nouns: [CommonCodeMaster, UOMGroupLine], scenarios: [SC01], note: "UNIT 그룹 → 단위그룹" }
+  - { table: erp.tb_mm_item,    meaning: 품목 마스터(원장),  nouns: [ItemMaster],                 scenarios: [SC01, SC02], business_key: [item_cd] }
+  - { table: erp.tb_pp_wc,      meaning: 작업장 = 공정,      nouns: [Operation],                  scenarios: [SC01] }
+  - { table: erp.tb_pp_line,    meaning: 생산라인,           nouns: [Line],                       scenarios: [SC01] }
+  - { table: erp.tb_pp_rout_h,  meaning: 라우팅 헤더,        nouns: [RoutingHeader],              scenarios: [SC01] }
+  - { table: erp.tb_pp_rout_d,  meaning: 라우팅 공정순서,    nouns: [RoutingLine],                scenarios: [SC01] }
+  - { table: erp.tb_pp_bom_h,   meaning: BOM 헤더,           nouns: [BOMHeader],                  scenarios: [SC01] }
+  - { table: erp.tb_pp_bom_d,   meaning: BOM 자품목,         nouns: [BOMLine],                    scenarios: [SC01] }
+  - { table: erp.tb_pp_mo,      meaning: 제조오더(생산지시), nouns: [ProductionOrder],            scenarios: [SC02], business_key: [mo_no, mo_seq] }
+  - { table: mes.tm_factory,    meaning: MES 공장 코드,      nouns: [Plant],                      scenarios: [SC01], scope: "참조(코드 대응)", note: "ERP 플랜트 코드와 대응표로만 사용" }
+  - { table: mes.tm_code,       meaning: MES 코드,           nouns: [CommonCodeMaster],           scenarios: [SC01, SC04, SC05] }
+  - { table: mes.tm_proc,       meaning: MES 공정,           nouns: [Operation],                  scenarios: [SC01, SC02], note: "ERP 작업장(wc_cd)과 1:1 대응(erp_wc_cd)" }
+  - { table: mes.tm_line,       meaning: MES 라인,           nouns: [Line],                       scenarios: [SC01], scope: "참조(코드 대응)" }
+  - { table: mes.tm_eqp,        meaning: 설비 마스터,        nouns: [Equipment, OperationEquipment], scenarios: [SC01, SC03, SC04], business_key: [eqp_id] }
+  - { table: mes.tm_item,       meaning: 품목(ERP 사본),     nouns: [ItemMaster],                 scenarios: [], scope: "제외(ERP 원장 사용)" }
+  - { table: mes.tm_param,      meaning: 설비 파라미터 정의, nouns: [EquipmentParameter],         scenarios: [SC03], business_key: [param_id] }
+  - { table: mes.tb_lot,        meaning: LOT,                nouns: [Lot],                        scenarios: [SC02, SC05], business_key: [lot_no] }
+  - { table: mes.tb_lot_link,   meaning: LOT 계보(소비),     nouns: [Lot, ProductionPerformanceItem], scenarios: [SC02], note: "ParentLotID·투입품목" }
+  - { table: mes.tb_trk_in,     meaning: 착공(Track-In),     nouns: [OperationStart],             scenarios: [SC02] }
+  - { table: mes.tb_trk_out,    meaning: 완공(Track-Out),    nouns: [OperationEnd],               scenarios: [SC02, SC05] }
+  - { table: mes.tb_eqp_stat,   meaning: 설비 상태 이력,     nouns: [EquipmentState],             scenarios: [SC04] }
+  - { table: mes.tb_alarm,      meaning: 설비 알람,          nouns: [Alarm],                      scenarios: [SC04] }
+  - { table: mes.tb_param_val,  meaning: 파라미터 수집값,    nouns: [TraceParameter],             scenarios: [SC03] }
+  - { table: mes.tb_qc_insp,    meaning: 품질검사 실적,      nouns: [ProductionPerformanceQuality], scenarios: [SC05] }
+  - { table: mes.tb_qc_defect,  meaning: 불량 유형별 수량,   nouns: [ProductionPerformanceQuality], scenarios: [SC05] }
+  - { table: mes.tb_prod_rslt,  meaning: 일별 생산실적 집계, nouns: [ProductionPerformance],      scenarios: [SC02, SC05] }
+
+scenarios:
+  - id: SC01
+    name: 생산 기준정보 동기화
+    nouns: [Enterprise, Site, Plant, Line, Department, Personnel, ItemMaster, BOMHeader, BOMLine, RoutingHeader,
+            RoutingLine, Operation, Equipment, OperationEquipment, CommonCodeMaster, UOMGroupHeader, UOMGroupLine]
+    gap: "WorkCalendar 원천 없음(제외 사유 기록). 단위그룹은 ERP UNIT 코드로 구성. OperationEquipment는 tm_eqp.proc_cd에서 파생"
+  - id: SC02
+    name: 착공·완공
+    nouns: [ProductionOrder, Lot, OperationStart, OperationEnd, ProductionPerformance, ProductionPerformanceItem]
+    ref_nouns: [ItemMaster, Operation, Equipment, Personnel, Line, RoutingLine, BOMHeader]
+    gap: "착공·완공 식별자 없음 → trk_in_id 사용. LOT 계보는 tb_lot_link. 생산실적 단위(일 집계 vs 건) 결정 필요"
+  - id: SC03
+    name: 설비 파라미터 수집
+    nouns: [EquipmentParameter, TraceParameter]
+    ref_nouns: [Equipment, Lot]
+    gap: "LOT 연결은 시간 구간 조인. ValidationResultCode는 원천 없음 → LSL/USL로 산출"
+  - id: SC04
+    name: 설비 상태 변경
+    nouns: [EquipmentState, Alarm]
+    ref_nouns: [Equipment, Lot, Operation]
+    gap: "원천은 구간 이력, 표준은 상태 변경 이벤트 → 시작 시점 이벤트로 변환. 제어·운영 모드 코드 대응 필요"
+  - id: SC05
+    name: 품질 실적
+    nouns: [ProductionPerformanceQuality, ProductionPerformance]
+    ref_nouns: [Lot, OperationEnd, ItemMaster, Operation]
+    gap: "D-PORO(기공) 표준 상세코드 없음 → Extension 후보. 검사 판정(judge) 표준 속성 없음 → Extension 후보"

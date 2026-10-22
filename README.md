@@ -37,7 +37,8 @@ KS X 9101 기반 제조 온톨로지 End-to-End 구현 저장소입니다. 구�
 | S6 검증 | 표준 적합성 SHACL(76개 셰이프) | `ontologies/shapes/` |
 | S7 추론 | 규칙 5종(계보·BOM 전개·영향 수주·납기 리스크) + rule-runner | `ontologies/rules/`, `services/rule-runner/` |
 | 시험 | 생성기 회귀, E2E 최소 시험(DDL → 시드 → OBDA → SHACL → 규칙), GitHub Actions CI | `tests/`, `.github/workflows/` |
-| S1~S3, S8~S11 | 양식·설정 예시만 있음(다음 구현 대상) | `mapping/`, `etl/dbt/`, `services/` |
+| S1 원천 분석 | **s1profiler 0.1** — 스키마·프로파일·코드·암묵 관계·품질 → 인벤토리. IMPIX 가상 원천(ERP·MES) | `tools/s1profiler/`, `mapping/impix/s1/`, `infra/docker-compose/impix-src/` |
+| S2~S3, S8~S11 | 양식·설정 예시만 있음(다음 구현 대상) | `mapping/`, `etl/dbt/`, `services/` |
 
 ## 시작하기
 
