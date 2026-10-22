@@ -120,16 +120,25 @@ def build(cfg_path, repo):
     # ---------------- 업무 질의서 xlsx ----------------
     wb = Workbook()
     wb.remove(wb.active)
-    _sheet(wb, "업무질의서", ["ID", "시나리오", "유형", "질문", "판단 기준", "필요 명사", "기대 답(실습 데이터)", "S7 규칙 후보", "S9 평가셋"],
+    _sheet(wb, "업무질의서", ["ID", "시나리오", "유형", "질문", "판단 기준", "필요 명사", "관련 KPI", "기대 답(실습 데이터)",
+                            "S7 규칙 후보", "S9 평가셋"],
            [(q["id"], f"{q['sc']} {scen[q['sc']]['name']}", q["type"], q["q"], q["criteria"], ", ".join(q["nouns"]),
-             q.get("answer", ""), "Y" if q["type"] in ("판단", "진단", "추적") else "", "Y")
-            for q in qs], [11, 18, 6, 44, 34, 30, 44, 8, 7], wrap_cols=(4, 5, 6, 7))
+             ", ".join(q.get("kpi", [])), q.get("answer", ""), "Y" if q["type"] in ("판단", "진단", "추적") else "", "Y")
+            for q in qs], [11, 18, 6, 44, 34, 30, 12, 44, 8, 7], wrap_cols=(4, 5, 6, 8))
     cnt = Counter((q["sc"], q["type"]) for q in qs)
     types = sd.get("types", sorted({q["type"] for q in qs}))
-    _sheet(wb, "시나리오별 집계", ["시나리오"] + types + ["합계", "기대 답 보유"],
+    _sheet(wb, "시나리오별 집계", ["시나리오"] + types + ["합계", "기대 답 보유", "KPI 연결"],
            [[f"{sid} {scen[sid]['name']}"] + [cnt[(sid, t)] for t in types] +
-            [sum(cnt[(sid, t)] for t in types), sum(1 for q in qs if q["sc"] == sid and q.get("answer"))]
-            for sid in scen], [24] + [7] * len(types) + [7, 10])
+            [sum(cnt[(sid, t)] for t in types), sum(1 for q in qs if q["sc"] == sid and q.get("answer")),
+             sum(1 for q in qs if q["sc"] == sid and q.get("kpi"))]
+            for sid in scen], [24] + [7] * len(types) + [7, 10, 9])
+    kq = defaultdict(list)
+    for q in qs:
+        for k in q.get("kpi", []):
+            kq[k].append(q["id"])
+    if kq:
+        _sheet(wb, "KPI별 질의", ["KPI ID", "질의 수", "질의 ID"], [(k, len(v), ", ".join(v)) for k, v in sorted(kq.items())],
+               [9, 8, 80], wrap_cols=(3,))
     _sheet(wb, "명사별 사용", ["명사", "질의 수", "시나리오"],
            sorted(((n, sum(1 for q in qs if n in q["nouns"]),
                     ", ".join(sorted({q["sc"] for q in qs if n in q["nouns"]}))) for n in {n for q in qs for n in q["nouns"]}),
@@ -152,7 +161,7 @@ def build(cfg_path, repo):
     _p(doc, "S1 원천 분석 산출물 · KS X 9101-1:2025 개정(안) v1.0 기준", 11)
     _table(doc, ["항목", "내용"], [
         ("대상 기업", c["name"]), ("작성일", date.today().isoformat()), ("상태", "초안 — 현업 승인 전"),
-        ("관련 산출물", f"S1_원천인벤토리_{ent}.xlsx, S1_업무질의서_{ent}.xlsx, scenarios.yaml"),
+        ("관련 산출물", f"S1_원천인벤토리_{ent}.xlsx, S1_업무질의서_{ent}.xlsx, S1_KPI정의서_{ent}.xlsx, scenarios.yaml"),
         ("완료 기준", c["approval"])], [4, 13])
 
     _h(doc, "1. 기업 개요", 1)
@@ -161,7 +170,9 @@ def build(cfg_path, repo):
         ("공정 흐름", c["flow"]), ("원천 시스템", "\n".join(c["systems"])), ("데이터 기간", c["period"])], [3, 14])
 
     _h(doc, "2. 시나리오 요약", 1)
-    _p(doc, f"1차 대상은 구현안내서 4.1 권장 5종이다. 업무 질의는 시나리오별 20건, 총 {len(qs)}건이다.")
+    _p(doc, f"1차 대상은 구현안내서 4.1 권장 5종에 전사 KPI 산출을 위한 SC06(고객·협력사 품질)·SC07(PSI·고객서비스)을 더한 "
+            f"{len(scen)}종이다. 업무 질의는 총 {len(qs)}건이며 그중 {sum(1 for q in qs if q.get('kpi'))}건은 KPI 정의서"
+            f"(S1_KPI정의서_{ent}.xlsx)의 KPI와 연결된다.")
     summ = []
     for sid, s in scen.items():
         tabs = [h["table"] for h in hints if sid in h.get("scenarios", [])]
@@ -197,10 +208,11 @@ def build(cfg_path, repo):
             _table(doc, ["ID", "심각도", "위치", "이슈", "건수"],
                    [(i["id"], i["severity"], f"{i['table']}.{i['column']}".rstrip("."), i["issue"], i["count"])
                     for i in iss], [1.4, 1.3, 5.3, 7.6, 1.4])
-        _h(doc, "업무 질의(20건)", 2)
-        _table(doc, ["ID", "유형", "질문", "판단 기준"],
-               [(q["id"].replace("Q-", ""), q["type"], q["q"], q["criteria"]) for q in qs if q["sc"] == sid],
-               [2.0, 1.2, 7.8, 6.0])
+        sq = [q for q in qs if q["sc"] == sid]
+        _h(doc, f"업무 질의({len(sq)}건)", 2)
+        _table(doc, ["ID", "유형", "질문", "판단 기준", "KPI"],
+               [(q["id"].replace("Q-", ""), q["type"], q["q"], q["criteria"], ", ".join(q.get("kpi", []))) for q in sq],
+               [1.9, 1.1, 7.2, 5.3, 1.5])
 
     _h(doc, f"{len(scen) + 3}. 승인", 1)
     _p(doc, "S1 완료 기준: 대상 테이블 100% 프로파일, 시나리오별 대상 명사 목록 승인(구현안내서 표 7).")

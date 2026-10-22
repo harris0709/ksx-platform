@@ -19,6 +19,11 @@ sources:
     schemas: [mes]
     dsn: { host: "${IMPIX_SRC_HOST:-localhost}", port: "${IMPIX_SRC_PORT:-5433}", dbname: impix_mes,
            user: s1_reader, password: "${IMPIX_SRC_READER_PASSWORD}" }
+  - system: QMS
+    owner: 품질경영 담당(품질보증팀, 가상)
+    schemas: [qms]
+    dsn: { host: "${IMPIX_SRC_HOST:-localhost}", port: "${IMPIX_SRC_PORT:-5433}", dbname: impix_qms,
+           user: s1_reader, password: "${IMPIX_SRC_READER_PASSWORD}" }
 
 profile:
   top_n: 5               # 컬럼별 상위 값 개수
@@ -29,8 +34,9 @@ codes:
   masters:
     - { system: ERP, table: erp.tb_cm_code, group: code_grp, code: code, name: code_nm }
     - { system: MES, table: mes.tm_code,    group: grp_cd,   code: cd,   name: cd_nm }
+    - { system: QMS, table: qms.qm_code,    group: code_grp, code: code, name: code_nm }
   candidate_max_distinct: 30
-  exclude_columns: []
+  exclude_columns: [erp.tb_co_std_cost.cost_ym, erp.tb_sd_plan.plan_ym, qms.qm_qcost.cost_ym]   # 기간(YYYYMM) 컬럼
 
 relations:
   sql_files: [mapping/impix/s1/source/legacy_queries.sql]   # 리포트·인터페이스 SQL(조인 조건 추출)
@@ -44,6 +50,22 @@ relations:
     - { child: mes.tm_eqp.mgr_emp_no,     parent: erp.tb_hr_emp.emp_no,   note: "설비 관리자" }
     - { child: erp.tb_pp_bom_d.chld_item_cd, parent: erp.tb_mm_item.item_cd, note: "자품목 FK 미선언" }
     - { child: mes.tb_qc_defect.defect_cd, parent: mes.tm_code.cd, parent_filter: { grp_cd: DEFECT_CD }, note: "불량코드" }
+    # --- KPI 확장(ERP 영업·구매·재고, QMS) ---
+    - { child: erp.tb_sd_dlv.lot_no,      parent: mes.tb_lot.lot_no,      note: "출하 LOT = MES 완제품 LOT(MES 도입 전 LOT은 ERP에만 있음)" }
+    - { child: erp.tb_pp_rcpt.mo_no,      parent: erp.tb_pp_mo.mo_no,     note: "MES 실적 인터페이스(IF-MES-03) 생산입고" }
+    - { child: erp.tb_pp_mat_chk.mo_no,   parent: erp.tb_pp_mo.mo_no,     note: "착수 전 자재 가용성 점검 배치" }
+    - { child: erp.tb_pp_mat_chk.comp_cd, parent: erp.tb_mm_item.item_cd, note: "BOM 자품목" }
+    - { child: qms.qm_claim.cust_cd,      parent: erp.tb_sd_cust.cust_cd, note: "고객 마스터는 ERP" }
+    - { child: qms.qm_claim.lot_no,       parent: mes.tb_lot.lot_no,      note: "클레임 LOT 추적(출하 LOT 기준)" }
+    - { child: qms.qm_claim.item_cd,      parent: erp.tb_mm_item.item_cd, note: "품목 원장은 ERP" }
+    - { child: qms.qm_claim.defect_cd,    parent: qms.qm_code.code, parent_filter: { code_grp: CLM_DEF }, note: "고객 불량 코드" }
+    - { child: qms.qm_iqc.gr_no,          parent: erp.tb_mm_gr.gr_no,     note: "수입검사 의뢰 = ERP 입고 건(IF-ERP-QMS-01)" }
+    - { child: qms.qm_iqc.vend_cd,        parent: erp.tb_mm_vend.vend_cd, note: "협력업체 마스터는 ERP" }
+    - { child: qms.qm_vend_ncr.vend_cd,   parent: erp.tb_mm_vend.vend_cd, note: "협력업체 마스터는 ERP" }
+    - { child: qms.qm_vend_ncr.iqc_no,    parent: qms.qm_iqc.iqc_no,      note: "수입검사 발견 부적합(라인·고객 발견분은 없음)" }
+    - { child: qms.qm_scrap.lot_no,       parent: mes.tb_lot.lot_no,      note: "MES 불량 → QMS 폐기 처리(일 배치)" }
+    - { child: qms.qm_scrap.proc_cd,      parent: mes.tm_proc.proc_cd,    note: "공정 코드는 MES" }
+    - { child: qms.qm_scrap.defect_cd,    parent: mes.tm_code.cd, parent_filter: { grp_cd: DEFECT_CD }, note: "MES 불량코드 그대로 사용" }
   non_key:                                                   # 키가 아닌 관계(시간 구간 등)
     - { child: mes.tb_param_val, parent: mes.tb_trk_in / mes.tb_trk_out, child_system: MES, parent_system: MES,
         note: "eqp_id 같고 coll_dtm이 착공~완공 사이인 LOT에 연결(시간 구간 조인). lot_no는 다이캐스팅기만 기록" }
@@ -58,6 +80,8 @@ checks:
     erp.tb_hr_emp:   [email]
     mes.tb_lot:      [lot_qty, mo_no]
     mes.tb_param_val: [val]
+    erp.tb_sd_dlv:   [lot_no]
+    qms.qm_claim:    [lot_no, resp_due_dt]
   custom:
     - system: MES
       table: mes.tb_trk_out
@@ -167,6 +191,33 @@ noun_hints:
   - { table: mes.tb_qc_insp,    meaning: 품질검사 실적,      nouns: [ProductionPerformanceQuality], scenarios: [SC05] }
   - { table: mes.tb_qc_defect,  meaning: 불량 유형별 수량,   nouns: [ProductionPerformanceQuality], scenarios: [SC05] }
   - { table: mes.tb_prod_rslt,  meaning: 일별 생산실적 집계, nouns: [ProductionPerformance],      scenarios: [SC02, SC05] }
+  # --- KPI 확장: ERP 영업·구매·재고·원가 ---
+  - { table: erp.tb_sd_cust,      meaning: 고객 마스터,        nouns: [CustomerPartyMaster],        scenarios: [SC06, SC07], business_key: [cust_cd] }
+  - { table: erp.tb_mm_vend,      meaning: 협력업체 마스터,    nouns: [VendorPartyMaster],          scenarios: [SC06, SC07], business_key: [vend_cd] }
+  - { table: erp.tb_mm_wh,        meaning: 창고,               nouns: [WarehouseLocationHeader],    scenarios: [SC07], business_key: [wh_cd] }
+  - { table: erp.tb_co_std_cost,  meaning: 월 표준원가,        nouns: [StandardCost*],              scenarios: [SC05, SC06, SC07], note: "* Extension 후보(표준 명사 없음)" }
+  - { table: erp.tb_mm_price,     meaning: 구매 단가,          nouns: [BasePrice],                  scenarios: [SC07] }
+  - { table: erp.tb_sd_plan,      meaning: 수요예측·판매계획,  nouns: [SalesPlan],                  scenarios: [SC07], note: "계획유형·고객·버전은 Extension" }
+  - { table: erp.tb_sd_so_h,      meaning: 수주 헤더,          nouns: [SalesOrderHeader],           scenarios: [SC07], business_key: [so_no] }
+  - { table: erp.tb_sd_so_d,      meaning: 수주 상세,          nouns: [SalesOrderLine],             scenarios: [SC07], business_key: [so_no, so_seq] }
+  - { table: erp.tb_sd_dlv,       meaning: 출하(납품),         nouns: [ProductRelease, DeliveryLine], scenarios: [SC07, SC06], business_key: [dlv_no] }
+  - { table: erp.tb_pp_plan,      meaning: 일 생산계획,        nouns: [ProductionPlanning],         scenarios: [SC07] }
+  - { table: erp.tb_pp_rcpt,      meaning: 생산입고,           nouns: [ProductIncoming],            scenarios: [SC07, SC02], business_key: [rcpt_no] }
+  - { table: erp.tb_pp_mat_chk,   meaning: 자재 가용성 점검,   nouns: [AvailableInventory],         scenarios: [SC07] }
+  - { table: erp.tb_mm_po_h,      meaning: 구매발주 헤더,      nouns: [PurchaseOrderHeader],        scenarios: [SC07], business_key: [po_no] }
+  - { table: erp.tb_mm_po_d,      meaning: 구매발주 상세,      nouns: [PurchaseOrderLine],          scenarios: [SC07] }
+  - { table: erp.tb_mm_gr,        meaning: 자재 입고,          nouns: [GoodsReceipt],               scenarios: [SC06, SC07], business_key: [gr_no] }
+  - { table: erp.tb_mm_gi,        meaning: 출고(불출·판매·조정), nouns: [GoodsIssue],               scenarios: [SC07], business_key: [gi_no] }
+  - { table: erp.tb_mm_stock_day, meaning: 일 마감 재고,       nouns: [Inventory],                  scenarios: [SC07], note: "기준일 속성 Extension" }
+  - { table: erp.tb_mm_stock_lot, meaning: LOT별 현재고(입고일), nouns: [Inventory, Lot],           scenarios: [SC07] }
+  - { table: erp.tb_mm_cnt,       meaning: 재고 실사,          nouns: [InventoryCount],             scenarios: [SC07] }
+  # --- KPI 확장: QMS ---
+  - { table: qms.qm_code,         meaning: QMS 코드,           nouns: [CommonCodeMaster],           scenarios: [SC06] }
+  - { table: qms.qm_claim,        meaning: 고객 클레임,        nouns: [Return, AfterSalesServiceRequest, CustomerComplaint*], scenarios: [SC06], business_key: [claim_no], note: "* Extension 후보" }
+  - { table: qms.qm_iqc,          meaning: 수입검사,           nouns: [SupplierInspectionResult],   scenarios: [SC06], business_key: [iqc_no] }
+  - { table: qms.qm_vend_ncr,     meaning: 협력업체 부적합·CAR, nouns: [CorrectiveActionRequest, CorrectiveActionResult], scenarios: [SC06], business_key: [ncr_no] }
+  - { table: qms.qm_scrap,        meaning: 불량 폐기,          nouns: [ProductionPerformanceQuality, GoodsIssue], scenarios: [SC05, SC06], business_key: [scrap_no] }
+  - { table: qms.qm_qcost,        meaning: 품질비용(Q-COST),   nouns: [QualityCost*],               scenarios: [SC06], note: "* Extension 후보" }
 
 scenarios:
   - id: SC01
@@ -194,3 +245,16 @@ scenarios:
     nouns: [ProductionPerformanceQuality, ProductionPerformance]
     ref_nouns: [Lot, OperationEnd, ItemMaster, Operation]
     gap: "D-PORO(기공) 표준 상세코드 없음 → Extension 후보. 검사 판정(judge) 표준 속성 없음 → Extension 후보"
+  - id: SC06
+    name: 고객·협력사 품질
+    nouns: [Return, AfterSalesServiceRequest, SupplierInspectionResult, CorrectiveActionRequest, CorrectiveActionResult,
+            GoodsReceipt, CustomerPartyMaster, VendorPartyMaster]
+    ref_nouns: [Lot, ItemMaster, ProductRelease, ProductionPerformanceQuality, CommonCodeMaster]
+    gap: "고객 클레임·품질비용·표준원가 명사 없음 → Extension CustomerComplaint·QualityCost·StandardCost. 시정조치 명사는 공급사 기준이라 고객 회신 일정은 Extension. 수입검사 불량수량 속성 없음"
+  - id: SC07
+    name: PSI·고객서비스
+    nouns: [SalesPlan, SalesOrderHeader, SalesOrderLine, ProductionPlanning, ProductIncoming, AvailableInventory,
+            PurchaseOrderHeader, PurchaseOrderLine, GoodsReceipt, GoodsIssue, Inventory, InventoryCount, ProductRelease,
+            DeliveryLine, WarehouseLocationHeader, BasePrice]
+    ref_nouns: [ItemMaster, CustomerPartyMaster, VendorPartyMaster, ProductionOrder, Lot, BOMLine]
+    gap: "SalesPlan 계획유형·고객·버전, SalesOrderLine 판매단가, Inventory 기준일·LOT·입고일, AvailableInventory 제조오더 연결은 Extension. WorkCalendar 원천 없음(생성)"

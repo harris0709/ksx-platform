@@ -3,6 +3,7 @@
   python -m s1profiler all --config mapping/impix/s1/s1_config.yaml
   python -m s1profiler check-conn --config ...
   python -m s1profiler scenarios --config ...   # 시나리오 정의서(docx)·업무 질의서(xlsx)
+  python -m s1profiler kpi --config ...         # KPI 정의서(xlsx) — 원천에서 KPI 산출·검증
 
 컨테이너: docker compose --profile tools run --rm s1-tools all --config mapping/impix/s1/s1_config.yaml
 """
@@ -25,9 +26,10 @@ def _load(path):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="s1profiler", description="S1 원천 분석(스키마·프로파일·코드·관계·품질·인벤토리)")
-    ap.add_argument("command", choices=["all", "check-conn", "scenarios"])
+    ap.add_argument("command", choices=["all", "check-conn", "scenarios", "kpi"])
     ap.add_argument("--config", required=True)
     ap.add_argument("--repo", default=os.getcwd(), help="저장소 루트(기본: 현재 폴더)")
+    ap.add_argument("--catalog", help="KPI 카탈로그(기본: <output_dir>/kpi_catalog.yaml)")
     a = ap.parse_args(argv)
     cfg = _load(a.config)
     t0 = time.time()
@@ -35,6 +37,13 @@ def main(argv=None):
         from . import scenario_docs
         for p in scenario_docs.build(a.config, a.repo):
             print(f"[산출물] {os.path.relpath(p, a.repo)}")
+        return 0
+    if a.command == "kpi":
+        from . import kpi
+        cat = a.catalog or os.path.join(a.repo, cfg["output_dir"], "kpi_catalog.yaml")
+        for p in kpi.run(cfg, cat, a.repo):
+            print(f"[산출물] {os.path.relpath(p, a.repo)}")
+        print(f"[완료] {time.time() - t0:.1f}초")
         return 0
 
     conns, tables = {}, []

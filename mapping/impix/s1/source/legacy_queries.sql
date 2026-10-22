@@ -63,3 +63,36 @@ FROM erp.tb_pp_mo m
 JOIN mes.tm_factory f ON f.erp_plant_cd = m.plant_cd
 JOIN mes.tm_line ln ON ln.erp_line_cd = m.line_cd
 WHERE m.mo_stat = '20';
+
+-- [ERP-RPT-11] 납기 준수 현황(영업 주간 보고)
+SELECT h.cust_cd, c.cust_nm, d.so_no, d.so_seq, d.item_cd, d.so_qty, d.req_dlv_dt, v.dlv_dt, v.dlv_qty
+FROM erp.tb_sd_so_d d
+JOIN erp.tb_sd_so_h h ON h.so_no = d.so_no
+JOIN erp.tb_sd_cust c ON c.cust_cd = h.cust_cd
+LEFT JOIN erp.tb_sd_dlv v ON v.so_no = d.so_no AND v.so_seq = d.so_seq
+WHERE h.so_stat <> '90';
+
+-- [ERP-RPT-12] 일 재고 금액(경영 보고)
+SELECT s.stk_dt, s.wh_cd, w.wh_nm, s.item_cd, s.stk_qty, c.std_cost, s.stk_qty * c.std_cost AS amt
+FROM erp.tb_mm_stock_day s
+JOIN erp.tb_mm_wh w ON w.wh_cd = s.wh_cd
+JOIN erp.tb_co_std_cost c ON s.item_cd = c.item_cd AND c.cost_ym = substr(s.stk_dt, 1, 6);
+
+-- [ERP-RPT-13] 구매 입고·수입검사 대기
+SELECT g.gr_no, g.po_no, g.po_seq, p.vend_cd, v.vend_nm, g.item_cd, g.gr_qty, g.iqc_stat
+FROM erp.tb_mm_gr g
+JOIN erp.tb_mm_po_d d ON d.po_no = g.po_no AND d.po_seq = g.po_seq
+JOIN erp.tb_mm_po_h p ON p.po_no = d.po_no
+JOIN erp.tb_mm_vend v ON v.vend_cd = p.vend_cd
+WHERE g.iqc_yn = 'Y';
+
+-- [QMS-RPT-01] 클레임 대책 회신 현황
+SELECT c.claim_no, c.cust_cd, c.claim_tp, t.code_nm, c.defect_cd, d.code_nm, c.resp_due_dt, c.resp_dt
+FROM qms.qm_claim c
+JOIN qms.qm_code t ON t.code_grp = 'CLAIM_TP' AND t.code = c.claim_tp
+LEFT JOIN qms.qm_code d ON d.code_grp = 'CLM_DEF' AND d.code = c.defect_cd;
+
+-- [QMS-RPT-02] 협력업체 부적합(수입검사 연결)
+SELECT n.ncr_no, n.vend_cd, n.item_cd, i.iqc_no, i.judge, i.ng_qty, n.car_due_dt, n.car_cls_dt
+FROM qms.qm_vend_ncr n
+LEFT JOIN qms.qm_iqc i ON i.iqc_no = n.iqc_no;

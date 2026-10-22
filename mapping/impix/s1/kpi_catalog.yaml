@@ -1,0 +1,1126 @@
+# =====================================================================
+# IMPIX 전사 KPI 카탈로그 (S1 — KPI 정의 + 원천 산출 검증)
+#   python -m s1profiler kpi --config mapping/impix/s1/s1_config.yaml
+#   → S1_KPI정의서_IMPIX.xlsx (정의·산출값·일별 추이·명사 매트릭스·공백·산출 SQL), s1_kpi_IMPIX.json
+#
+# 산출 방식(2단계)
+#   1) datasets : 원천 시스템(ERP·MES·QMS)별 추출 SQL(PostgreSQL). 원천 컬럼 그대로 최소 가공만 한다.
+#   2) views    : 추출 결과를 메모리 sqlite에 올린 뒤 만드는 공통 뷰(정규화·시스템 간 조인)
+#   3) kpis[].result : sqlite SQL. 열 = period, dim, value [, num, den, note]
+#      kpis[].daily  : (선택) 일별 추이. 열 = d, dim, value
+#   KPI 결과는 k_<ID> 테이블로도 저장되어 뒤 KPI가 참조할 수 있다(예: OEE = 시간×성능×양품).
+#   SQL 매개변수: :as_of(기준 일시) :as_of_date :as_of_ym
+#   sqlite 확장 함수: d8('YYYYMMDD') → 'YYYY-MM-DD', prod(x) 곱 집계
+# =====================================================================
+enterprise: IMPIX
+as_of: "2026-10-20 17:00"
+calendar: { from: "2026-08-01", to: "2026-10-31", off_weekdays: [7] }   # 일요일 휴무
+months: ["2026-08", "2026-09", "2026-10"]
+period_note: >-
+  ERP 이력은 2026-08-01부터, MES·QMS 실적은 MES 도입일(2026-09-21, 하우징 선행 생산 09-19)부터 있다.
+  2026-10은 기준일(10-20 17:00)까지의 월 누계(MTD)다.
+
+datasets:
+  # ---------------- MES ----------------
+  m_out:
+    system: MES
+    desc: 공정 완공(착공 연결) + LOT 품목
+    sql: |
+      SELECT o.lot_no, l.item_cd, o.proc_cd, o.eqp_id,
+             to_char(to_timestamp(i.trk_in_dtm,'YYYYMMDDHH24MISS'),'YYYY-MM-DD HH24:MI:SS') AS in_ts,
+             to_char(to_timestamp(o.trk_out_dtm,'YYYYMMDDHH24MISS'),'YYYY-MM-DD HH24:MI:SS') AS out_ts,
+             to_char(to_timestamp(o.trk_out_dtm,'YYYYMMDDHH24MISS'),'YYYY-MM-DD') AS d,
+             i.in_qty::float8 AS in_qty, o.good_qty::float8 AS good, o.ng_qty::float8 AS ng,
+             EXTRACT(EPOCH FROM to_timestamp(o.trk_out_dtm,'YYYYMMDDHH24MISS')
+                              - to_timestamp(i.trk_in_dtm,'YYYYMMDDHH24MISS'))::float8 / 60 AS proc_min
+      FROM mes.tb_trk_out o
+      JOIN mes.tb_trk_in i ON i.trk_in_id = o.trk_in_id
+      JOIN mes.tb_lot l ON l.lot_no = o.lot_no
+  m_lot:
+    system: MES
+    desc: LOT 현재 상태(재공 스냅샷)
+    sql: |
+      SELECT lot_no, lot_tp, item_cd, mo_no, cur_qty::float8 AS cur_qty, lot_stat, hold_flag, cur_proc_cd, next_proc_cd,
+             to_char(crt_dtm,'YYYY-MM-DD HH24:MI:SS') AS crt_ts
+      FROM mes.tb_lot
+  m_link:
+    system: MES
+    desc: LOT 계보(하우징 → 조립 LOT)
+    sql: SELECT from_lot_no AS from_lot, to_lot_no AS to_lot, link_qty::float8 AS qty FROM mes.tb_lot_link
+  m_stat_day:
+    system: MES
+    desc: 설비 상태 구간을 일 단위로 자른 분(min). 진행 중 구간은 기준 일시까지
+    sql: |
+      SELECT s.eqp_id, e.proc_cd, s.stat_cd, s.err_cd, to_char(g.d,'YYYY-MM-DD') AS d,
+             EXTRACT(EPOCH FROM LEAST(COALESCE(s.ed_dtm, TIMESTAMP '{as_of}'), g.d + INTERVAL '1 day')
+                              - GREATEST(s.st_dtm, g.d))::float8 / 60 AS min
+      FROM mes.tb_eqp_stat s
+      JOIN mes.tm_eqp e ON e.eqp_id = s.eqp_id
+      CROSS JOIN LATERAL generate_series(date_trunc('day', s.st_dtm),
+                                         COALESCE(s.ed_dtm, TIMESTAMP '{as_of}') - INTERVAL '1 second',
+                                         INTERVAL '1 day') AS g(d)
+      WHERE s.st_dtm < TIMESTAMP '{as_of}'
+  m_fail:
+    system: MES
+    desc: 고장(상태 3) 사건 — 시작일 기준
+    sql: |
+      SELECT s.eqp_id, e.proc_cd, s.err_cd, to_char(s.st_dtm,'YYYY-MM-DD HH24:MI') AS st_ts,
+             to_char(s.st_dtm,'YYYY-MM-DD') AS d,
+             EXTRACT(EPOCH FROM COALESCE(s.ed_dtm, TIMESTAMP '{as_of}') - s.st_dtm)::float8 / 60 AS min
+      FROM mes.tb_eqp_stat s JOIN mes.tm_eqp e ON e.eqp_id = s.eqp_id
+      WHERE s.stat_cd = '3' AND s.st_dtm < TIMESTAMP '{as_of}'
+  m_proc:
+    system: MES
+    sql: SELECT proc_cd, proc_nm, proc_tp, fac_id, erp_wc_cd FROM mes.tm_proc
+  m_eqp:
+    system: MES
+    sql: SELECT eqp_id, eqp_nm, eqp_grp, proc_cd, use_flag FROM mes.tm_eqp
+  m_code:
+    system: MES
+    sql: SELECT grp_cd, cd, cd_nm FROM mes.tm_code
+  # ---------------- ERP ----------------
+  e_rout:
+    system: ERP
+    desc: 품목별 공정(작업장) 표준 작업시간(초/EA) — 표준 UPM = 60 / run_sec
+    sql: |
+      SELECT DISTINCT upper(trim(b.prnt_item_cd)) AS item_cd, d.wc_cd, d.run_sec::float8 AS run_sec
+      FROM erp.tb_pp_bom_h b JOIN erp.tb_pp_rout_d d ON d.rout_cd = b.rout_cd
+  e_cost:
+    system: ERP
+    sql: SELECT item_cd, cost_ym, std_cost::float8 AS std_cost FROM erp.tb_co_std_cost
+  e_cust:
+    system: ERP
+    sql: SELECT cust_cd, cust_nm, cust_grp FROM erp.tb_sd_cust
+  e_vend:
+    system: ERP
+    sql: SELECT vend_cd, vend_nm FROM erp.tb_mm_vend
+  e_splan:
+    system: ERP
+    desc: 수요예측(FCST)·판매계획(PLAN)
+    sql: SELECT plan_ym, plan_tp, plan_ver, cust_cd, item_cd, plan_qty::float8 AS qty FROM erp.tb_sd_plan
+  e_so:
+    system: ERP
+    sql: |
+      SELECT h.so_no, d.so_seq, h.cust_cd, h.so_dt, h.so_tp, h.so_stat, d.item_cd, d.so_qty::float8 AS qty,
+             d.unit_prc::float8 AS unit_prc, d.req_dlv_dt
+      FROM erp.tb_sd_so_h h JOIN erp.tb_sd_so_d d ON d.so_no = h.so_no
+  e_dlv:
+    system: ERP
+    sql: SELECT dlv_no, so_no, so_seq, cust_cd, item_cd, dlv_qty::float8 AS qty, dlv_dt, lot_no FROM erp.tb_sd_dlv
+  e_pplan:
+    system: ERP
+    sql: SELECT plan_dt, line_cd, item_cd, plan_qty::float8 AS qty FROM erp.tb_pp_plan
+  e_rcpt:
+    system: ERP
+    sql: SELECT rcpt_no, rcpt_dt, mo_no, item_cd, rcpt_qty::float8 AS qty, src FROM erp.tb_pp_rcpt
+  e_matchk:
+    system: ERP
+    sql: |
+      SELECT chk_dt, mo_no, comp_cd, req_qty::float8 AS req, avail_qty::float8 AS avail, short_qty::float8 AS short
+      FROM erp.tb_pp_mat_chk
+  e_mo:
+    system: ERP
+    sql: SELECT mo_no, item_cd, mo_qty::float8 AS qty, plan_st_dt, due_dt, mo_stat FROM erp.tb_pp_mo
+  e_gr:
+    system: ERP
+    sql: SELECT gr_no, vend_cd, item_cd, gr_qty::float8 AS qty, gr_dt, iqc_yn, iqc_stat FROM erp.tb_mm_gr
+  e_gi:
+    system: ERP
+    sql: SELECT gi_no, gi_dt, gi_tp, item_cd, gi_qty::float8 AS qty, wh_cd FROM erp.tb_mm_gi
+  e_stk:
+    system: ERP
+    sql: SELECT stk_dt, wh_cd, item_cd, stk_qty::float8 AS qty FROM erp.tb_mm_stock_day
+  e_stklot:
+    system: ERP
+    sql: SELECT wh_cd, item_cd, lot_no, rcv_dt, stk_qty::float8 AS qty FROM erp.tb_mm_stock_lot
+  e_cnt:
+    system: ERP
+    sql: SELECT cnt_no, cnt_dt, wh_cd, item_cd, book_qty::float8 AS book, cnt_qty::float8 AS cnt FROM erp.tb_mm_cnt
+  # ---------------- QMS ----------------
+  q_claim:
+    system: QMS
+    sql: |
+      SELECT claim_no, cust_cd, item_cd, lot_no, claim_tp, occur_dt, rcv_dt, defect_cd, claim_qty::float8 AS qty,
+             resp_due_dt, resp_dt, close_dt, status, claim_amt::float8 AS amt, cause_proc
+      FROM qms.qm_claim
+  q_iqc:
+    system: QMS
+    sql: |
+      SELECT iqc_no, gr_no, vend_cd, item_cd, insp_dt, rcv_qty::float8 AS rcv_qty, smpl_qty::float8 AS smpl_qty,
+             ng_qty::float8 AS ng_qty, judge, defect_cd
+      FROM qms.qm_iqc
+  q_ncr:
+    system: QMS
+    sql: |
+      SELECT ncr_no, vend_cd, item_cd, iqc_no, found_at, occur_dt, ng_qty::float8 AS ng_qty, defect_cd, car_due_dt, car_cls_dt
+      FROM qms.qm_vend_ncr
+  q_scrap:
+    system: QMS
+    sql: |
+      SELECT scrap_no, scrap_dt, plant_cd, proc_cd, item_cd, lot_no, defect_cd, scrap_qty::float8 AS qty,
+             unit_cost::float8 AS unit_cost, scrap_amt::float8 AS amt
+      FROM qms.qm_scrap
+  q_qcost:
+    system: QMS
+    sql: SELECT cost_ym, cost_cls, cost_itm, amount::float8 AS amt FROM qms.qm_qcost
+  q_code:
+    system: QMS
+    sql: SELECT code_grp, code, code_nm FROM qms.qm_code
+
+views:
+  - |
+    CREATE VIEW v_cost AS
+    SELECT item_cd, substr(cost_ym,1,4)||'-'||substr(cost_ym,5,2) AS ym, std_cost FROM e_cost
+  - |
+    CREATE VIEW v_so AS
+    SELECT so_no, so_seq, cust_cd, d8(so_dt) AS so_dt, so_tp, so_stat, item_cd, qty, unit_prc, d8(req_dlv_dt) AS req_dt
+    FROM e_so WHERE so_stat <> '90'
+  - |
+    CREATE VIEW v_dlv AS
+    SELECT dlv_no, so_no, so_seq, cust_cd, item_cd, qty, d8(dlv_dt) AS dlv_dt, lot_no FROM e_dlv
+  - |
+    CREATE VIEW v_soline AS
+    SELECT s.*, COALESCE((SELECT SUM(v.qty) FROM v_dlv v WHERE v.so_no = s.so_no AND v.so_seq = s.so_seq
+                          AND v.dlv_dt <= s.req_dt), 0) AS ship_by_req,
+           (SELECT MAX(v.dlv_dt) FROM v_dlv v WHERE v.so_no = s.so_no AND v.so_seq = s.so_seq) AS last_dlv
+    FROM v_so s
+  - |
+    CREATE VIEW v_eq AS
+    WITH st AS (
+      SELECT eqp_id, substr(d,1,7) AS ym,
+             SUM(CASE WHEN stat_cd='1' THEN min ELSE 0 END) AS run, SUM(CASE WHEN stat_cd='2' THEN min ELSE 0 END) AS idle,
+             SUM(CASE WHEN stat_cd='3' THEN min ELSE 0 END) AS down, SUM(CASE WHEN stat_cd='4' THEN min ELSE 0 END) AS pm,
+             SUM(CASE WHEN stat_cd='5' THEN min ELSE 0 END) AS setup, SUM(CASE WHEN stat_cd='6' THEN min ELSE 0 END) AS off
+      FROM m_stat_day GROUP BY 1, 2),
+    pr AS (
+      SELECT o.eqp_id, substr(o.d,1,7) AS ym, SUM(o.good) AS g, SUM(o.ng) AS n, SUM(o.proc_min) AS proc_min,
+             SUM((o.good + o.ng) * r.run_sec) / 60.0 AS std_min
+      FROM m_out o JOIN m_proc p ON p.proc_cd = o.proc_cd
+      JOIN e_rout r ON r.item_cd = o.item_cd AND r.wc_cd = p.erp_wc_cd
+      GROUP BY 1, 2),
+    fl AS (SELECT eqp_id, substr(d,1,7) AS ym, COUNT(*) AS fails FROM m_fail GROUP BY 1, 2)
+    SELECT st.*, COALESCE(pr.g,0) AS g, COALESCE(pr.n,0) AS n, COALESCE(pr.proc_min,0) AS proc_min,
+           COALESCE(pr.std_min,0) AS std_min, COALESCE(fl.fails,0) AS fails
+    FROM st LEFT JOIN pr USING (eqp_id, ym) LEFT JOIN fl USING (eqp_id, ym)
+    JOIN m_eqp e ON e.eqp_id = st.eqp_id WHERE e.use_flag IN ('Y','1')
+  - |
+    CREATE VIEW v_stk_amt AS
+    SELECT d8(s.stk_dt) AS d, substr(d8(s.stk_dt),1,7) AS ym, s.wh_cd, s.item_cd,
+           CASE WHEN s.wh_cd = 'W300' THEN '제품' ELSE '자재·반제품' END AS cls, s.qty, s.qty * c.std_cost AS amt
+    FROM e_stk s JOIN v_cost c ON c.item_cd = s.item_cd AND c.ym = substr(d8(s.stk_dt),1,7)
+  - |
+    CREATE VIEW v_gi_amt AS
+    SELECT d8(g.gi_dt) AS d, substr(d8(g.gi_dt),1,7) AS ym, g.gi_tp, g.item_cd,
+           CASE WHEN g.wh_cd = 'W300' THEN '제품' ELSE '자재·반제품' END AS cls, g.qty, g.qty * c.std_cost AS amt
+    FROM e_gi g JOIN v_cost c ON c.item_cd = g.item_cd AND c.ym = substr(d8(g.gi_dt),1,7)
+  - |
+    CREATE VIEW v_mdays AS
+    SELECT ym, MIN(d) AS d_fr, MAX(d) AS d_to, COUNT(*) AS cal_days, SUM(is_work) AS work_days,
+           SUM(CASE WHEN d <= :as_of_date THEN 1 ELSE 0 END) AS cal_days_td,
+           SUM(CASE WHEN d <= :as_of_date THEN is_work ELSE 0 END) AS work_days_td
+    FROM cal GROUP BY ym
+
+kpis:
+  # =================================================================
+  # 생산관리 — 생산현황
+  # =================================================================
+  - id: PR01
+    headline: "A400"
+    area: 생산관리
+    group: 생산현황
+    name: 공정별 일/월 생산실적
+    definition: 공정별로 완공 처리된 양품 수량. 일·월 단위로 집계하고 ERP 생산입고(제품)와 대조한다.
+    formula: Σ 완공 양품수량(공정, 기간)
+    unit: EA
+    period: 일/월
+    direction: 계획 대비 100%
+    target: 일 생산계획(A100 400EA, B200 200EA)
+    dims: [공정, 품목, 일자]
+    nouns: [OperationEnd, ProductionPerformance, ProductIncoming]
+    attrs: [OperationEnd.ProducedQuantity, OperationEnd.OperationEndTime, ProductionPerformance.ProducedQuantity, ProductionPerformance.ProductionPerformanceDate]
+    source: MES tb_trk_out·tb_trk_in·tb_lot / ERP tb_pp_rcpt
+    gap: 없음(Core). 8월은 MES 이전이라 ERP 생산입고(HIST)만 있음
+    scenarios: [SC02]
+    num_label: 완공 처리수량(양품+불량)
+    result: |
+      SELECT substr(d,1,7) AS period, proc_cd AS dim, SUM(good) AS value, SUM(good + ng) AS num
+      FROM m_out WHERE d <= :as_of_date GROUP BY 1, 2
+      UNION ALL
+      SELECT substr(d8(rcpt_dt),1,7), 'ERP 생산입고 ' || item_cd, SUM(qty), NULL
+      FROM e_rcpt WHERE d8(rcpt_dt) <= :as_of_date AND item_cd LIKE 'EWP-%' GROUP BY 1, 2
+      ORDER BY 1, 2
+    daily: |
+      SELECT d, proc_cd AS dim, SUM(good) AS value FROM m_out GROUP BY 1, 2 ORDER BY 1, 2
+  - id: PR02
+    headline: "합계"
+    area: 생산관리
+    group: 생산현황
+    name: 재공재고(WIP)
+    definition: 기준 시점에 완료(C)·폐기(S)되지 않은 LOT의 현재 수량과 표준원가 환산 금액. 보류(H) LOT을 따로 보인다.
+    formula: Σ LOT 현재수량(상태 W·R·H) · 금액 = 수량 × 품목 표준원가
+    unit: EA
+    period: 시점(일)
+    direction: 낮을수록 좋음
+    target: 하루 생산량 이내
+    dims: [공정, LOT 상태, 품목]
+    nouns: [Lot, StockerInventory]
+    attrs: [Lot.LotState, Lot.HoldIndicator, Lot.CurrentOperationID, Lot.ProducedQuantity]
+    source: MES tb_lot / ERP tb_co_std_cost
+    gap: "MES는 현재 상태만 보존 → 일별 WIP 추이는 스냅샷 적재 필요(S3 이력 테이블). 표준원가 명사 없음 → Extension StandardCost"
+    scenarios: [SC02]
+    num_label: 재공금액(원)
+    result: |
+      SELECT :as_of_date AS period,
+             COALESCE(l.next_proc_cd, l.cur_proc_cd, '-') || ' 대기 · ' ||
+               CASE l.lot_stat WHEN 'H' THEN '보류' WHEN 'R' THEN '진행' ELSE '대기' END AS dim,
+             SUM(l.cur_qty) AS value, SUM(l.cur_qty * c.std_cost) AS num, NULL AS den,
+             COUNT(*) || ' LOT: ' || group_concat(l.lot_no, ', ') AS note
+      FROM m_lot l LEFT JOIN v_cost c ON c.item_cd = l.item_cd AND c.ym = :as_of_ym
+      WHERE l.lot_stat IN ('W','R','H') GROUP BY 2
+      UNION ALL
+      SELECT :as_of_date, '합계', SUM(l.cur_qty), SUM(l.cur_qty * c.std_cost), NULL, COUNT(*) || ' LOT'
+      FROM m_lot l LEFT JOIN v_cost c ON c.item_cd = l.item_cd AND c.ym = :as_of_ym
+      WHERE l.lot_stat IN ('W','R','H')
+  - id: PR03
+    headline: "FPY(직행률)"
+    area: 생산관리
+    group: 생산현황
+    name: 양품율(공정·직행률)
+    definition: 공정별 완공 처리수량 중 양품 비율. 공정 양품율을 곱한 직행률(FPY)을 함께 본다.
+    formula: Σ 양품 / Σ(양품+불량) × 100, FPY = Π 공정 양품율
+    unit: "%"
+    period: 일/월
+    direction: 높을수록 좋음
+    target: "공정 99.5%, FPY 97%"
+    dims: [공정, 품목]
+    nouns: [OperationEnd, ProductionPerformance, ProductionPerformanceQuality]
+    attrs: [OperationEnd.ProducedQuantity, OperationEnd.DefectQuantity]
+    source: MES tb_trk_out
+    gap: 없음(Core)
+    scenarios: [SC02, SC05]
+    num_label: 양품
+    den_label: 처리수량
+    result: |
+      WITH p AS (SELECT substr(d,1,7) AS period, proc_cd AS dim, 100.0 * SUM(good) / SUM(good + ng) AS value,
+                        SUM(good) AS num, SUM(good + ng) AS den
+                 FROM m_out WHERE d <= :as_of_date GROUP BY 1, 2)
+      SELECT period, dim, value, num, den FROM p
+      UNION ALL
+      SELECT period, 'FPY(직행률)', prod(value / 100.0) * 100, NULL, NULL FROM p GROUP BY period
+      ORDER BY 1, 2
+    daily: |
+      SELECT d, proc_cd AS dim, 100.0 * SUM(good) / SUM(good + ng) AS value FROM m_out GROUP BY 1, 2
+  - id: PR04
+    area: 생산관리
+    group: 생산현황
+    name: 공정별 불량금액
+    definition: 공정에서 발생한 불량(폐기) 수량에 그 공정 단계의 단위원가를 곱한 금액.
+    formula: Σ 폐기수량 × 공정 단계 단위원가
+    unit: 원
+    period: 월
+    direction: 낮을수록 좋음
+    target: 월 200만원 이하
+    dims: [공정, 불량유형, 품목]
+    nouns: [ProductionPerformanceQuality, GoodsIssue]
+    attrs: [ProductionPerformanceQuality.DefectTypeQuantity, ProductionPerformanceQuality.DefectTypeCode, GoodsIssue.InventoryTransactionType]
+    source: QMS qm_scrap (MES 불량 연계)
+    gap: "공정 단계 원가(누적원가) 원천 없음 → Extension StandardCost(ItemID, OperationID, CostPeriod, UnitCost)"
+    scenarios: [SC05]
+    num_label: 폐기수량
+    result: |
+      SELECT substr(d8(scrap_dt),1,7) AS period, proc_cd AS dim, SUM(amt) AS value, SUM(qty) AS num
+      FROM q_scrap GROUP BY 1, 2
+      UNION ALL
+      SELECT substr(d8(scrap_dt),1,7), '합계', SUM(amt), SUM(qty) FROM q_scrap GROUP BY 1
+      ORDER BY 1, 2
+  - id: PR05
+    headline: "실패비용 합계"
+    area: 생산관리
+    group: 생산현황
+    name: 품질 비용(불량 실패비용)
+    definition: Q-COST 중 실패비용. 내부실패(폐기·재작업)와 외부실패(클레임·반품 운송)로 나눈다.
+    formula: Σ 내부실패비용 + Σ 외부실패비용
+    unit: 원
+    period: 월
+    direction: 낮을수록 좋음
+    target: 매출액의 1% 이하
+    dims: [비용 구분, 비용 항목]
+    nouns: [Return]
+    attrs: [Return.ReturnQuantity]
+    source: QMS qm_qcost (qm_scrap·qm_claim 집계)
+    gap: "품질비용 명사 없음 → Extension QualityCost(CostPeriod, CostClass, CostItem, Amount)"
+    scenarios: [SC06]
+    result: |
+      SELECT substr(cost_ym,1,4)||'-'||substr(cost_ym,5,2) AS period,
+             CASE cost_cls WHEN 'IF' THEN '내부실패(IF)' ELSE '외부실패(EF)' END AS dim, SUM(amt) AS value,
+             NULL AS num, NULL AS den, group_concat(cost_itm || ' ' || CAST(CAST(amt AS INTEGER) AS TEXT), ', ') AS note
+      FROM q_qcost WHERE cost_cls IN ('IF','EF') GROUP BY 1, 2
+      UNION ALL
+      SELECT substr(cost_ym,1,4)||'-'||substr(cost_ym,5,2), '실패비용 합계', SUM(amt), NULL, NULL, NULL
+      FROM q_qcost WHERE cost_cls IN ('IF','EF') GROUP BY 1
+      ORDER BY 1, 2
+
+  # =================================================================
+  # 생산관리 — 설비관리현황
+  # =================================================================
+  - id: EQ01
+    area: 생산관리
+    group: 설비관리현황
+    name: 표준 UPM 대비 분당 생산성
+    definition: 설비가 LOT을 처리한 실제 분당 생산수량(UPM)을 라우팅 표준 작업시간으로 구한 표준 UPM과 비교한다.
+    formula: 실제 UPM ÷ 표준 UPM × 100 = Σ(처리수량 × 표준초) / 60 ÷ Σ LOT 처리시간(착공~완공)
+    unit: "%"
+    period: 월
+    direction: 높을수록 좋음
+    target: 95% 이상
+    dims: [설비, 공정]
+    nouns: [OperationStart, OperationEnd, RoutingLine, Equipment]
+    attrs: [RoutingLine.RunTime, OperationStart.OperationStartTime, OperationEnd.OperationEndTime, OperationEnd.ProducedQuantity]
+    source: MES tb_trk_in·tb_trk_out / ERP tb_pp_rout_d (MES tm_proc.erp_wc_cd로 대응)
+    gap: "설비별 표준 UPM 없음 → 공정 표준시간 사용. 설비 고유 사이클(Equipment Extension) 필요 시 추가"
+    scenarios: [SC04]
+    num_label: 실제 UPM
+    den_label: 표준 UPM
+    result: |
+      SELECT ym AS period, eqp_id AS dim, 100.0 * std_min / proc_min AS value,
+             (g + n) / proc_min AS num, (g + n) / std_min AS den
+      FROM v_eq WHERE proc_min > 0
+      UNION ALL
+      SELECT ym, '전체', 100.0 * SUM(std_min) / SUM(proc_min), SUM(g + n) / SUM(proc_min), SUM(g + n) / SUM(std_min)
+      FROM v_eq WHERE proc_min > 0 GROUP BY ym ORDER BY 1, 2
+  - id: EQ02
+    area: 생산관리
+    group: 설비관리현황
+    name: 양품율(설비)
+    definition: 설비별 처리수량 중 양품 비율(OEE 품질 요소).
+    formula: Σ 양품 / Σ(양품+불량) × 100
+    unit: "%"
+    period: 월
+    direction: 높을수록 좋음
+    target: 99.5% 이상
+    dims: [설비]
+    nouns: [OperationEnd, ProductionPerformanceEquipment]
+    attrs: [OperationEnd.EquipmentID, ProductionPerformanceEquipment.ProducedQuantity, ProductionPerformanceEquipment.DefectQuantity]
+    source: MES tb_trk_out
+    gap: 없음(Core)
+    scenarios: [SC04]
+    num_label: 양품
+    den_label: 처리수량
+    result: |
+      SELECT ym AS period, eqp_id AS dim, 100.0 * g / (g + n) AS value, g AS num, g + n AS den
+      FROM v_eq WHERE g + n > 0
+      UNION ALL SELECT ym, '전체', 100.0 * SUM(g) / SUM(g + n), SUM(g), SUM(g + n) FROM v_eq WHERE g + n > 0 GROUP BY ym
+      ORDER BY 1, 2
+  - id: EQ03
+    area: 생산관리
+    group: 설비관리현황
+    name: 작업시간
+    definition: 설비가 가동(상태 1) 상태였던 시간. 셋업·고장·대기·보전·계획 비가동은 제외한다.
+    formula: Σ 가동 상태 시간(시간)
+    unit: 시간
+    period: 일/월
+    direction: 계획 대비
+    target: 부하시간의 90% 이상
+    dims: [설비]
+    nouns: [EquipmentState, ProductionPerformanceEquipment]
+    attrs: [EquipmentState.EquipmentState, ProductionPerformanceEquipment.RunTime, ProductionPerformanceEquipment.SetupTime]
+    source: MES tb_eqp_stat
+    gap: "표준 EquipmentState는 상태 변경 이벤트(시작 시각만) → 구간(시작~종료)으로 재구성 필요"
+    scenarios: [SC04]
+    num_label: 고장(분)
+    den_label: 대기(분)
+    result: |
+      SELECT ym AS period, eqp_id AS dim, run / 60.0 AS value, down AS num, idle AS den,
+             printf('가동 %.0f · 셋업 %.0f · 고장 %.0f · 보전 %.0f · 대기 %.0f · 계획비가동 %.0f (분)', run, setup, down, pm, idle, off) AS note
+      FROM v_eq
+      UNION ALL SELECT ym, '전체', SUM(run) / 60.0, SUM(down), SUM(idle), COUNT(*) || '대 합계' FROM v_eq GROUP BY ym
+      ORDER BY 1, 2
+    daily: |
+      SELECT d, eqp_id AS dim, SUM(CASE WHEN stat_cd='1' THEN min ELSE 0 END) / 60.0 AS value
+      FROM m_stat_day GROUP BY 1, 2
+  - id: EQ04
+    area: 생산관리
+    group: 설비관리현황
+    name: 비가동 — MTBF(평균 고장 간격)
+    definition: 가동시간을 고장 건수로 나눈 평균 고장 간격. 고장이 없으면 값 없음(∞).
+    formula: Σ 가동시간(시간) / 고장 건수
+    unit: 시간
+    period: 월
+    direction: 높을수록 좋음
+    target: 200시간 이상
+    dims: [설비]
+    nouns: [EquipmentState, Alarm]
+    attrs: [EquipmentState.EquipmentState, EquipmentState.ErrorCode]
+    source: MES tb_eqp_stat(상태 3=고장)
+    gap: 상태 구간 재구성(EQ03과 동일)
+    scenarios: [SC04]
+    num_label: 가동시간(시간)
+    den_label: 고장 건수
+    result: |
+      SELECT ym AS period, eqp_id AS dim, CASE WHEN fails > 0 THEN run / 60.0 / fails END AS value,
+             run / 60.0 AS num, fails AS den, CASE WHEN fails = 0 THEN '고장 0건' END AS note
+      FROM v_eq
+      UNION ALL SELECT ym, '전체', CASE WHEN SUM(fails) > 0 THEN SUM(run) / 60.0 / SUM(fails) END, SUM(run) / 60.0, SUM(fails), '설비 평균'
+      FROM v_eq GROUP BY ym
+      ORDER BY 1, 2
+  - id: EQ05
+    area: 생산관리
+    group: 설비관리현황
+    name: 비가동 — MTTR(평균 수리 시간)
+    definition: 고장 1건당 평균 수리(정지) 시간.
+    formula: Σ 고장시간(분) / 고장 건수
+    unit: 분
+    period: 월
+    direction: 낮을수록 좋음
+    target: 60분 이하
+    dims: [설비, 오류코드]
+    nouns: [EquipmentState]
+    attrs: [EquipmentState.EquipmentState, EquipmentState.ErrorCode]
+    source: MES tb_eqp_stat(상태 3=고장)
+    gap: 상태 구간 재구성(EQ03과 동일)
+    scenarios: [SC04]
+    num_label: 고장시간(분)
+    den_label: 고장 건수
+    result: |
+      SELECT substr(d,1,7) AS period, eqp_id AS dim, SUM(min) / COUNT(*) AS value, SUM(min) AS num, COUNT(*) AS den,
+             group_concat(err_cd || '@' || st_ts, ', ') AS note
+      FROM m_fail GROUP BY 1, 2
+      UNION ALL SELECT substr(d,1,7), '전체', SUM(min) / COUNT(*), SUM(min), COUNT(*), NULL FROM m_fail GROUP BY 1
+      ORDER BY 1, 2
+  - id: EQ06
+    area: 생산관리
+    group: 설비관리현황
+    name: 시간가동율
+    definition: 부하시간(가동+정지손실) 중 실제 가동시간 비율. 정지손실 = 고장 + 셋업. 대기(작업 없음)·계획보전·계획 비가동은 부하시간에서 뺀다.
+    formula: 가동시간 / (가동시간 + 고장시간 + 셋업시간) × 100
+    unit: "%"
+    period: 월
+    direction: 높을수록 좋음
+    target: 90% 이상
+    dims: [설비]
+    nouns: [EquipmentState]
+    attrs: [EquipmentState.EquipmentState]
+    source: MES tb_eqp_stat
+    gap: "대기(2) 사유 구분 없음 — 자재부족(E06) 대기는 손실로 분리하려면 대기 사유 Extension 필요"
+    scenarios: [SC04]
+    num_label: 가동(분)
+    den_label: 부하(분)
+    result: |
+      SELECT ym AS period, eqp_id AS dim, 100.0 * run / (run + down + setup) AS value, run AS num, run + down + setup AS den
+      FROM v_eq WHERE run + down + setup > 0
+      UNION ALL SELECT ym, '전체', 100.0 * SUM(run) / SUM(run + down + setup), SUM(run), SUM(run + down + setup) FROM v_eq GROUP BY ym
+      ORDER BY 1, 2
+  - id: EQ07
+    area: 생산관리
+    group: 설비관리현황
+    name: 성능가동율
+    definition: 가동시간 동안 표준 속도로 만들 수 있는 양 대비 실제로 처리한 양(표준시간 환산). 100% 초과는 표준 작업시간이 실제보다 느슨하다는 뜻(기준 재설정 대상).
+    formula: Σ(처리수량 × 표준 작업시간) / 가동시간 × 100
+    unit: "%"
+    period: 월
+    direction: 높을수록 좋음
+    target: 95% 이상
+    dims: [설비]
+    nouns: [EquipmentState, OperationEnd, RoutingLine]
+    attrs: [RoutingLine.RunTime, OperationEnd.ProducedQuantity, OperationEnd.DefectQuantity]
+    source: MES tb_eqp_stat·tb_trk_out / ERP tb_pp_rout_d
+    gap: EQ01과 같음
+    scenarios: [SC04]
+    num_label: 표준시간(분)
+    den_label: 가동(분)
+    result: |
+      SELECT ym AS period, eqp_id AS dim, 100.0 * std_min / run AS value, std_min AS num, run AS den
+      FROM v_eq WHERE run > 0 AND std_min > 0
+      UNION ALL SELECT ym, '전체', 100.0 * SUM(std_min) / SUM(run), SUM(std_min), SUM(run) FROM v_eq WHERE run > 0 AND std_min > 0 GROUP BY ym
+      ORDER BY 1, 2
+  - id: EQ08
+    area: 생산관리
+    group: 설비관리현황
+    name: 설비 종합효율(OEE)
+    definition: 시간가동율 × 성능가동율 × 양품율.
+    formula: EQ06 × EQ07 × EQ02 / 10⁴
+    unit: "%"
+    period: 월
+    direction: 높을수록 좋음
+    target: 85% 이상(세계 수준)
+    dims: [설비]
+    nouns: [EquipmentState, OperationEnd, RoutingLine, ProductionPerformanceEquipment]
+    attrs: [EquipmentState.EquipmentState, RoutingLine.RunTime, OperationEnd.ProducedQuantity, OperationEnd.DefectQuantity]
+    source: EQ02·EQ06·EQ07 결과
+    gap: EQ03·EQ06과 같음
+    scenarios: [SC04]
+    num_label: 시간가동율
+    den_label: 성능가동율
+    result: |
+      SELECT a.period, a.dim, a.value * b.value * c.value / 10000.0 AS value, a.value AS num, b.value AS den,
+             printf('양품율 %.2f%%', c.value) AS note
+      FROM k_EQ06 a JOIN k_EQ07 b ON b.period = a.period AND b.dim = a.dim
+      JOIN k_EQ02 c ON c.period = a.period AND c.dim = a.dim ORDER BY 1, 2
+
+  # =================================================================
+  # 품질관리 — 품질현황
+  # =================================================================
+  - id: QM01
+    area: 품질관리
+    group: 품질현황
+    name: 고객 부적합 건수
+    definition: 고객이 제기한 부적합(입고검사 부적합·라인 중단·필드 반송 포함) 접수 건수. 발생일 기준.
+    formula: COUNT(고객 클레임)
+    unit: 건
+    period: 월
+    direction: 낮을수록 좋음
+    target: 월 1건 이하
+    dims: [고객, 유형, 품목]
+    nouns: [CustomerPartyMaster, Return, AfterSalesServiceRequest]
+    attrs: [Return.CustomerID, Return.LotID, Return.ReturnQuantity]
+    source: QMS qm_claim
+    gap: "고객 클레임 명사 없음(Return·AfterSalesServiceRequest는 일부만 대응) → Extension CustomerComplaint(ClaimType, DefectCode, ResponseDueDate, ResponseDate, ClaimAmount)"
+    scenarios: [SC06]
+    num_label: 클레임 수량(EA)
+    result: |
+      SELECT substr(d8(occur_dt),1,7) AS period, cust_cd AS dim, COUNT(*) AS value, SUM(qty) AS num, NULL AS den,
+             group_concat(claim_no || '(' || claim_tp || ')', ', ') AS note
+      FROM q_claim GROUP BY 1, 2
+      UNION ALL
+      SELECT substr(d8(occur_dt),1,7), '전체', COUNT(*), SUM(qty), NULL, NULL FROM q_claim GROUP BY 1
+      ORDER BY 1, 2
+  - id: QM02
+    area: 품질관리
+    group: 품질현황
+    name: 고객 부적합 일정 준수율
+    definition: 대책서 회신 기한이 지난(또는 회신한) 클레임 중 기한 안에 회신한 비율. 회신 기한 월 기준.
+    formula: 기한 내 회신 건수 / (기한 도래 건수 + 기한 전 회신 건수) × 100
+    unit: "%"
+    period: 월
+    direction: 높을수록 좋음
+    target: 100%
+    dims: [고객]
+    nouns: [CorrectiveActionRequest, CorrectiveActionResult]
+    attrs: [CorrectiveActionRequest.CorrectiveActionRequestID]
+    source: QMS qm_claim(resp_due_dt, resp_dt)
+    gap: "표준 시정조치 명사는 공급사(VendorID) 기준 → 고객 대응 일정(회신 기한·회신일) Extension 필요"
+    scenarios: [SC06]
+    num_label: 기한 내 회신
+    den_label: 대상 건수
+    result: |
+      SELECT substr(d8(resp_due_dt),1,7) AS period, '전체' AS dim,
+             100.0 * SUM(CASE WHEN resp_dt IS NOT NULL AND resp_dt <= resp_due_dt THEN 1 ELSE 0 END) / COUNT(*) AS value,
+             SUM(CASE WHEN resp_dt IS NOT NULL AND resp_dt <= resp_due_dt THEN 1 ELSE 0 END) AS num, COUNT(*) AS den,
+             group_concat(CASE WHEN resp_dt IS NULL OR resp_dt > resp_due_dt
+                               THEN claim_no || ' 기한 ' || d8(resp_due_dt) || ' 회신 ' || COALESCE(d8(resp_dt), '미회신') END, ', ') AS note
+      FROM q_claim WHERE d8(resp_due_dt) < :as_of_date OR resp_dt IS NOT NULL
+      GROUP BY 1 ORDER BY 1
+  - id: QM03
+    headline: "고객 Line 중단 Claim"
+    area: 품질관리
+    group: 품질현황
+    name: 고객 Line 중단 Claim 건수 · 필드 반송 건수
+    definition: 고객 조립 라인을 멈춘 클레임(LS)과 시장(필드)에서 반송된 클레임(FR) 건수.
+    formula: COUNT(클레임 유형 = LS), COUNT(클레임 유형 = FR)
+    unit: 건
+    period: 월
+    direction: 낮을수록 좋음
+    target: 라인 중단 0건
+    dims: [유형, 고객]
+    nouns: [Return, AfterSalesServiceRequest]
+    attrs: [Return.ReturnType, Return.CustomerID]
+    source: QMS qm_claim
+    gap: QM01과 같음(ClaimType 코드 Extension)
+    scenarios: [SC06]
+    num_label: 수량(EA)
+    result: |
+      SELECT m.ym AS period, t.nm AS dim, COUNT(c.claim_no) AS value, SUM(c.qty) AS num, NULL AS den,
+             group_concat(c.claim_no || ' ' || c.cust_cd || ' ' || COALESCE(c.lot_no, 'LOT 미상'), ', ') AS note
+      FROM months m
+      CROSS JOIN (SELECT 'LS' AS tp, '고객 Line 중단 Claim' AS nm UNION ALL SELECT 'FR', '필드 반송') t
+      LEFT JOIN q_claim c ON substr(d8(c.occur_dt),1,7) = m.ym AND c.claim_tp = t.tp
+      WHERE m.ym >= '2026-09' GROUP BY 1, 2 ORDER BY 1, 2
+  - id: QM04
+    headline: "5 합계"
+    area: 품질관리
+    group: 품질현황
+    name: Q-COST(품질비용)
+    definition: 예방(P)·평가(A)·내부실패(IF)·외부실패(EF) 비용 합계와 매출액 대비 비율.
+    formula: Σ P + A + IF + EF, 매출 대비 = Q-COST / 매출액 × 100
+    unit: 원
+    period: 월
+    direction: 낮을수록 좋음
+    target: 매출액의 3% 이하
+    dims: [비용 구분]
+    nouns: [ProductRelease, SalesOrderLine]
+    attrs: [ProductRelease.SalesQuantity]
+    source: QMS qm_qcost / ERP tb_sd_dlv·tb_sd_so_d(판매단가)
+    gap: "QualityCost Extension(PR05와 같음). 판매단가가 수주라인 표준 속성에 없음 → SalesOrderLine Extension UnitPrice"
+    scenarios: [SC06]
+    num_label: Q-COST(원)
+    den_label: 매출액(원)
+    result: |
+      WITH q AS (SELECT substr(cost_ym,1,4)||'-'||substr(cost_ym,5,2) AS ym, cost_cls, SUM(amt) AS amt FROM q_qcost GROUP BY 1, 2),
+           s AS (SELECT substr(v.dlv_dt,1,7) AS ym, SUM(v.qty * o.unit_prc) AS sales
+                 FROM v_dlv v JOIN v_so o ON o.so_no = v.so_no AND o.so_seq = v.so_seq GROUP BY 1)
+      SELECT ym AS period, CASE cost_cls WHEN 'P' THEN '1 예방(P)' WHEN 'A' THEN '2 평가(A)' WHEN 'IF' THEN '3 내부실패(IF)'
+                                ELSE '4 외부실패(EF)' END AS dim, amt AS value, NULL AS num, NULL AS den, NULL AS note FROM q
+      UNION ALL
+      SELECT q.ym, '5 합계', SUM(q.amt), SUM(q.amt), MAX(s.sales),
+             printf('매출 대비 %.2f%%', 100.0 * SUM(q.amt) / MAX(s.sales)) FROM q JOIN s ON s.ym = q.ym GROUP BY q.ym
+      ORDER BY 1, 2
+  - id: QM05
+    headline: "전체"
+    area: 품질관리
+    group: 품질현황
+    name: 공정 불량률(공정 PPM)
+    definition: 공정별 처리수량 백만 개당 불량 수.
+    formula: Σ 불량 / Σ(양품+불량) × 10⁶
+    unit: PPM
+    period: 월
+    direction: 낮을수록 좋음
+    target: "공정 3,000PPM 이하"
+    dims: [공정, 품목, 설비]
+    nouns: [OperationEnd, ProductionPerformanceQuality]
+    attrs: [OperationEnd.DefectQuantity, OperationEnd.ProducedQuantity]
+    source: MES tb_trk_out
+    gap: 없음(Core)
+    scenarios: [SC05]
+    num_label: 불량
+    den_label: 처리수량
+    result: |
+      SELECT substr(d,1,7) AS period, proc_cd AS dim, 1e6 * SUM(ng) / SUM(good + ng) AS value, SUM(ng) AS num, SUM(good + ng) AS den
+      FROM m_out WHERE d <= :as_of_date GROUP BY 1, 2
+      UNION ALL SELECT substr(d,1,7), '전체', 1e6 * SUM(ng) / SUM(good + ng), SUM(ng), SUM(good + ng) FROM m_out WHERE d <= :as_of_date GROUP BY 1
+      ORDER BY 1, 2
+  - id: QM06
+    headline: "D-LEAK 누설"
+    area: 품질관리
+    group: 품질현황
+    name: 불량 유형별 폐기 현황
+    definition: 폐기 처리된 불량을 불량 유형별 수량·금액으로 집계한다.
+    formula: Σ 폐기수량, Σ 폐기금액 (불량유형별)
+    unit: EA
+    period: 월
+    direction: 낮을수록 좋음
+    target: 상위 3유형 집중 관리
+    dims: [불량유형, 공정]
+    nouns: [ProductionPerformanceQuality, GoodsIssue]
+    attrs: [ProductionPerformanceQuality.DefectTypeCode, ProductionPerformanceQuality.DefectTypeQuantity]
+    source: QMS qm_scrap / MES tm_code(DEFECT_CD)
+    gap: "D-PORO(기공) 등 표준 상세코드 없음 → DefectTypeDetailCode 코드 Extension"
+    scenarios: [SC05]
+    num_label: 폐기금액(원)
+    result: |
+      SELECT substr(d8(s.scrap_dt),1,7) AS period, s.defect_cd || ' ' || COALESCE(c.cd_nm, '') AS dim, SUM(s.qty) AS value,
+             SUM(s.amt) AS num, NULL AS den, group_concat(DISTINCT s.proc_cd) AS note
+      FROM q_scrap s LEFT JOIN m_code c ON c.grp_cd = 'DEFECT_CD' AND c.cd = s.defect_cd
+      GROUP BY 1, 2 ORDER BY 1, 4 DESC
+  - id: QM07
+    area: 품질관리
+    group: 품질현황
+    name: 불량 손실액
+    definition: 사내 폐기 손실과 고객 클레임 손실을 더한 불량 손실 금액.
+    formula: Σ 폐기금액 + Σ 클레임 금액
+    unit: 원
+    period: 월
+    direction: 낮을수록 좋음
+    target: 월 500만원 이하
+    dims: [구분]
+    nouns: [ProductionPerformanceQuality, Return]
+    attrs: [ProductionPerformanceQuality.DefectTypeQuantity, Return.ReturnQuantity]
+    source: QMS qm_scrap·qm_claim
+    gap: StandardCost·CustomerComplaint Extension
+    scenarios: [SC06]
+    result: |
+      WITH x AS (SELECT substr(d8(scrap_dt),1,7) AS ym, '사내 폐기' AS dim, SUM(amt) AS amt FROM q_scrap GROUP BY 1
+                 UNION ALL SELECT substr(d8(occur_dt),1,7), '고객 클레임', SUM(amt) FROM q_claim GROUP BY 1)
+      SELECT ym AS period, dim, amt AS value FROM x
+      UNION ALL SELECT ym, '합계', SUM(amt) FROM x GROUP BY ym
+      ORDER BY 1, 2
+  - id: QM08
+    headline: "전체"
+    area: 품질관리
+    group: 품질현황
+    name: 협력업체 불량건수
+    definition: 협력업체 부품 부적합(수입검사·라인·고객 발견) 발행 건수. 시정조치(CAR) 완료 여부를 함께 본다.
+    formula: COUNT(협력업체 부적합 보고)
+    unit: 건
+    period: 월
+    direction: 낮을수록 좋음
+    target: 협력사별 월 0건
+    dims: [협력업체, 발견 위치, 품목]
+    nouns: [VendorPartyMaster, SupplierInspectionResult, CorrectiveActionRequest, CorrectiveActionResult]
+    attrs: [CorrectiveActionRequest.VendorID, CorrectiveActionRequest.ItemID, SupplierInspectionResult.InspectionResult]
+    source: QMS qm_vend_ncr / ERP tb_mm_vend
+    gap: "발견 위치(IQC·LINE·CUST)·CAR 기한 속성 없음 → CorrectiveActionRequest Extension"
+    scenarios: [SC06]
+    num_label: 불량수량
+    result: |
+      SELECT substr(d8(n.occur_dt),1,7) AS period, n.vend_cd || ' ' || COALESCE(v.vend_nm, '') AS dim, COUNT(*) AS value,
+             SUM(n.ng_qty) AS num, NULL AS den,
+             group_concat(n.ncr_no || ' ' || n.item_cd || ' ' || n.found_at || CASE WHEN n.car_cls_dt IS NULL THEN ' CAR 미완료' ELSE '' END, ', ') AS note
+      FROM q_ncr n LEFT JOIN e_vend v ON v.vend_cd = n.vend_cd GROUP BY 1, 2
+      UNION ALL SELECT substr(d8(occur_dt),1,7), '전체', COUNT(*), SUM(ng_qty), NULL, NULL FROM q_ncr GROUP BY 1
+      ORDER BY 1, 2
+  - id: QM09
+    area: 품질관리
+    group: 품질현황
+    name: 수입검사 불량률(수입검사 PPM)
+    definition: 수입검사 시료 백만 개당 불량 수. LOT 불합격률(불합격 LOT / 검사 LOT)을 함께 본다.
+    formula: Σ 시료 불량수 / Σ 시료수 × 10⁶
+    unit: PPM
+    period: 월
+    direction: 낮을수록 좋음
+    target: 1,000PPM 이하
+    dims: [협력업체, 품목]
+    nouns: [GoodsReceipt, SupplierInspectionResult]
+    attrs: [GoodsReceipt.IncomingInspectionAcceptedQuantity, GoodsReceipt.IncomingInspectionRejectedQuantity, SupplierInspectionResult.InspectionQuantity, SupplierInspectionResult.InspectionResult]
+    source: QMS qm_iqc / ERP tb_mm_gr
+    gap: "검사 불량수량 속성 없음(SupplierInspectionResult) → Extension DefectQuantity"
+    scenarios: [SC06]
+    num_label: 시료 불량
+    den_label: 시료수
+    result: |
+      SELECT substr(d8(i.insp_dt),1,7) AS period, i.vend_cd || ' ' || COALESCE(v.vend_nm, '') AS dim,
+             1e6 * SUM(i.ng_qty) / SUM(i.smpl_qty) AS value, SUM(i.ng_qty) AS num, SUM(i.smpl_qty) AS den,
+             printf('LOT 불합격 %d/%d', SUM(CASE WHEN i.judge = 'R' THEN 1 ELSE 0 END), COUNT(*)) AS note
+      FROM q_iqc i LEFT JOIN e_vend v ON v.vend_cd = i.vend_cd GROUP BY 1, 2
+      UNION ALL
+      SELECT substr(d8(insp_dt),1,7), '전체', 1e6 * SUM(ng_qty) / SUM(smpl_qty), SUM(ng_qty), SUM(smpl_qty),
+             printf('LOT 불합격 %d/%d', SUM(CASE WHEN judge = 'R' THEN 1 ELSE 0 END), COUNT(*)) FROM q_iqc GROUP BY 1
+      ORDER BY 1, 2
+
+  # =================================================================
+  # SCM — PSI 운영
+  # =================================================================
+  - id: SC01
+    area: SCM
+    group: PSI(Sales)
+    name: 수요예측 정확도
+    definition: 월 수요예측 수량과 실제 수주 수량의 일치 정도(1 − 절대오차율). 마감된 월만 평가한다.
+    formula: (1 − Σ|실수주 − 예측| / Σ 실수주) × 100
+    unit: "%"
+    period: 월
+    direction: 높을수록 좋음
+    target: 90% 이상
+    dims: [고객, 품목]
+    nouns: [SalesPlan, SalesOrderHeader, SalesOrderLine]
+    attrs: [SalesPlan.SalesProjection, SalesPlan.ProjectionStartDate, SalesOrderLine.ItemQuantity]
+    source: ERP tb_sd_plan(FCST)·tb_sd_so_h·tb_sd_so_d
+    gap: "SalesPlan에 계획유형(예측·판매계획)·고객·버전 속성 없음 → Extension PlanType, CustomerID, PlanVersion"
+    scenarios: [SC07]
+    num_label: 실수주
+    den_label: 예측
+    result: |
+      WITH a AS (SELECT substr(so_dt,1,7) AS ym, cust_cd, item_cd, SUM(qty) AS act FROM v_so GROUP BY 1, 2, 3),
+           f AS (SELECT substr(plan_ym,1,4)||'-'||substr(plan_ym,5,2) AS ym, cust_cd, item_cd, qty AS fc FROM e_splan WHERE plan_tp = 'FCST')
+      SELECT f.ym AS period, f.cust_cd || ' ' || f.item_cd AS dim, 100.0 * (1 - ABS(a.act - f.fc) / a.act) AS value, a.act AS num, f.fc AS den
+      FROM f JOIN a ON a.ym = f.ym AND a.cust_cd = f.cust_cd AND a.item_cd = f.item_cd WHERE f.ym < :as_of_ym
+      UNION ALL
+      SELECT f.ym, '전체', 100.0 * (1 - SUM(ABS(a.act - f.fc)) / SUM(a.act)), SUM(a.act), SUM(f.fc)
+      FROM f JOIN a ON a.ym = f.ym AND a.cust_cd = f.cust_cd AND a.item_cd = f.item_cd WHERE f.ym < :as_of_ym GROUP BY f.ym
+      ORDER BY 1, 2
+  - id: SC02
+    area: SCM
+    group: PSI(Sales)
+    name: 판매계획준수율
+    definition: 월 판매계획(PLAN) 대비 출하(매출) 수량. 진행 월은 영업일 경과율로 계획을 안분한다.
+    formula: Σ 출하수량 / (판매계획 × 경과 영업일 / 월 영업일) × 100
+    unit: "%"
+    period: 월
+    direction: 100% 근접
+    target: 95~105%
+    dims: [고객, 품목]
+    nouns: [SalesPlan, ProductRelease, DeliveryLine]
+    attrs: [SalesPlan.SalesProjection, ProductRelease.SalesQuantity, ProductRelease.InventoryTransactionDate]
+    source: ERP tb_sd_plan(PLAN)·tb_sd_dlv
+    gap: SC01과 같음
+    scenarios: [SC07]
+    num_label: 출하
+    den_label: 계획(안분)
+    result: |
+      WITH p AS (SELECT substr(plan_ym,1,4)||'-'||substr(plan_ym,5,2) AS ym, cust_cd, item_cd, qty FROM e_splan WHERE plan_tp = 'PLAN'),
+           s AS (SELECT substr(dlv_dt,1,7) AS ym, cust_cd, item_cd, SUM(qty) AS qty FROM v_dlv WHERE dlv_dt <= :as_of_date GROUP BY 1, 2, 3),
+           j AS (SELECT p.ym, p.cust_cd || ' ' || p.item_cd AS dim, COALESCE(s.qty, 0) AS act,
+                        p.qty * md.work_days_td / md.work_days AS pl
+                 FROM p JOIN v_mdays md ON md.ym = p.ym
+                 LEFT JOIN s ON s.ym = p.ym AND s.cust_cd = p.cust_cd AND s.item_cd = p.item_cd
+                 WHERE p.ym <= :as_of_ym)
+      SELECT ym AS period, dim, 100.0 * act / pl AS value, act AS num, pl AS den FROM j
+      UNION ALL SELECT ym, '전체', 100.0 * SUM(act) / SUM(pl), SUM(act), SUM(pl) FROM j GROUP BY ym
+      ORDER BY 1, 2
+  - id: SC03
+    area: SCM
+    group: PSI(Production)
+    name: 생산계획준수율
+    definition: 일 생산계획 수량 중 같은 날 생산입고된 수량(계획 초과분은 인정하지 않음). 마감된 날만 평가한다.
+    formula: Σ min(일 생산입고, 일 계획) / Σ 일 계획 × 100
+    unit: "%"
+    period: 일/월
+    direction: 높을수록 좋음
+    target: 95% 이상
+    dims: [품목, 라인]
+    nouns: [ProductionPlanning, ProductionOrder, ProductIncoming]
+    attrs: [ProductionPlanning.ProductionPlanQuantity, ProductionPlanning.ScheduleStartDateTime, ProductIncoming.ItemUnitQuantity]
+    source: ERP tb_pp_plan·tb_pp_rcpt
+    gap: "ProductionPlanning에 라인 속성 없음 → Extension LineID(또는 ProductionOrder로 대응)"
+    scenarios: [SC07, SC02]
+    num_label: 준수 수량
+    den_label: 계획
+    result: |
+      WITH p AS (SELECT d8(plan_dt) AS d, item_cd, SUM(qty) AS pl FROM e_pplan WHERE item_cd LIKE 'EWP-%' GROUP BY 1, 2),
+           r AS (SELECT d8(rcpt_dt) AS d, item_cd, SUM(qty) AS act FROM e_rcpt GROUP BY 1, 2),
+           j AS (SELECT p.d, p.item_cd, p.pl, MIN(COALESCE(r.act, 0), p.pl) AS ok FROM p LEFT JOIN r ON r.d = p.d AND r.item_cd = p.item_cd
+                 WHERE p.d < :as_of_date)
+      SELECT substr(d,1,7) AS period, item_cd AS dim, 100.0 * SUM(ok) / SUM(pl) AS value, SUM(ok) AS num, SUM(pl) AS den FROM j GROUP BY 1, 2
+      UNION ALL SELECT substr(d,1,7), '전체', 100.0 * SUM(ok) / SUM(pl), SUM(ok), SUM(pl) FROM j GROUP BY 1
+      ORDER BY 1, 2
+    daily: |
+      WITH p AS (SELECT d8(plan_dt) AS d, item_cd, SUM(qty) AS pl FROM e_pplan WHERE item_cd LIKE 'EWP-%' GROUP BY 1, 2),
+           r AS (SELECT d8(rcpt_dt) AS d, item_cd, SUM(qty) AS act FROM e_rcpt GROUP BY 1, 2)
+      SELECT p.d, p.item_cd AS dim, 100.0 * MIN(COALESCE(r.act, 0), p.pl) / p.pl AS value
+      FROM p LEFT JOIN r ON r.d = p.d AND r.item_cd = p.item_cd WHERE p.d < :as_of_date
+  - id: SC04
+    area: SCM
+    group: PSI(Production)
+    name: 자재충족율
+    definition: 제조오더 착수 전 자재 가용성 점검(06:00)에서 모든 자품목이 소요량 이상 확보된 오더 비율.
+    formula: 결품 없는 제조오더 수 / 점검 제조오더 수 × 100
+    unit: "%"
+    period: 월
+    direction: 높을수록 좋음
+    target: 98% 이상
+    dims: [자품목, 품목]
+    nouns: [AvailableInventory, ProductionOrder, BOMLine]
+    attrs: [AvailableInventory.AvailableInventoryQuantity, AvailableInventory.PriorDemandQuantity, BOMLine.ChildItemQuantity]
+    source: ERP tb_pp_mat_chk
+    gap: "AvailableInventory에 제조오더·점검일 속성 없음 → Extension ProductionOrderID, CheckDateTime, ShortageQuantity"
+    scenarios: [SC07]
+    num_label: 충족 오더
+    den_label: 점검 오더
+    result: |
+      WITH m AS (SELECT chk_dt, mo_no, MAX(CASE WHEN short > 0 THEN 1 ELSE 0 END) AS sh,
+                        group_concat(CASE WHEN short > 0 THEN comp_cd || ' 부족 ' || CAST(short AS INTEGER) END) AS what
+                 FROM e_matchk GROUP BY 1, 2)
+      SELECT substr(d8(chk_dt),1,7) AS period, '전체' AS dim, 100.0 * SUM(1 - sh) / COUNT(*) AS value,
+             SUM(1 - sh) AS num, COUNT(*) AS den,
+             group_concat(CASE WHEN sh = 1 THEN mo_no || '(' || what || ')' END, ', ') AS note
+      FROM m GROUP BY 1 ORDER BY 1
+  - id: SC05
+    headline: "EWP-A100 주조~포장"
+    area: SCM
+    group: PSI(Production)
+    name: 제조 리드타임
+    definition: 완제품 LOT의 조립 착공부터 포장 완공까지, 그리고 하우징 주조 착공부터 포장 완공까지 걸린 평균 시간.
+    formula: AVG(포장 완공 일시 − 조립 착공 일시), AVG(포장 완공 − 연결 하우징 주조 착공)
+    unit: 시간
+    period: 월
+    direction: 낮을수록 좋음
+    target: "조립~포장 12시간, 주조~포장 48시간"
+    dims: [품목, 구간]
+    nouns: [Lot, OperationStart, OperationEnd, ProductionPerformanceItem]
+    attrs: [OperationStart.OperationStartTime, OperationEnd.OperationEndTime, Lot.ParentLotID]
+    source: MES tb_trk_in·tb_trk_out·tb_lot_link
+    gap: 없음(Core). 보류 LOT은 포장 완공 전이라 제외(특채 출하분은 ERP 수기 입고)
+    scenarios: [SC07, SC02]
+    num_label: 최대(시간)
+    den_label: LOT 수
+    result: |
+      WITH fg AS (SELECT lot_no, item_cd, MIN(CASE WHEN proc_cd = 'A100' THEN in_ts END) AS st,
+                         MAX(CASE WHEN proc_cd = 'A400' THEN out_ts END) AS ed
+                  FROM m_out WHERE item_cd LIKE 'EWP-%' GROUP BY 1, 2),
+           hs AS (SELECT k.to_lot, MIN(o.in_ts) AS st FROM m_link k JOIN m_out o ON o.lot_no = k.from_lot AND o.proc_cd = 'P100' GROUP BY 1),
+           x AS (SELECT substr(fg.ed,1,7) AS ym, fg.item_cd || ' 조립~포장' AS dim, (julianday(fg.ed) - julianday(fg.st)) * 24 AS h
+                 FROM fg WHERE fg.st IS NOT NULL AND fg.ed IS NOT NULL
+                 UNION ALL
+                 SELECT substr(fg.ed,1,7), fg.item_cd || ' 주조~포장', (julianday(fg.ed) - julianday(hs.st)) * 24
+                 FROM fg JOIN hs ON hs.to_lot = fg.lot_no WHERE fg.ed IS NOT NULL)
+      SELECT ym AS period, dim, AVG(h) AS value, MAX(h) AS num, COUNT(*) AS den FROM x GROUP BY 1, 2 ORDER BY 1, 2
+  - id: SC06
+    area: SCM
+    group: PSI(Inventory)
+    name: 재고 보유일수
+    definition: 월말(진행 월은 기준일) 재고금액을 일평균 출고금액으로 나눈 값. 출고 = 판매출고 + 생산투입 + 폐기.
+    formula: 월말 재고금액 / (월 출고금액 / 경과 달력일수)
+    unit: 일
+    period: 월
+    direction: 낮을수록 좋음
+    target: "제품 3일, 자재 5일 이하"
+    dims: [재고 구분(제품·자재), 창고, 품목]
+    nouns: [Inventory, GoodsIssue, ProductRelease, WarehouseLocationHeader]
+    attrs: [Inventory.InventoryQuantity, Inventory.WarehouseID, GoodsIssue.ItemUnitQuantity, GoodsIssue.InventoryTransactionType]
+    source: ERP tb_mm_stock_day·tb_mm_gi·tb_co_std_cost
+    gap: "Inventory는 현재고만 정의(기준일 없음) → 일별 재고 스냅샷 Extension InventoryDate. 금액 환산에 StandardCost Extension"
+    scenarios: [SC07]
+    num_label: 월말 재고금액(원)
+    den_label: 일평균 출고금액(원)
+    result: |
+      WITH me AS (SELECT ym, MAX(d) AS d FROM v_stk_amt WHERE d <= :as_of_date GROUP BY 1),
+           inv AS (SELECT me.ym, s.cls, SUM(s.amt) AS amt FROM me JOIN v_stk_amt s ON s.d = me.d GROUP BY 1, 2),
+           iss AS (SELECT ym, cls, SUM(amt) AS amt FROM v_gi_amt WHERE gi_tp IN ('SAL','PRD','SCR') AND d <= :as_of_date GROUP BY 1, 2),
+           j AS (SELECT inv.ym, inv.cls, inv.amt AS inv_amt, iss.amt / md.cal_days_td AS daily
+                 FROM inv JOIN iss ON iss.ym = inv.ym AND iss.cls = inv.cls JOIN v_mdays md ON md.ym = inv.ym)
+      SELECT ym AS period, cls AS dim, inv_amt / daily AS value, inv_amt AS num, daily AS den FROM j
+      UNION ALL SELECT ym, '전체', SUM(inv_amt) / SUM(daily), SUM(inv_amt), SUM(daily) FROM j GROUP BY ym
+      ORDER BY 1, 2
+  - id: SC07
+    area: SCM
+    group: PSI(Inventory)
+    name: 재고회전율
+    definition: 연환산 출고금액을 평균 재고금액(월 일평균)으로 나눈 회전 수.
+    formula: (월 출고금액 × 365 / 경과 달력일수) / 월 평균 재고금액
+    unit: 회/년
+    period: 월
+    direction: 높을수록 좋음
+    target: "제품 100회, 자재 70회 이상"
+    dims: [재고 구분, 품목]
+    nouns: [Inventory, GoodsIssue, ProductRelease]
+    attrs: [Inventory.InventoryQuantity, GoodsIssue.ItemUnitQuantity]
+    source: ERP tb_mm_stock_day·tb_mm_gi·tb_co_std_cost
+    gap: SC06과 같음
+    scenarios: [SC07]
+    num_label: 연환산 출고금액(원)
+    den_label: 평균 재고금액(원)
+    result: |
+      WITH av AS (SELECT ym, cls, SUM(amt) / COUNT(DISTINCT d) AS amt FROM v_stk_amt WHERE d <= :as_of_date GROUP BY 1, 2),
+           iss AS (SELECT ym, cls, SUM(amt) AS amt FROM v_gi_amt WHERE gi_tp IN ('SAL','PRD','SCR') AND d <= :as_of_date GROUP BY 1, 2),
+           j AS (SELECT av.ym, av.cls, iss.amt * 365.0 / md.cal_days_td AS yr, av.amt AS avg_amt
+                 FROM av JOIN iss ON iss.ym = av.ym AND iss.cls = av.cls JOIN v_mdays md ON md.ym = av.ym)
+      SELECT ym AS period, cls AS dim, yr / avg_amt AS value, yr AS num, avg_amt AS den FROM j
+      UNION ALL SELECT ym, '전체', SUM(yr) / SUM(avg_amt), SUM(yr), SUM(avg_amt) FROM j GROUP BY ym
+      ORDER BY 1, 2
+  - id: SC08
+    headline: "품목 일치율"
+    area: SCM
+    group: PSI(Inventory)
+    name: 재고정확도
+    definition: 재고실사에서 장부 수량과 실사 수량이 일치한 품목(창고×품목) 비율. 수량 기준 정확도를 함께 본다.
+    formula: 일치 품목 수 / 실사 품목 수 × 100, 수량 정확도 = (1 − Σ|장부 − 실사| / Σ 장부) × 100
+    unit: "%"
+    period: 실사 시점(월)
+    direction: 높을수록 좋음
+    target: 98% 이상
+    dims: [창고, 품목]
+    nouns: [InventoryCount]
+    attrs: [InventoryCount.InventoryQuantity, InventoryCount.InventoryCountQuantity, InventoryCount.InventoryCountDateTime]
+    source: ERP tb_mm_cnt
+    gap: 없음(Core)
+    scenarios: [SC07]
+    num_label: 일치 품목
+    den_label: 실사 품목
+    result: |
+      SELECT substr(d8(cnt_dt),1,7) AS period, '품목 일치율' AS dim,
+             100.0 * SUM(CASE WHEN ABS(book - cnt) < 0.001 THEN 1 ELSE 0 END) / COUNT(*) AS value,
+             SUM(CASE WHEN ABS(book - cnt) < 0.001 THEN 1 ELSE 0 END) AS num, COUNT(*) AS den,
+             group_concat(CASE WHEN ABS(book - cnt) >= 0.001 THEN wh_cd || '/' || item_cd || ' ' || CAST(CAST(cnt - book AS INTEGER) AS TEXT) END, ', ') AS note
+      FROM e_cnt GROUP BY 1
+      UNION ALL
+      SELECT substr(d8(cnt_dt),1,7), '수량 정확도', 100.0 * (1 - SUM(ABS(book - cnt)) / SUM(book)), SUM(ABS(book - cnt)), SUM(book), NULL
+      FROM e_cnt GROUP BY 1
+  - id: SC09
+    headline: "1 180일 초과(장기 체화)"
+    area: SCM
+    group: PSI(Inventory)
+    name: 장기 체화 재고 비율
+    definition: 기준일 현재고 중 입고 후 180일이 지난 재고의 금액 비율. 91~180일 구간을 함께 본다.
+    formula: Σ 재고금액(입고 경과 > 180일) / Σ 재고금액 × 100
+    unit: "%"
+    period: 시점(월말)
+    direction: 낮을수록 좋음
+    target: 2% 이하
+    dims: [경과 구간, 품목, 창고]
+    nouns: [Inventory, Lot, GoodsReceipt]
+    attrs: [Inventory.InventoryQuantity, GoodsReceipt.GoodsReceiptDate, Lot.LotID]
+    source: ERP tb_mm_stock_lot·tb_co_std_cost
+    gap: "Inventory에 LOT·입고일 속성 없음 → Extension LotID, ReceiptDate(또는 Lot 명사 연결)"
+    scenarios: [SC07]
+    num_label: 구간 재고금액(원)
+    den_label: 총 재고금액(원)
+    result: |
+      WITH s AS (SELECT l.wh_cd, l.item_cd, l.lot_no, l.qty * c.std_cost AS amt,
+                        julianday(:as_of_date) - julianday(d8(l.rcv_dt)) AS age
+                 FROM e_stklot l JOIN v_cost c ON c.item_cd = l.item_cd AND c.ym = :as_of_ym),
+           t AS (SELECT SUM(amt) AS tot FROM s),
+           b AS (SELECT CASE WHEN age > 180 THEN '1 180일 초과(장기 체화)' WHEN age > 90 THEN '2 91~180일' ELSE '3 90일 이하' END AS dim,
+                        SUM(amt) AS amt, group_concat(CASE WHEN age > 90 THEN item_cd || '(' || lot_no || ')' END, ', ') AS what
+                 FROM s GROUP BY 1)
+      SELECT :as_of_date AS period, b.dim, 100.0 * b.amt / t.tot AS value, b.amt AS num, t.tot AS den, b.what AS note
+      FROM b, t ORDER BY 2
+
+  # =================================================================
+  # 고객서비스
+  # =================================================================
+  - id: CS01
+    area: 고객서비스
+    group: 고객서비스
+    name: 납기이행율
+    definition: 요청 납기가 지난 수주라인 중 요청일까지 전량 출하된 라인 비율(취소 제외).
+    formula: 요청일까지 전량 출하된 라인 수 / 요청일 도래 라인 수 × 100
+    unit: "%"
+    period: 월(요청 납기 기준)
+    direction: 높을수록 좋음
+    target: 98% 이상
+    dims: [고객, 품목]
+    nouns: [SalesOrderLine, ProductRelease, DeliveryLine, CustomerPartyMaster]
+    attrs: [SalesOrderLine.RequestedDeliveryDate, SalesOrderLine.ItemQuantity, DeliveryLine.ProductDeliveryQuantity, ProductRelease.InventoryTransactionDate]
+    source: ERP tb_sd_so_h·tb_sd_so_d·tb_sd_dlv
+    gap: 없음(Core)
+    scenarios: [SC07]
+    num_label: 납기 준수 라인
+    den_label: 대상 라인
+    result: |
+      WITH x AS (SELECT substr(req_dt,1,7) AS ym, cust_cd, so_no, req_dt, last_dlv, CASE WHEN ship_by_req >= qty THEN 1 ELSE 0 END AS ot
+                 FROM v_soline WHERE req_dt < :as_of_date)
+      SELECT ym AS period, cust_cd AS dim, 100.0 * SUM(ot) / COUNT(*) AS value, SUM(ot) AS num, COUNT(*) AS den,
+             group_concat(CASE WHEN ot = 0 THEN so_no || '(요청 ' || req_dt || ', 출하 ' || COALESCE(last_dlv, '미출하') || ')' END, ', ') AS note
+      FROM x GROUP BY 1, 2
+      UNION ALL SELECT ym, '전체', 100.0 * SUM(ot) / COUNT(*), SUM(ot), COUNT(*), NULL FROM x GROUP BY 1
+      ORDER BY 1, 2
+  - id: CS02
+    area: 고객서비스
+    group: 고객서비스
+    name: 품절율
+    definition: 판매 제품의 영업일 마감 재고가 0 이하였던 날의 비율(품목×영업일 기준, 마감된 날만).
+    formula: 재고 0 품목·일 수 / 전체 품목·영업일 수 × 100
+    unit: "%"
+    period: 월
+    direction: 낮을수록 좋음
+    target: 0%
+    dims: [품목]
+    nouns: [Inventory, AvailableInventory]
+    attrs: [Inventory.InventoryQuantity, AvailableInventory.AvailableInventoryQuantity]
+    source: ERP tb_mm_stock_day(제품창고 W300) / 달력
+    gap: "일별 재고 스냅샷 Extension(SC06과 같음). WorkCalendar 원천 없음 → 생성(일요일 휴무)"
+    scenarios: [SC07]
+    num_label: 품절 일수
+    den_label: 영업일 수
+    result: |
+      WITH x AS (SELECT substr(s.d,1,7) AS ym, s.item_cd, s.d, CASE WHEN s.qty <= 0 THEN 1 ELSE 0 END AS so
+                 FROM v_stk_amt s JOIN cal c ON c.d = s.d AND c.is_work = 1
+                 WHERE s.wh_cd = 'W300' AND s.item_cd IN ('EWP-A100','EWP-B200') AND s.d < :as_of_date)
+      SELECT ym AS period, item_cd AS dim, 100.0 * SUM(so) / COUNT(*) AS value, SUM(so) AS num, COUNT(*) AS den,
+             group_concat(CASE WHEN so = 1 THEN substr(d,6) END, ', ') AS note
+      FROM x GROUP BY 1, 2
+      UNION ALL SELECT ym, '전체', 100.0 * SUM(so) / COUNT(*), SUM(so), COUNT(*), NULL FROM x GROUP BY 1
+      ORDER BY 1, 2
+    daily: |
+      SELECT d, item_cd AS dim, qty AS value FROM v_stk_amt WHERE wh_cd = 'W300' AND item_cd IN ('EWP-A100','EWP-B200')
+  - id: CS03
+    area: 고객서비스
+    group: 고객서비스
+    name: 결품율
+    definition: 요청 납기일에 고객 요청 수량 중 출하하지 못한 수량의 비율(수량 기준).
+    formula: Σ max(0, 요청수량 − 요청일까지 출하수량) / Σ 요청수량 × 100
+    unit: "%"
+    period: 월(요청 납기 기준)
+    direction: 낮을수록 좋음
+    target: 0.5% 이하
+    dims: [고객, 품목]
+    nouns: [SalesOrderLine, ProductRelease, DeliveryLine]
+    attrs: [SalesOrderLine.ItemQuantity, SalesOrderLine.RequestedDeliveryDate, DeliveryLine.ProductDeliveryQuantity]
+    source: ERP tb_sd_so_d·tb_sd_dlv
+    gap: 없음(Core)
+    scenarios: [SC07]
+    num_label: 결품 수량
+    den_label: 요청 수량
+    result: |
+      WITH x AS (SELECT substr(req_dt,1,7) AS ym, cust_cd, qty, MAX(qty - ship_by_req, 0) AS short FROM v_soline WHERE req_dt < :as_of_date)
+      SELECT ym AS period, cust_cd AS dim, 100.0 * SUM(short) / SUM(qty) AS value, SUM(short) AS num, SUM(qty) AS den FROM x GROUP BY 1, 2
+      UNION ALL SELECT ym, '전체', 100.0 * SUM(short) / SUM(qty), SUM(short), SUM(qty) FROM x GROUP BY 1
+      ORDER BY 1, 2

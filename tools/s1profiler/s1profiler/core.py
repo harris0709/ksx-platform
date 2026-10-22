@@ -479,6 +479,8 @@ def find_relations(conns, tables: list[Table], cfg: dict, repo_root: str):
                 right_parent = bool(is_key(rt, rc))
             elif tmap[rt].pk == [rc] or tmap[lt].pk == [lc]:
                 right_parent = tmap[rt].pk == [rc]
+            elif (rc in tmap[rt].pk) != (lc in tmap[lt].pk):       # 복합 PK 구성 컬럼인 쪽(헤더·상세 → 이력)
+                right_parent = rc in tmap[rt].pk
             else:
                 right_parent = True
             if right_parent:

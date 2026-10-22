@@ -23,8 +23,9 @@ def _lit(v):
 
 
 class _Cursor:
-    def __init__(self, rows):
+    def __init__(self, rows, names=None):
         self._rows = rows
+        self.description = [(n,) for n in names] if names is not None else None
 
     def fetchall(self):
         return self._rows
@@ -53,11 +54,13 @@ class Connection:
         r = subprocess.run(self.args + ["-c", wrapped], env=self.env, capture_output=True, text=True)
         if r.returncode:
             raise RuntimeError(r.stderr.strip())
-        rows = []
+        rows, names = [], None
         for line in r.stdout.splitlines():
             if line.strip():
-                rows.append(tuple(v for _, v in json.loads(line, object_pairs_hook=lambda p: p)))
-        return _Cursor(rows)
+                pairs = json.loads(line, object_pairs_hook=lambda p: p)
+                names = names or [k for k, _ in pairs]
+                rows.append(tuple(v for _, v in pairs))
+        return _Cursor(rows, names)
 
     def close(self):
         pass

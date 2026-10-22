@@ -14,7 +14,19 @@
 python -m s1profiler check-conn --config mapping/impix/s1/s1_config.yaml   # 접속 확인
 python -m s1profiler all        --config mapping/impix/s1/s1_config.yaml   # 분석 전체
 python -m s1profiler scenarios  --config mapping/impix/s1/s1_config.yaml   # 정의서·질의서
+python -m s1profiler kpi        --config mapping/impix/s1/s1_config.yaml   # KPI 정의서(xlsx) + 원천 산출 검증
 ```
+
+### kpi 명령
+
+`<output_dir>/kpi_catalog.yaml`(또는 `--catalog`)을 읽어 다음 순서로 계산합니다.
+
+1. `datasets` — 원천 시스템별 추출 SQL(PostgreSQL, `{as_of}` 치환)을 실행해 메모리 sqlite 테이블로 적재
+2. `views` — 정규화·시스템 간 조인 뷰(`:as_of_date` 등은 문자열로 치환), 달력 `cal`·월 `months` 테이블 자동 생성
+3. `kpis[].result` — KPI별 sqlite SQL(열: period, dim, value, num, den, note). 결과는 `k_<ID>` 테이블로 남아 뒤 KPI가 참조(OEE)
+4. 산출물: `S1_KPI정의서_<기업>.xlsx`(개요·KPI정의서·KPI산출값·월별비교·일별추이·명사-KPI·공백·Extension·산출SQL), `s1_kpi_<기업>.json`
+
+업무 질의(`scenarios.yaml`)의 `kpi:` 필드로 질의와 KPI가 서로 연결됩니다(정의서 '관련 질의' 열, 질의서 'KPI별 질의' 시트).
 
 - 기본 드라이버는 psycopg 3입니다. 설치할 수 없는 환경은 `S1_DB_DRIVER=psql`로 psql 명령 기반 대체 드라이버를 씁니다(느림).
 - 원천 계정은 읽기 전용으로 접속하며(`default_transaction_read_only`), 질의는 집계·DISTINCT만 실행합니다.
