@@ -277,7 +277,7 @@ services:
   #   DB: impix_erp(스키마 erp), impix_mes(스키마 mes) / 분석 계정 s1_reader(읽기 전용)
   # ---------------------------------------------------------------
   impix-src:
-    profiles: ["sim"]
+    profiles: ["sim", "tools"]   # s1-tools가 의존하므로 tools 프로필에서도 정의
     image: apache/age:${AGE_IMAGE_TAG}
     command: ["postgres", "-c", "shared_preload_libraries="]
     environment:
