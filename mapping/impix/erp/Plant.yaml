@@ -3,7 +3,7 @@
 noun: Plant
 layer: core
 structure: '1:1'
-source: {system: ERP, table: erp.tb_cm_plant}
+source: {system: ERP, table: erp.tb_cm_plant, filter: use_yn = 'Y'}
 base: {EnterpriseID: 'xref(enterprise, comp_cd)', SiteID: 'xref(site, bizarea_cd)', PlantID: 'xref(plant, plant_cd)'}
 identity:
 - PlantID

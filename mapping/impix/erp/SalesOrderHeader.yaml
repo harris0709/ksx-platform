@@ -9,10 +9,10 @@ identity:
 - SalesDocumentNumber
 attributes:
   SalesDocumentNumber: {from: so_no, match: normalized, status: reviewed}
-  SalesDate: {from: so_dt, match: manual, transform: to_date8(so_dt), status: reviewed}
   SalesOrderType: {from: so_tp, match: manual, code: SO_TP -> SalesOrderType, status: reviewed}
-  SalesStatus: {from: so_stat, match: korean, code: SO_STAT -> SalesStatus, status: reviewed}
+  SalesStatus: {from: so_stat, match: normalized, code: SO_STAT -> SalesStatus, status: reviewed}
   CustomerID: {from: cust_cd, match: normalized, status: reviewed}
+  SalesDate: {from: so_dt, match: normalized, transform: to_date8(so_dt), status: reviewed}
   CreatorID: {from: reg_id, match: normalized, status: reviewed}
 extension: {}
 excluded: []

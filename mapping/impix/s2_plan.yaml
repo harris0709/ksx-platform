@@ -46,11 +46,13 @@ specs:
   - noun: Plant
     source: erp.tb_cm_plant
     base: { EnterpriseID: "xref(enterprise, comp_cd)", SiteID: "xref(site, bizarea_cd)", PlantID: "xref(plant, plant_cd)" }
+    filter: "use_yn = 'Y'"
     map: { DialNumber: tel_no }
     exclude: { use_yn: "표준 공장에 사용여부 없음 — 전 건 Y(적재 필터)" }
   - noun: Department
     source: erp.tb_cm_dept
     base: { PlantID: "xref(plant, plant_cd)" }
+    filter: "use_yn = 'Y'"
     exclude: { use_yn: "표준 부서에 사용여부 없음 — 전 건 Y(적재 필터)" }
   - noun: Personnel
     source: erp.tb_hr_emp
@@ -191,6 +193,7 @@ specs:
     source: mes.tm_param
     join: [ { table: mes.tm_eqp, as: e, on: "eqp_id = e.eqp_id" } ]
     base: { PlantID: "xref(plant, e.fac_id)" }
+    filter: "use_flag = 'Y'"
     map:
       EquipmentID: eqp_id
       ParameterType: { from: param_kind, code: PARAM_KIND }
@@ -219,7 +222,6 @@ specs:
     base: { PlantID: const(P2) }
     map:
       SalesDocumentNumber: so_no
-      SalesDate: so_dt
       SalesOrderType: { from: so_tp, code: SO_TP }
       SalesStatus: { from: so_stat, code: SO_STAT }
   - noun: SalesOrderLine

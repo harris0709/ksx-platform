@@ -3,7 +3,7 @@
 noun: Department
 layer: core
 structure: '1:1'
-source: {system: ERP, table: erp.tb_cm_dept}
+source: {system: ERP, table: erp.tb_cm_dept, filter: use_yn = 'Y'}
 base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, plant_cd)'}
 identity:
 - DepartmentID

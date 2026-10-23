@@ -3,7 +3,7 @@
 noun: EquipmentParameter
 layer: core
 structure: '1:1'
-source: {system: MES, table: mes.tm_param}
+source: {system: MES, table: mes.tm_param, filter: use_flag = 'Y'}
 join:
 - {table: mes.tm_eqp, as: e, 'on': eqp_id = e.eqp_id}
 base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, e.fac_id)'}
