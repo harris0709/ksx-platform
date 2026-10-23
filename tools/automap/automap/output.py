@@ -78,7 +78,7 @@ def write_all(eng, out: str) -> list[str]:
     for r in eng.results:
         p = spec_path(out, r)
         os.makedirs(os.path.dirname(p), exist_ok=True)
-        open(p, "w", encoding="utf-8").write(_spec_yaml(eng, r))
+        open(p, "w", encoding="utf-8", newline="\n").write(_spec_yaml(eng, r))
         paths.append(p)
     # 대응표 CSV
     rows = eng.code_rows()
@@ -205,5 +205,5 @@ def _md(eng, out, ent, judg, met) -> str:
            for r in eng.results]
     md += ["", "## 검사", ""] + ([f"- {a} · {b}: {c}" for a, b, c in eng.issues] or ["- 오류 없음"])
     p = os.path.join(out, f"S2_매핑요약_{ent}.md")
-    open(p, "w", encoding="utf-8").write("\n".join(md) + "\n")
+    open(p, "w", encoding="utf-8", newline="\n").write("\n".join(md) + "\n")
     return p
