@@ -61,6 +61,19 @@ def test_extension_attrs_are_mapped():
         assert k in by and by[k].layer == "ext", k
 
 
+def test_lot_sources_and_material_lot_ids():
+    """A안: 로트는 출처 4곳(생산·구매·이관·도입 전 출하), 공급사 LOT 참조는 모두 mat_lot(LOT+품목)으로 만든다."""
+    lots = {r.spec.get("file", r.noun): r for r in eng().results if r.noun == "Lot"}
+    assert set(lots) == {"Lot", "Lot_material", "Lot_legacy", "Lot_shipped"}, set(lots)
+    assert {r.maps["LotOriginType"].transform for r in lots.values()} == {"const(PRODUCTION)", "const(PURCHASE)", "const(LEGACY)"}
+    for r in eng().results:
+        m = r.maps.get("LotID")
+        if m and m.src and ("vend_lot" in m.src or r.table in ("erp.tb_mm_stock_lot",)):
+            assert m.transform.startswith("mat_lot("), (r.noun, m.src, m.transform)
+        if r.table in ("erp.tb_mm_gr", "qms.qm_iqc", "erp.tb_mm_stock_lot"):
+            assert "ItemID" in r.maps, (r.noun, r.table)        # 조합에 쓰인 item_cd도 단독 매칭
+
+
 def test_filter_columns_checked():
     """filter에 원천에 없는 컬럼을 쓰면 오류(예: mes.tm_param은 use_yn이 아니라 use_flag)."""
     import tempfile

@@ -18,6 +18,7 @@ attributes:
 extension:
   CurrencyCode: {match: const, transform: const(KRW), note: 원천 통화 없음 — 원화 단일, status: reviewed}
   SalesAmount: {from: 'so_qty,unit_prc', match: derived, transform: so_qty * unit_prc, status: reviewed}
+  UnitPrice: {from: unit_prc, match: normalized, status: reviewed}
 excluded:
 - {column: dlv_qty, reason: 납품 누계 — DeliveryLine 합계로 계산(파생 값 적재 안 함)}
 - {column: cls_yn, reason: 마감 표식 — 출하 완료는 SalesStatus·DeliveryLine으로 도출}

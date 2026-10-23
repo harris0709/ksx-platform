@@ -13,8 +13,10 @@ attributes:
   SalesProjection: {from: plan_qty, match: manual, status: reviewed}
   ProjectionStartDate: {from: plan_ym, match: manual, transform: ym_first(plan_ym), status: reviewed}
   ProjectionEndDate: {from: plan_ym, match: manual, transform: ym_last(plan_ym), status: reviewed}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
   CreationDateTime: {from: reg_dt, match: normalized, transform: to_ts(reg_dt), status: reviewed}
 extension:
   SalesPlanType: {from: plan_tp, match: component, code: PLAN_TP -> SalesPlanType, status: reviewed}
   SalesPlanVersion: {from: plan_ver, match: manual, status: reviewed}
+  CustomerID: {from: cust_cd, match: normalized, status: reviewed}
 excluded: []

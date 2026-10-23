@@ -12,7 +12,7 @@ identity:
 attributes: {}
 extension:
   WarehouseID: {from: wh_cd, match: normalized, status: reviewed}
-  LotID: {from: lot_no, match: normalized, status: reviewed}
+  LotID: {from: 'lot_no,item_cd', match: derived, transform: 'mat_lot(lot_no,item_cd)', status: reviewed}
   GoodsReceiptDate: {from: rcv_dt, match: normalized, transform: to_date8(rcv_dt), status: reviewed}
   InventoryQuantity: {from: stk_qty, match: normalized, status: reviewed}
   ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}

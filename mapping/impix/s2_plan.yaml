@@ -14,6 +14,8 @@
 #   eq(x,'v')              x = 'v' → boolean             case(조건, 참, 거짓)  조건식
 #   unpivot(c1→E1, c2→E2)  한 원천 행 → 이벤트 여러 행(ev 열로 구분)
 #   const(v)               상수                          xref(대응표, 컬럼)  식별 대응표(xref.csv)
+#   mat_lot(lot, item)     공급사 LOT('V###-…')면 lot||'_'||upper_trim(item), 아니면 lot 그대로
+#                          — 공급사 LOT 번호는 품목 간에 겹친다(75개 번호 → 169개 품목 LOT)
 # 변환을 적지 않으면 엔진이 원천 형식·표준 자료형으로 추론한다(char(8)→to_date8, varchar(14)→to_ts14,
 # timestamp→to_ts, Y/N→yn, numeric→int). 코드(code)는 아래 codes 대응표, 단위(uom)는 units 대응표로 점검한다.
 # =====================================================================
@@ -301,7 +303,7 @@ specs:
       WarehouseID: wh_cd
       PurchaseDocumentNumber: po_no
       PurchaseDocumentSequence: po_seq
-      LotID: { from: vend_lot, note: "공급사 LOT" }
+      LotID: { from: "vend_lot,item_cd", transform: "mat_lot(vend_lot,item_cd)", note: "구매 자재 LOT(Lot_material)" }
       IncomingInspectionIndicator: iqc_yn
       IncomingInspectionAcceptedQuantity: { from: "gr_qty,iqc_stat", transform: "case(iqc_stat IN ('10','30'), gr_qty, 0)", note: "10 합격·30 특채" }
       IncomingInspectionRejectedQuantity: { from: "gr_qty,iqc_stat", transform: "case(iqc_stat = '20', gr_qty, 0)" }
@@ -378,7 +380,7 @@ specs:
   - noun: LotInventory
     source: erp.tb_mm_stock_lot
     base: { PlantID: "xref(wh_plant, wh_cd)" }
-    map: { WarehouseID: wh_cd, LotID: lot_no, GoodsReceiptDate: rcv_dt, InventoryQuantity: stk_qty }
+    map: { WarehouseID: wh_cd, LotID: { from: "lot_no,item_cd", transform: "mat_lot(lot_no,item_cd)" }, GoodsReceiptDate: rcv_dt, InventoryQuantity: stk_qty }
   - noun: InventoryCount
     source: erp.tb_mm_cnt
     base: { PlantID: "xref(wh_plant, wh_cd)" }
@@ -397,6 +399,42 @@ specs:
       CurrentOperationID: cur_proc_cd
       LotPriority: prior_no
       CreatorID: crt_user
+      LotOriginType: { transform: const(PRODUCTION) }
+  - noun: Lot
+    source: erp.tb_mm_gr
+    file: Lot_material
+    structure: "1:1(입고 → 구매 자재 LOT)"
+    filter: "vend_lot IS NOT NULL"
+    base: { PlantID: "xref(wh_plant, wh_cd)" }
+    map:
+      LotID: { from: "vend_lot,item_cd", transform: "mat_lot(vend_lot,item_cd)" }
+      LotCreatedQuantity: gr_qty
+      CreationDateTime: gr_dt
+      LotOriginType: { transform: const(PURCHASE) }
+      VendorLotNumber: vend_lot
+    rest: "GoodsReceipt 명세에서 판정"
+  - noun: Lot
+    source: erp.tb_mm_stock_lot
+    file: Lot_legacy
+    structure: "1:1(기초·이관 재고 LOT — 입고 이력 이전)"
+    filter: "rcv_dt < '20260801'"
+    base: { PlantID: "xref(wh_plant, wh_cd)" }
+    map:
+      LotID: { from: "lot_no,item_cd", transform: "mat_lot(lot_no,item_cd)" }
+      LotCreatedQuantity: { from: stk_qty, note: "이관 시점 재고" }
+      CreationDateTime: rcv_dt
+      LotOriginType: { transform: const(LEGACY) }
+    rest: "LotInventory 명세에서 판정"
+  - noun: Lot
+    source: erp.tb_sd_dlv
+    file: Lot_shipped
+    structure: "N→1(MES 도입 전 출하 LOT — LOT별 1행)"
+    filter: "lot_no < 'E260921'"
+    base: { PlantID: "xref(wh_plant, wh_cd)" }
+    map:
+      LotID: { from: lot_no, note: "MES 도입(2026-09-21) 전 생산 LOT — 생산 이력 없이 LOT만 등록(S1 품질 이슈)" }
+      LotOriginType: { transform: const(LEGACY) }
+    rest: "ProductRelease 명세에서 판정"
   - noun: OperationStart
     source: mes.tb_trk_in
     structure: "이력→이벤트"
@@ -571,7 +609,7 @@ specs:
       InspectionResultID: iqc_no
       GoodsReceiptID: gr_no
       GoodsReceiptSequence: { transform: const(1) }
-      LotID: { from: vend_lot, note: "공급사 LOT" }
+      LotID: { from: "vend_lot,item_cd", transform: "mat_lot(vend_lot,item_cd)", note: "구매 자재 LOT(Lot_material)" }
       InspectionQuantity: { from: smpl_qty, note: "시료 수량" }
       InspectionResult: { from: judge, code: IQC_JUDGE }
       DefectTypeCode: { from: defect_cd, code: "IQC_DEFECT:TYPE" }

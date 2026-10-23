@@ -2,13 +2,13 @@
 
 | 항목 | 값 |
 |---|---|
-| 매핑 명세 / 대상 명사 | 55 / 54 |
-| 매핑 속성(컬럼 1개) / 파생(여러 컬럼) | 416 / 12 |
+| 매핑 명세 / 대상 명사 | 58 / 54 |
+| 매핑 속성(컬럼 1개) / 파생(여러 컬럼) | 427 / 17 |
 | 결정론 해소율 | 71.9% (목표 70% 이상) |
-| 검토자 수정 비율 | 2.0% (목표 20% 미만) |
-| 필수 속성 매핑 | 100.0% (259/259) |
+| 검토자 수정 비율 | 1.9% (목표 20% 미만) |
+| 필수 속성 매핑 | 100.0% (275/275) |
 | 대상 컬럼 판정 | 100.0% (452/452) |
-| 판정 분포 | 매핑 319, 미판정 0, 식별 대응 9, 제외 40, 조인 원천 4, 조인 키 7, 코드 원천 16, 확장 57 |
+| 판정 분포 | 매핑 325, 미판정 0, 식별 대응 9, 제외 40, 조인 원천 4, 조인 키 7, 코드 원천 16, 확장 51 |
 | 검사 오류 | 0 |
 
 ## 명세
@@ -35,9 +35,9 @@
 | BasePrice | erp.tb_mm_price | 1:1 | 6 | — |
 | StandardCost | erp.tb_co_std_cost | 1:1 | 12 | — |
 | EquipmentParameter | mes.tm_param | 1:1 | 15 | — |
-| SalesPlan | erp.tb_sd_plan | 1:1 | 10 | — |
+| SalesPlan | erp.tb_sd_plan | 1:1 | 12 | — |
 | SalesOrderHeader | erp.tb_sd_so_h | 1:1 | 9 | — |
-| SalesOrderLine | erp.tb_sd_so_d | 1:1 | 11 | — |
+| SalesOrderLine | erp.tb_sd_so_d | 1:1 | 12 | — |
 | ProductRelease | erp.tb_sd_dlv | 1:1 | 14 | — |
 | DeliveryHeader | erp.tb_sd_dlv | 1→헤더·라인(헤더) | 6 | — |
 | DeliveryLine | erp.tb_sd_dlv | 1→헤더·라인(라인) | 12 | — |
@@ -45,7 +45,7 @@
 | PurchaseOrderLine | erp.tb_mm_po_d | 1:1 | 11 | — |
 | GoodsReceipt | erp.tb_mm_gr | 1:1 | 16 | — |
 | GoodsIssue | erp.tb_mm_gi | 1:1 | 12 | — |
-| ProductionPlanning | erp.tb_pp_plan | 1:1 | 7 | — |
+| ProductionPlanning | erp.tb_pp_plan | 1:1 | 8 | — |
 | ProductionOrder | erp.tb_pp_mo | 1:1 | 19 | — |
 | ProductIncoming | erp.tb_pp_rcpt | 1:1 | 12 | — |
 | AvailableInventory | erp.tb_pp_mat_chk | 1:1 | 11 | — |
@@ -53,7 +53,10 @@
 | InventorySnapshot | erp.tb_mm_stock_day | 1:1 | 7 | — |
 | LotInventory | erp.tb_mm_stock_lot | 1:1 | 8 | — |
 | InventoryCount | erp.tb_mm_cnt | 1:1 | 9 | — |
-| Lot | mes.tb_lot | 1:1 | 22 | — |
+| Lot | mes.tb_lot | 1:1 | 23 | — |
+| Lot | erp.tb_mm_gr | 1:1(입고 → 구매 자재 LOT) | 10 | — |
+| Lot | erp.tb_mm_stock_lot | 1:1(기초·이관 재고 LOT — 입고 이력 이전) | 8 | — |
+| Lot | erp.tb_sd_dlv | N→1(MES 도입 전 출하 LOT — LOT별 1행) | 6 | — |
 | OperationStart | mes.tb_trk_in | 이력→이벤트 | 10 | — |
 | OperationEnd | mes.tb_trk_out | 이력→이벤트 | 11 | — |
 | ProductionPerformance | mes.tb_trk_out | N→1(완공+착공+LOT+검사) | 18 | — |

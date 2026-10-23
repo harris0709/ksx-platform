@@ -55,7 +55,7 @@ def test_extension_impix():
     issues = X.validate(e, m)
     assert not [i for i in issues if i.level == "오류"], issues
     kinds = [t.ext_type for t in e.tables.values()]
-    assert kinds.count("확장 명사") == 5 and kinds.count("확장 속성") == 16   # S1 8 + S2 매핑 8
+    assert kinds.count("확장 명사") == 5 and kinds.count("확장 속성") == 17   # S1 8 + S2 매핑 9
     props, _, _, viss = X.ext_vocab(e, m, v)
     assert not viss
     assert all(p.name.startswith("impix:") for p in props.values() if p.new)

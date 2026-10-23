@@ -1,0 +1,22 @@
+# Lot ← erp.tb_sd_dlv (N→1(MES 도입 전 출하 LOT — LOT별 1행)) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: Lot
+layer: core
+structure: N→1(MES 도입 전 출하 LOT — LOT별 1행)
+source: {system: ERP, table: erp.tb_sd_dlv, filter: lot_no < 'E260921'}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, wh_cd)'}
+identity:
+- LotID
+attributes:
+  LotID: {from: lot_no, match: normalized, note: MES 도입(2026-09-21) 전 생산 LOT — 생산 이력 없이 LOT만 등록(S1 품질 이슈), status: reviewed}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+extension:
+  LotOriginType: {match: const, transform: const(LEGACY), status: reviewed}
+excluded:
+- {column: dlv_no, reason: ProductRelease 명세에서 판정}
+- {column: so_no, reason: ProductRelease 명세에서 판정}
+- {column: so_seq, reason: ProductRelease 명세에서 판정}
+- {column: cust_cd, reason: ProductRelease 명세에서 판정}
+- {column: dlv_qty, reason: ProductRelease 명세에서 판정}
+- {column: dlv_dt, reason: ProductRelease 명세에서 판정}
+- {column: rtn_yn, reason: ProductRelease 명세에서 판정}

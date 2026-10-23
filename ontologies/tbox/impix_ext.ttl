@@ -162,6 +162,12 @@ impix:lcl a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
 impix:ucl a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
     rdfs:label "관리상한"@ko, "UCL"@en ;
     ksx:sourceAttribute "UCL" .
+impix:lotOriginType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "LotOriginType" ;
+    rdfs:label "로트출처유형"@ko, "LotOriginType"@en ;
+    ksx:sourceAttribute "LotOriginType" .
+impix:vendorLotNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "공급사로트번호"@ko, "VendorLotNumber"@en ;
+    ksx:sourceAttribute "VendorLotNumber" .
 impix:refCauseOperation a owl:ObjectProperty ; rdfs:range ksx:Operation ; owl:inverseOf impix:refCauseOperationInverse ;
     rdfs:label "원인공정식별자 참조"@ko, "refCauseOperation"@en ;
     ksx:sourceAttribute "CauseOperationID" .

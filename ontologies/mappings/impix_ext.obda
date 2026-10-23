@@ -90,4 +90,8 @@ mappingId	IMPIX_EquipmentParameterExt
 target		d:{enterpriseid}/EquipmentParameter/{parameterid} impix:lcl {lcl}^^xsd:decimal ; impix:ucl {ucl}^^xsd:decimal .
 source		SELECT "EnterpriseID" AS enterpriseid, "ParameterID" AS parameterid, "LCL" AS lcl, "UCL" AS ucl FROM ext."EquipmentParameterExt"
 
+mappingId	IMPIX_LotExt
+target		d:{enterpriseid}/Lot/{lotid} impix:lotOriginType d:codelist/LotOriginType/{lotorigintype} ; ksx:vendorID {vendorid} ; impix:vendorLotNumber {vendorlotnumber} ; ksx:refVendor d:{enterpriseid}/VendorPartyMaster/{vendorid} .
+source		SELECT "EnterpriseID" AS enterpriseid, "LotID" AS lotid, "LotOriginType" AS lotorigintype, "VendorID" AS vendorid, "VendorLotNumber" AS vendorlotnumber FROM ext."LotExt"
+
 ]]

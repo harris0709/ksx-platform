@@ -22,5 +22,5 @@ attributes:
 extension:
   PurchaseDocumentNumber: {from: po_no, match: normalized, status: reviewed}
   PurchaseDocumentSequence: {from: po_seq, match: normalized, status: reviewed}
-  LotID: {from: vend_lot, match: manual, note: 공급사 LOT, status: reviewed}
+  LotID: {from: 'vend_lot,item_cd', match: derived, transform: 'mat_lot(vend_lot,item_cd)', note: 구매 자재 LOT(Lot_material), status: reviewed}
 excluded: []

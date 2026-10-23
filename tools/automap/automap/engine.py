@@ -153,10 +153,8 @@ class Engine:
                     continue
                 v = {"from": v} if isinstance(v, str) else dict(v)
                 src = v.get("from")
-                if src:
-                    for x in re.split(r"[,+ ]+", src):
-                        if x:
-                            r.used_cols.add(x.split(".")[-1])
+                if src and not re.search(r"[,+ ]", src):    # 조합(여러 컬럼)에 쓰인 컬럼은 단독 매칭도 계속 받는다
+                    r.used_cols.add(src.split(".")[-1])
                 stage = "manual" if src else ("const" if "const" in str(v.get("transform", "")) else "derived")
                 r.maps[an] = AttrMap(an, src, stage, v.get("status", "reviewed"), v.get("code"), v.get("uom"),
                                      v.get("transform"), v.get("note"), layer=noun.attrs[an].layer)
@@ -170,18 +168,24 @@ class Engine:
                 hit = M.match(cname, comment, free, self.abbrev, self.ko_syn)
                 mapped_here = [m for m in r.maps.values() if m.src and q in re.split(r"[,+ ]+", m.src)
                                and m.stage not in ("const", "xref")]
+                in_combo = False
                 if mapped_here:
+                    singles = []
                     for m in mapped_here:
                         if re.search(r"[,+ ]", m.src):      # 여러 컬럼 조합(식별자 생성·계산) = 검토자 파생
                             m.stage, m.evidence = "derived", m.evidence or "여러 컬럼 조합 — 검토자 파생"
+                            in_combo = True
                             continue
+                        singles.append(m)
+                    for m in singles:
                         if hit and hit.attr.en == m.attr:
                             m.stage, m.evidence = hit.stage, hit.evidence
                         elif hit:
                             m.auto, m.evidence = hit.attr.en, f"결정론 후보 {hit.attr.en}({hit.stage}) → 검토자 수정"
                         else:
                             m.evidence = m.evidence or "결정론 미해소 → 검토자 판단"
-                    continue
+                    if singles:
+                        continue
                 if q in r.excluded or q in r.join_cols or (al is None and cname in r.used_cols):
                     continue
                 if al is not None:          # 조인 테이블 컬럼은 계획에 명시한 것만 쓴다(자동 매칭 안 함)
@@ -192,7 +196,7 @@ class Engine:
                                            layer=a.layer)
                     taken.add(a.en)
                     r.used_cols.add(cname)
-                else:
+                elif not in_combo:                  # 조합에만 쓰인 컬럼은 이미 판정됨(매핑)
                     r.unresolved[q] = M.candidates(cname, comment, attrs, self.abbrev)
             if sp.get("rest"):                     # 파생 명세: 남은 원천 컬럼은 주 명세에서 판정
                 for q in list(r.unresolved):

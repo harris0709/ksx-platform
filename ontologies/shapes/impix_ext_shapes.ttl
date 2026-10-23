@@ -228,3 +228,9 @@ impixs:TraceParameterExtShape a sh:NodeShape ; sh:targetClass ksx:TraceParameter
 impixs:EquipmentParameterExtShape a sh:NodeShape ; sh:targetClass ksx:EquipmentParameter ;
     sh:property [ sh:path impix:lcl ; sh:maxCount 1 ; sh:datatype xsd:decimal ] ;
     sh:property [ sh:path impix:ucl ; sh:maxCount 1 ; sh:datatype xsd:decimal ] .
+
+impixs:LotExtShape a sh:NodeShape ; sh:targetClass ksx:Lot ;
+    sh:property [ sh:path impix:lotOriginType ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path ksx:vendorID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path impix:vendorLotNumber ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:refVendor ; sh:class ksx:VendorPartyMaster ] .

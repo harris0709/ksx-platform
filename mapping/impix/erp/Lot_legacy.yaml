@@ -1,0 +1,17 @@
+# Lot ← erp.tb_mm_stock_lot (1:1(기초·이관 재고 LOT — 입고 이력 이전)) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: Lot
+layer: core
+structure: 1:1(기초·이관 재고 LOT — 입고 이력 이전)
+source: {system: ERP, table: erp.tb_mm_stock_lot, filter: rcv_dt < '20260801'}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, wh_cd)'}
+identity:
+- LotID
+attributes:
+  LotID: {from: 'lot_no,item_cd', match: derived, transform: 'mat_lot(lot_no,item_cd)', status: reviewed}
+  LotCreatedQuantity: {from: stk_qty, match: manual, note: 이관 시점 재고, status: reviewed}
+  CreationDateTime: {from: rcv_dt, match: manual, transform: to_date8(rcv_dt), status: reviewed}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+extension:
+  LotOriginType: {match: const, transform: const(LEGACY), status: reviewed}
+excluded: []

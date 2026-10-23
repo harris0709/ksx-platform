@@ -3,12 +3,12 @@
 | 항목 | 값 |
 |---|---|
 | 확장 명사(클래스) | 5 — StandardCost, CustomerComplaint, QualityCost, InventorySnapshot, LotInventory |
-| 확장 속성 테이블(대상 Core 명사) | 16 — SalesPlan, SalesOrderLine, AvailableInventory, ProductionPerformance, SupplierInspectionResult, CorrectiveActionRequest, Equipment, EquipmentState, ProductionOrder, Alarm, CustomerPartyMaster, GoodsReceipt, GoodsIssue, ProductIncoming, TraceParameter, EquipmentParameter |
-| 확장 컬럼 | 92 |
-| 속성: 표준 공유 재사용 / 신규 | 43 / 45 |
-| 관계(물리 FK) | 61 |
-| 확장 코드 그룹 / 코드 | 14 / 49 |
-| 판정 기록 | 44 |
+| 확장 속성 테이블(대상 Core 명사) | 17 — SalesPlan, SalesOrderLine, AvailableInventory, ProductionPerformance, SupplierInspectionResult, CorrectiveActionRequest, Equipment, EquipmentState, ProductionOrder, Alarm, CustomerPartyMaster, GoodsReceipt, GoodsIssue, ProductIncoming, TraceParameter, EquipmentParameter, Lot |
+| 확장 컬럼 | 95 |
+| 속성: 표준 공유 재사용 / 신규 | 45 / 47 |
+| 관계(물리 FK) | 63 |
+| 확장 코드 그룹 / 코드 | 15 / 52 |
+| 판정 기록 | 46 |
 | 오류 / 경고 | 0 / 0 |
 
 ## 속성 대응(확장 컬럼 → 온톨로지 속성)
@@ -107,6 +107,9 @@
 | TraceParameterExt | LotID | `ksx:lotID` | 표준 재사용 |
 | EquipmentParameterExt | LCL | `impix:lcl` | 신규 |
 | EquipmentParameterExt | UCL | `impix:ucl` | 신규 |
+| LotExt | LotOriginType | `impix:lotOriginType` | 신규 |
+| LotExt | VendorID | `ksx:vendorID` | 표준 재사용 |
+| LotExt | VendorLotNumber | `impix:vendorLotNumber` | 신규 |
 
 ## 검사 결과
 

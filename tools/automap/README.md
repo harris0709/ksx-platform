@@ -68,6 +68,8 @@ xref:  { plant: [ { system, src, ksx } ] }
 
 - 변환을 적지 않으면 원천 형식과 표준 자료형으로 추론한다: `char(8)`→`to_date8`, `varchar(14)`→`to_ts14`,
   timestamp→`to_ts`, Y/N→`yn`, numeric→`int`(정수 속성). 컬럼별 고정 변환은 `defaults.transform_by_column`.
+- 같은 명사를 원천 여러 곳에서 만들면 명세를 나누고 `file:`로 이름을 붙인다(예: `Lot`, `Lot_material`, `Lot_legacy`, `Lot_shipped`).
+  식별자가 서로 겹치지 않는지는 원천 데이터로 확인해 승인 기록에 남긴다.
 - YAML 1.1 주의: 키 `NO`·`YES`·`ON`은 불리언으로 읽힌다. 약어 사전 키는 따옴표로 감싼다(엔진이 문자열이 아닌 키를 거부).
 - 확장 속성(`extensions/{ent}/확장정의서.xlsx`)은 Core 명사의 속성으로 합쳐져 같은 `map`에 적는다. 명세에는 `extension:` 절로 나뉘어 기록된다.
 

@@ -27,5 +27,6 @@ attributes:
   ScheduledDueDate: {from: due_dt, match: component, transform: to_date8(due_dt), status: reviewed}
   CreationDateTime: {from: crt_dtm, match: normalized, transform: to_ts(crt_dtm), status: reviewed}
   ModificationDateTime: {from: upd_dtm, match: normalized, transform: to_ts(upd_dtm), status: reviewed}
-extension: {}
+extension:
+  LotOriginType: {match: const, transform: const(PRODUCTION), status: reviewed}
 excluded: []

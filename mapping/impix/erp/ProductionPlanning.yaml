@@ -13,6 +13,7 @@ attributes:
   ProductionPlanID: {from: 'plan_dt,line_cd,item_cd', match: derived, transform: 'concat(plan_dt,''_'',line_cd,''_'',upper_trim(item_cd))', status: reviewed}
   ScheduleStartDateTime: {from: plan_dt, match: manual, transform: to_date8(plan_dt), status: reviewed}
   ScheduleEndDateTime: {from: plan_dt, match: manual, transform: to_date8(plan_dt), status: reviewed}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
   ProductionPlanQuantity: {from: plan_qty, match: component, transform: int(plan_qty), status: reviewed}
 extension: {}
 excluded:

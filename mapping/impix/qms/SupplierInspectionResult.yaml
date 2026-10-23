@@ -11,7 +11,7 @@ identity:
 - InspectionResultID
 attributes:
   InspectionResultID: {from: iqc_no, match: manual, status: reviewed}
-  LotID: {from: vend_lot, match: manual, note: 공급사 LOT, status: reviewed}
+  LotID: {from: 'vend_lot,item_cd', match: derived, transform: 'mat_lot(vend_lot,item_cd)', note: 구매 자재 LOT(Lot_material), status: reviewed}
   InspectionQuantity: {from: smpl_qty, match: manual, note: 시료 수량, status: reviewed}
   InspectionResult: {from: judge, match: manual, code: IQC_JUDGE -> InspectionResult, status: reviewed}
   Inspector: {from: insp_emp, match: manual, status: reviewed}
