@@ -13,15 +13,15 @@ identity:
 - ProductionPerformanceSequence
 - EquipmentID
 attributes:
-  ProductionPerformanceID: {from: trk_out_id, match: manual, transform: 'concat(''PP-'',trk_out_id)', status: reviewed}
-  ProductionPerformanceSequence: {match: const, transform: const(1), status: reviewed}
-  ProductionOrderID: {from: l.mo_no, match: normalized, status: reviewed}
-  ExecutionStartDateTime: {from: i.trk_in_dtm, match: manual, transform: to_ts14(i.trk_in_dtm), status: reviewed}
-  ExecutionEndDateTime: {from: trk_out_dtm, match: manual, transform: to_ts14(trk_out_dtm), status: reviewed}
-  PersonnelID: {from: oper_emp_no, match: component, status: reviewed}
-  OperationID: {from: proc_cd, match: normalized, status: reviewed}
-  EquipmentID: {from: eqp_id, match: normalized, status: reviewed}
-  ProducedQuantity: {from: good_qty, match: normalized, status: reviewed}
-  DefectQuantity: {from: ng_qty, match: normalized, status: reviewed}
+  ProductionPerformanceID: {from: trk_out_id, match: manual, transform: 'concat(''PP-'',trk_out_id)', status: approved}
+  ProductionPerformanceSequence: {match: const, transform: const(1), status: approved}
+  ProductionOrderID: {from: l.mo_no, match: normalized, status: approved}
+  ExecutionStartDateTime: {from: i.trk_in_dtm, match: manual, transform: to_ts14(i.trk_in_dtm), status: approved}
+  ExecutionEndDateTime: {from: trk_out_dtm, match: manual, transform: to_ts14(trk_out_dtm), status: approved}
+  PersonnelID: {from: oper_emp_no, match: component, status: approved}
+  OperationID: {from: proc_cd, match: normalized, status: approved}
+  EquipmentID: {from: eqp_id, match: normalized, status: approved}
+  ProducedQuantity: {from: good_qty, match: normalized, status: approved}
+  DefectQuantity: {from: ng_qty, match: normalized, status: approved}
 extension: {}
 excluded: []

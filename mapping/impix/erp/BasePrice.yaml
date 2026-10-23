@@ -9,9 +9,9 @@ identity:
 - ItemID
 - CurrencyCode
 attributes:
-  CurrencyCode: {from: curr_cd, match: normalized, code: CURR -> CurrencyCode, status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
-  UnitPrice: {from: unit_prc, match: normalized, status: reviewed}
+  CurrencyCode: {from: curr_cd, match: normalized, code: CURR -> CurrencyCode, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
+  UnitPrice: {from: unit_prc, match: normalized, status: approved}
 extension: {}
 excluded:
 - {column: vend_cd, reason: 품목당 단일 공급사 단가(중복 0건) — 공급사는 ItemMaster.MainVendorID로 연결(S3)}

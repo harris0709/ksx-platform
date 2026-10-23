@@ -8,9 +8,9 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, w
 identity:
 - DeliveryID
 attributes:
-  DeliveryID: {from: dlv_no, match: normalized, status: reviewed}
-  CustomerID: {from: cust_cd, match: normalized, status: reviewed}
-  DeliveryDateTime: {from: dlv_dt, match: normalized, transform: to_date8(dlv_dt), status: reviewed}
+  DeliveryID: {from: dlv_no, match: normalized, status: approved}
+  CustomerID: {from: cust_cd, match: normalized, status: approved}
+  DeliveryDateTime: {from: dlv_dt, match: normalized, transform: to_date8(dlv_dt), status: approved}
 extension: {}
 excluded:
 - {column: so_no, reason: ProductRelease 명세에서 판정}

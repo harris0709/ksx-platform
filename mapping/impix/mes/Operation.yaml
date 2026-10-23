@@ -10,10 +10,10 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, fac_
 identity:
 - OperationID
 attributes:
-  OperationType: {from: proc_tp, match: normalized, code: PROC_TP -> OperationType, status: reviewed}
-  OperationID: {from: proc_cd, match: normalized, status: reviewed}
-  OperationName: {from: proc_nm, match: normalized, status: reviewed}
-  UseIndicator: {from: use_flag, match: normalized, transform: yn(use_flag), status: reviewed}
+  OperationType: {from: proc_tp, match: normalized, code: PROC_TP -> OperationType, status: approved}
+  OperationID: {from: proc_cd, match: normalized, status: approved}
+  OperationName: {from: proc_nm, match: normalized, status: approved}
+  UseIndicator: {from: use_flag, match: normalized, transform: yn(use_flag), status: approved}
 extension: {}
 excluded:
 - {column: seq_no, reason: 화면 표시 순서 — 공정 순서는 RoutingLine.OperationSequence}

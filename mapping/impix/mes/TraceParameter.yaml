@@ -11,13 +11,13 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, e.fa
 identity:
 - TraceParameterID
 attributes:
-  TraceParameterID: {from: 'param_id,coll_dtm', match: derived, transform: 'concat(param_id,''_'',to_char(coll_dtm,''YYYYMMDDHH24MISS''))', status: reviewed}
-  EquipmentID: {from: eqp_id, match: normalized, status: reviewed}
-  ParameterID: {from: param_id, match: normalized, status: reviewed}
-  EventDateTime: {from: coll_dtm, match: manual, transform: to_ts(coll_dtm), status: reviewed}
-  ParameterValue: {from: val, match: manual, status: reviewed}
-  ParameterUOMCode: {from: p.unit, match: manual, uom: p.unit, status: reviewed}
-  ValidationResultCode: {from: 'val,p.lsl,p.usl', match: derived, transform: 'case(val > p.usl, OVER_USL, val < p.lsl, UNDER_LSL, NORMAL)', status: reviewed}
+  TraceParameterID: {from: 'param_id,coll_dtm', match: derived, transform: 'concat(param_id,''_'',to_char(coll_dtm,''YYYYMMDDHH24MISS''))', status: approved}
+  EquipmentID: {from: eqp_id, match: normalized, status: approved}
+  ParameterID: {from: param_id, match: normalized, status: approved}
+  EventDateTime: {from: coll_dtm, match: manual, transform: to_ts(coll_dtm), status: approved}
+  ParameterValue: {from: val, match: manual, status: approved}
+  ParameterUOMCode: {from: p.unit, match: manual, uom: p.unit, status: approved}
+  ValidationResultCode: {from: 'val,p.lsl,p.usl', match: derived, transform: 'case(val > p.usl, OVER_USL, val < p.lsl, UNDER_LSL, NORMAL)', status: approved}
 extension:
-  LotID: {from: lot_no, match: normalized, status: reviewed}
+  LotID: {from: lot_no, match: normalized, status: approved}
 excluded: []

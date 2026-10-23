@@ -8,14 +8,14 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, w
 identity:
 - GoodsIssueID
 attributes:
-  GoodsIssueID: {from: gi_no, match: normalized, status: reviewed}
-  InventoryTransactionTypeCode: {from: gi_tp, match: manual, code: GI_TP -> InventoryTransactionTypeCode, status: reviewed}
-  ItemUnitQuantity: {from: gi_qty, match: manual, status: reviewed}
-  WarehouseID: {from: wh_cd, match: normalized, status: reviewed}
-  Note: {from: rmk, match: manual, status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  GoodsIssueID: {from: gi_no, match: normalized, status: approved}
+  InventoryTransactionTypeCode: {from: gi_tp, match: manual, code: GI_TP -> InventoryTransactionTypeCode, status: approved}
+  ItemUnitQuantity: {from: gi_qty, match: manual, status: approved}
+  WarehouseID: {from: wh_cd, match: normalized, status: approved}
+  Note: {from: rmk, match: manual, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
 extension:
-  InventoryTransactionDate: {from: gi_dt, match: manual, transform: to_date8(gi_dt), status: reviewed}
-  ProductionOrderID: {from: mo_no, match: normalized, status: reviewed}
-  ProductionOrderSequence: {match: const, transform: const(1), note: 오더 순번 고정 1 — mo_no가 있는 행(생산 투입)만, status: reviewed}
+  InventoryTransactionDate: {from: gi_dt, match: manual, transform: to_date8(gi_dt), status: approved}
+  ProductionOrderID: {from: mo_no, match: normalized, status: approved}
+  ProductionOrderSequence: {match: const, transform: const(1), note: 오더 순번 고정 1 — mo_no가 있는 행(생산 투입)만, status: approved}
 excluded: []

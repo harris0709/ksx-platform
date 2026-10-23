@@ -9,21 +9,21 @@ identity:
 - ProductionOrderID
 - ProductionOrderSequence
 attributes:
-  ProductionOrderID: {from: mo_no, match: normalized, status: reviewed}
-  ProductionOrderSequence: {from: mo_seq, match: normalized, status: reviewed}
-  ProductionOrderQuantity: {from: mo_qty, match: normalized, transform: int(mo_qty), status: reviewed}
-  ItemUOMCode: {from: unit, match: manual, uom: unit, status: reviewed}
-  ScheduleStartDateTime: {from: plan_st_dt, match: component, transform: to_date8(plan_st_dt), status: reviewed}
-  ScheduleEndDateTime: {from: plan_ed_dt, match: manual, transform: to_date8(plan_ed_dt), status: reviewed}
-  SalesDocumentNumber: {from: so_no, match: normalized, status: reviewed}
-  SalesDocumentSequence: {from: so_seq, match: normalized, status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
-  LineID: {from: line_cd, match: normalized, status: reviewed}
-  RoutingID: {from: rout_cd, match: normalized, status: reviewed}
-  BOMRevisionNumber: {from: bom_rev, match: normalized, status: reviewed}
-  ProductionDueDateTime: {from: due_dt, match: component, transform: to_date8(due_dt), status: reviewed}
-  CreationDateTime: {from: reg_dt, match: normalized, transform: to_ts(reg_dt), status: reviewed}
-  CreatorID: {from: reg_id, match: normalized, status: reviewed}
+  ProductionOrderID: {from: mo_no, match: normalized, status: approved}
+  ProductionOrderSequence: {from: mo_seq, match: normalized, status: approved}
+  ProductionOrderQuantity: {from: mo_qty, match: normalized, transform: int(mo_qty), status: approved}
+  ItemUOMCode: {from: unit, match: manual, uom: unit, status: approved}
+  ScheduleStartDateTime: {from: plan_st_dt, match: component, transform: to_date8(plan_st_dt), status: approved}
+  ScheduleEndDateTime: {from: plan_ed_dt, match: manual, transform: to_date8(plan_ed_dt), status: approved}
+  SalesDocumentNumber: {from: so_no, match: normalized, status: approved}
+  SalesDocumentSequence: {from: so_seq, match: normalized, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
+  LineID: {from: line_cd, match: normalized, status: approved}
+  RoutingID: {from: rout_cd, match: normalized, status: approved}
+  BOMRevisionNumber: {from: bom_rev, match: normalized, status: approved}
+  ProductionDueDateTime: {from: due_dt, match: component, transform: to_date8(due_dt), status: approved}
+  CreationDateTime: {from: reg_dt, match: normalized, transform: to_ts(reg_dt), status: approved}
+  CreatorID: {from: reg_id, match: normalized, status: approved}
 extension:
-  ProductionOrderStatusCode: {from: mo_stat, match: manual, code: MO_STAT -> ProductionOrderStatusCode, status: reviewed}
+  ProductionOrderStatusCode: {from: mo_stat, match: manual, code: MO_STAT -> ProductionOrderStatusCode, status: approved}
 excluded: []

@@ -15,14 +15,14 @@ identity:
 - DefectTypeCode
 - DefectTypeDetailCode
 attributes:
-  ProductionPerformanceID: {from: o.trk_out_id, match: manual, transform: 'concat(''PP-'',o.trk_out_id)', status: reviewed}
-  ProductionPerformanceSequence: {match: const, transform: const(1), status: reviewed}
-  DefectTypeCode: {from: defect_cd, match: manual, code: 'DEFECT_CD:TYPE -> DefectTypeCode', status: reviewed}
-  DefectTypeDetailCode: {from: defect_cd, match: manual, code: DEFECT_CD -> DefectTypeDetailCode, status: reviewed}
-  OperationID: {from: q.proc_cd, match: normalized, status: reviewed}
-  LotID: {from: q.lot_no, match: normalized, status: reviewed}
-  ItemID: {from: l.item_cd, match: normalized, transform: upper_trim(l.item_cd), status: reviewed}
-  ProductionOrderID: {from: l.mo_no, match: normalized, status: reviewed}
-  DefectTypeQuantity: {from: defect_qty, match: component, transform: int(defect_qty), status: reviewed}
+  ProductionPerformanceID: {from: o.trk_out_id, match: manual, transform: 'concat(''PP-'',o.trk_out_id)', status: approved}
+  ProductionPerformanceSequence: {match: const, transform: const(1), status: approved}
+  DefectTypeCode: {from: defect_cd, match: manual, code: 'DEFECT_CD:TYPE -> DefectTypeCode', status: approved}
+  DefectTypeDetailCode: {from: defect_cd, match: manual, code: DEFECT_CD -> DefectTypeDetailCode, status: approved}
+  OperationID: {from: q.proc_cd, match: normalized, status: approved}
+  LotID: {from: q.lot_no, match: normalized, status: approved}
+  ItemID: {from: l.item_cd, match: normalized, transform: upper_trim(l.item_cd), status: approved}
+  ProductionOrderID: {from: l.mo_no, match: normalized, status: approved}
+  DefectTypeQuantity: {from: defect_qty, match: component, transform: int(defect_qty), status: approved}
 extension: {}
 excluded: []

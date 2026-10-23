@@ -12,12 +12,12 @@ identity:
 - RoutingID
 - OperationSequence
 attributes:
-  RoutingID: {from: rout_cd, match: normalized, status: reviewed}
-  OperationID: {from: p.proc_cd, match: normalized, note: ERP 작업장 → MES 공정(tm_proc.erp_wc_cd), status: reviewed}
-  SetupTime: {from: setup_min, match: normalized, transform: minutes(setup_min), status: reviewed}
-  RunTime: {from: run_sec, match: normalized, transform: seconds(run_sec), note: 개당 작업시간, status: reviewed}
-  MoveTime: {from: move_min, match: normalized, transform: minutes(move_min), status: reviewed}
-  OperationSequence: {from: oper_seq, match: component, status: reviewed}
-  LastOperationIndicator: {from: last_yn, match: component, transform: yn(last_yn), status: reviewed}
+  RoutingID: {from: rout_cd, match: normalized, status: approved}
+  OperationID: {from: p.proc_cd, match: normalized, note: ERP 작업장 → MES 공정(tm_proc.erp_wc_cd), status: approved}
+  SetupTime: {from: setup_min, match: normalized, transform: minutes(setup_min), status: approved}
+  RunTime: {from: run_sec, match: normalized, transform: seconds(run_sec), note: 개당 작업시간, status: approved}
+  MoveTime: {from: move_min, match: normalized, transform: minutes(move_min), status: approved}
+  OperationSequence: {from: oper_seq, match: component, status: approved}
+  LastOperationIndicator: {from: last_yn, match: component, transform: yn(last_yn), status: approved}
 extension: {}
 excluded: []

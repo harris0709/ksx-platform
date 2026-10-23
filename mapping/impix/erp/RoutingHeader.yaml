@@ -8,9 +8,9 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, plan
 identity:
 - RoutingID
 attributes:
-  RoutingID: {from: rout_cd, match: normalized, status: reviewed}
-  RoutingName: {from: rout_nm, match: normalized, status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
-  UseIndicator: {from: use_yn, match: normalized, transform: yn(use_yn), status: reviewed}
+  RoutingID: {from: rout_cd, match: normalized, status: approved}
+  RoutingName: {from: rout_nm, match: normalized, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
+  UseIndicator: {from: use_yn, match: normalized, transform: yn(use_yn), status: approved}
 extension: {}
 excluded: []

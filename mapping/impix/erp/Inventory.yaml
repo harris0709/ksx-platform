@@ -9,9 +9,9 @@ identity:
 - WarehouseID
 - ItemID
 attributes:
-  WarehouseID: {from: wh_cd, match: normalized, status: reviewed}
-  InventoryQuantity: {from: stk_qty, match: normalized, status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  WarehouseID: {from: wh_cd, match: normalized, status: approved}
+  InventoryQuantity: {from: stk_qty, match: normalized, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
 extension: {}
 excluded:
 - {column: stk_dt, reason: '기준일 — 필터(마지막 기준일)에 사용, 이력은 InventorySnapshot'}

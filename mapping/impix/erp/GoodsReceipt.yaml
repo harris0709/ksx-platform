@@ -9,18 +9,18 @@ identity:
 - GoodsReceiptID
 - GoodsReceiptSequence
 attributes:
-  GoodsReceiptID: {from: gr_no, match: normalized, status: reviewed}
-  GoodsReceiptSequence: {match: const, transform: const(1), status: reviewed}
-  GoodsReceiptDate: {from: gr_dt, match: normalized, transform: to_date8(gr_dt), status: reviewed}
-  GoodsReceiptQuantity: {from: gr_qty, match: normalized, status: reviewed}
-  WarehouseID: {from: wh_cd, match: normalized, status: reviewed}
-  IncomingInspectionIndicator: {from: iqc_yn, match: normalized, transform: yn(iqc_yn), status: reviewed}
-  IncomingInspectionAcceptedQuantity: {from: 'gr_qty,iqc_stat', match: derived, transform: 'case(iqc_stat IN (''10'',''30''), gr_qty, 0)', note: 10 합격·30 특채, status: reviewed}
-  IncomingInspectionRejectedQuantity: {from: 'gr_qty,iqc_stat', match: derived, transform: 'case(iqc_stat = ''20'', gr_qty, 0)', status: reviewed}
-  VendorID: {from: vend_cd, match: normalized, status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  GoodsReceiptID: {from: gr_no, match: normalized, status: approved}
+  GoodsReceiptSequence: {match: const, transform: const(1), status: approved}
+  GoodsReceiptDate: {from: gr_dt, match: normalized, transform: to_date8(gr_dt), status: approved}
+  GoodsReceiptQuantity: {from: gr_qty, match: normalized, status: approved}
+  WarehouseID: {from: wh_cd, match: normalized, status: approved}
+  IncomingInspectionIndicator: {from: iqc_yn, match: normalized, transform: yn(iqc_yn), status: approved}
+  IncomingInspectionAcceptedQuantity: {from: 'gr_qty,iqc_stat', match: derived, transform: 'case(iqc_stat IN (''10'',''30''), gr_qty, 0)', note: 10 합격·30 특채, status: approved}
+  IncomingInspectionRejectedQuantity: {from: 'gr_qty,iqc_stat', match: derived, transform: 'case(iqc_stat = ''20'', gr_qty, 0)', status: approved}
+  VendorID: {from: vend_cd, match: normalized, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
 extension:
-  PurchaseDocumentNumber: {from: po_no, match: normalized, status: reviewed}
-  PurchaseDocumentSequence: {from: po_seq, match: normalized, status: reviewed}
-  LotID: {from: 'vend_lot,item_cd', match: derived, transform: 'mat_lot(vend_lot,item_cd)', note: 구매 자재 LOT(Lot_material), status: reviewed}
+  PurchaseDocumentNumber: {from: po_no, match: normalized, status: approved}
+  PurchaseDocumentSequence: {from: po_seq, match: normalized, status: approved}
+  LotID: {from: 'vend_lot,item_cd', match: derived, transform: 'mat_lot(vend_lot,item_cd)', note: 구매 자재 LOT(Lot_material), status: approved}
 excluded: []

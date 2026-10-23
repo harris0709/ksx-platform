@@ -38,7 +38,7 @@ KS X 9101 기반 제조 온톨로지 End-to-End 구현 저장소입니다. 구�
 | S7 추론 | 규칙 5종(계보·BOM 전개·영향 수주·납기 리스크) + rule-runner | `ontologies/rules/`, `services/rule-runner/` |
 | 시험 | 생성기 회귀, E2E 최소 시험(DDL → 시드 → OBDA → SHACL → 규칙), GitHub Actions CI | `tests/`, `.github/workflows/` |
 | S1 원천 분석 | **s1profiler 0.2** — 스키마·프로파일·코드·암묵 관계·품질 → 인벤토리, 시나리오 7종·업무 질의 155건, **전사 KPI 34종 정의·산출(Excel)**. IMPIX 가상 원천(ERP·MES·QMS) | `tools/s1profiler/`, `tools/sim/`, `mapping/impix/s1/`, `infra/docker-compose/impix-src/` |
-| S2 표준 매핑 | **기업 확장 정의서 양식** + IMPIX 확장(확장 명사 5·확장 속성 테이블 17·확장 코드 52·판정 46), **automap 0.1** — 결정론 매칭(①~④)·검토자 판단 계획 → 매핑 명세 58건·코드 대응 165·단위·식별 대응·검토본(Excel). 필수 속성 100%·컬럼 판정 100%·결정론 71.9%. 업무 승인 대기 | `extensions/`, `tools/automap/`, `mapping/impix/` |
+| S2 표준 매핑 | **기업 확장 정의서 양식** + IMPIX 확장(확장 명사 5·확장 속성 테이블 17·확장 코드 52·판정 46), **automap 0.1** — 결정론 매칭(①~④)·검토자 판단 계획 → 매핑 명세 58건·코드 대응 165·단위·식별 대응·검토본(Excel). 필수 속성 100%·컬럼 판정 100%·결정론 71.9%. **2026-10-23 승인** | `extensions/`, `tools/automap/`, `mapping/impix/` |
 | S3, S8~S11 | 양식·설정 예시만 있음(다음 구현 대상) | `mapping/`, `etl/dbt/`, `services/` |
 
 ## 시작하기

@@ -29,6 +29,15 @@ out: mapping/impix
 accept_auto: true
 scope_tables: all          # S1 원천 56개 테이블의 모든 컬럼을 판정한다(완료 기준 ② 100%)
 
+# 업무 승인(⑦) — 승인되면 모든 명세 status: approved. 근거: S2_승인기록.md
+approval:
+  status: approved
+  date: "2026-10-23"
+  signers:
+    - { role: "데이터 엔지니어(reviewed)", name: "Claude(자동 매핑·검토)", date: "2026-10-23", note: "완료 기준 3종 충족, 로트 A안 반영" }
+    - { role: "도메인(PI) 컨설턴트(approved)", name: "장홍관", date: "2026-10-23", note: "S2 승인 — PM·도메인·현업 겸임(가상 실습)" }
+    - { role: "고객사 현업 검수자(approved)", name: "장홍관(겸임)", date: "2026-10-23", note: "근사 대응 4건·확장·구조 판단 확인" }
+
 defaults:
   base: { EnterpriseID: const(IMPIX), SiteID: const(HQ) }
   transform_by_column: { item_cd: upper_trim, chld_item_cd: upper_trim, prnt_item_cd: upper_trim }

@@ -8,12 +8,12 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, plan
 identity:
 - PersonnelID
 attributes:
-  PersonnelID: {from: emp_no, match: normalized, status: reviewed}
-  PersonInChargeEmail: {from: email, match: manual, status: reviewed}
-  PersonInChargeDialNumber: {from: hp_no, match: component, status: reviewed}
-  EmploymentStatusType: {from: retire_yn, match: manual, code: RETIRE_YN -> EmploymentStatusType, status: reviewed}
-  PersonnelName: {from: emp_nm, match: normalized, status: reviewed}
-  DepartmentID: {from: dept_cd, match: normalized, status: reviewed}
+  PersonnelID: {from: emp_no, match: normalized, status: approved}
+  PersonInChargeEmail: {from: email, match: manual, status: approved}
+  PersonInChargeDialNumber: {from: hp_no, match: component, status: approved}
+  EmploymentStatusType: {from: retire_yn, match: manual, code: RETIRE_YN -> EmploymentStatusType, status: approved}
+  PersonnelName: {from: emp_nm, match: normalized, status: approved}
+  DepartmentID: {from: dept_cd, match: normalized, status: approved}
 extension: {}
 excluded:
 - {column: join_dt, reason: '입사일 — 표준 사원에 없음, KPI·질의 미사용(확장 불요)'}

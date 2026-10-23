@@ -10,13 +10,13 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, i.fa
 identity:
 - OperationEndID
 attributes:
-  OperationEndID: {from: trk_out_id, match: manual, transform: 'concat(''TO-'',trk_out_id)', status: reviewed}
-  LotID: {from: lot_no, match: normalized, status: reviewed}
-  OperationEndTime: {from: trk_out_dtm, match: manual, transform: to_ts14(trk_out_dtm), status: reviewed}
-  PersonnelID: {from: oper_emp_no, match: component, status: reviewed}
-  OperationID: {from: proc_cd, match: normalized, status: reviewed}
-  EquipmentID: {from: eqp_id, match: normalized, status: reviewed}
-  ProducedQuantity: {from: good_qty, match: normalized, status: reviewed}
-  DefectQuantity: {from: ng_qty, match: normalized, status: reviewed}
+  OperationEndID: {from: trk_out_id, match: manual, transform: 'concat(''TO-'',trk_out_id)', status: approved}
+  LotID: {from: lot_no, match: normalized, status: approved}
+  OperationEndTime: {from: trk_out_dtm, match: manual, transform: to_ts14(trk_out_dtm), status: approved}
+  PersonnelID: {from: oper_emp_no, match: component, status: approved}
+  OperationID: {from: proc_cd, match: normalized, status: approved}
+  EquipmentID: {from: eqp_id, match: normalized, status: approved}
+  ProducedQuantity: {from: good_qty, match: normalized, status: approved}
+  DefectQuantity: {from: ng_qty, match: normalized, status: approved}
 extension: {}
 excluded: []

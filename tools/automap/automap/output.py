@@ -107,6 +107,13 @@ def write_all(eng, out: str) -> list[str]:
     return paths
 
 
+def _state(eng) -> str:
+    ap = eng.plan.get("approval") or {}
+    if ap.get("status") == "approved":
+        return f"approved — 업무 승인 {ap.get('date', '')} (승인 시트·S2_승인기록.md)"
+    return "reviewed(데이터 엔지니어 검토) — 도메인·현업 승인 대기"
+
+
 def _xlsx(eng, out, ent, judg, met) -> str:
     wb = Workbook()
     wb.remove(wb.active)
@@ -122,7 +129,7 @@ def _xlsx(eng, out, ent, judg, met) -> str:
             ("대상 컬럼 판정", f"{met['judged']}/{met['cols']} ({met['judge_rate']}%) — 완료 기준 100%"),
             ("판정 분포", ", ".join(f"{k} {v}" for k, v in sorted(met["by_kind"].items()))),
             ("검사 오류", met["errors"]),
-            ("상태", "reviewed(데이터 엔지니어 검토) — 도메인·현업 승인 대기")]
+            ("상태", _state(eng))]
     _sheet(wb, "요약", ["항목", "값"], summ, [34, 90], wrap_cols=(2,))
     _sheet(wb, "구조매핑", ["No", "명사", "구분", "구조 유형", "원천 시스템", "원천 테이블", "조인", "필터", "기본 속성", "식별(UK)",
                          "매핑 속성", "필수 누락", "명세 파일", "비고"],
@@ -177,9 +184,10 @@ def _xlsx(eng, out, ent, judg, met) -> str:
            [(t, d.get("disposition", ""), d.get("note", "")) for t, d in eng.plan.get("tables", {}).items()], [26, 14, 80],
            wrap_cols=(3,))
     _sheet(wb, "검사", ["수준", "위치", "내용"], eng.issues or [("—", "—", "오류·경고 없음")], [8, 40, 90], wrap_cols=(3,))
+    signers = (eng.plan.get("approval") or {}).get("signers") or [
+        {"role": "데이터 엔지니어(reviewed)"}, {"role": "도메인(PI) 컨설턴트(approved)"}, {"role": "고객사 현업 검수자(approved)"}]
     _sheet(wb, "승인", ["역할", "이름", "일자", "의견"],
-           [("데이터 엔지니어(reviewed)", "", "", ""), ("도메인(PI) 컨설턴트(approved)", "", "", ""),
-            ("고객사 현업 검수자(approved)", "", "", "")], [30, 16, 12, 50])
+           [(x.get("role", ""), x.get("name", ""), str(x.get("date", "")), x.get("note", "")) for x in signers], [30, 24, 12, 60])
     p = os.path.join(out, f"S2_매핑정의서_{ent}.xlsx")
     for ws in wb:                                   # 인쇄: 가로·폭 맞춤·제목 행 반복
         ws.page_setup.orientation = "landscape"

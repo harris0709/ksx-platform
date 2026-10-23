@@ -9,15 +9,15 @@ identity:
 - ProductIncomingID
 - ProductIncomingSequence
 attributes:
-  ProductIncomingID: {from: rcpt_no, match: normalized, status: reviewed}
-  ProductIncomingSequence: {match: const, transform: const(1), status: reviewed}
-  InventoryTransactionDate: {from: rcpt_dt, match: manual, transform: to_date8(rcpt_dt), status: reviewed}
-  ItemUnitQuantity: {from: rcpt_qty, match: manual, status: reviewed}
-  WarehouseID: {from: wh_cd, match: normalized, status: reviewed}
-  InventoryTransactionTypeCode: {match: const, transform: const(R200), note: 생산입고, status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  ProductIncomingID: {from: rcpt_no, match: normalized, status: approved}
+  ProductIncomingSequence: {match: const, transform: const(1), status: approved}
+  InventoryTransactionDate: {from: rcpt_dt, match: manual, transform: to_date8(rcpt_dt), status: approved}
+  ItemUnitQuantity: {from: rcpt_qty, match: manual, status: approved}
+  WarehouseID: {from: wh_cd, match: normalized, status: approved}
+  InventoryTransactionTypeCode: {match: const, transform: const(R200), note: 생산입고, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
 extension:
-  ProductionOrderID: {from: mo_no, match: normalized, status: reviewed}
-  ProductionOrderSequence: {match: const, transform: const(1), status: reviewed}
+  ProductionOrderID: {from: mo_no, match: normalized, status: approved}
+  ProductionOrderSequence: {match: const, transform: const(1), status: approved}
 excluded:
 - {column: src, reason: '적재 경로 표식(HIST·MES·MAN) — 기술 컬럼, audit에 기록(확장정의서 판정)'}

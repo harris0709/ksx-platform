@@ -8,13 +8,13 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, plan
 identity:
 - GoodsIssueID
 attributes:
-  GoodsIssueID: {from: scrap_no, match: manual, status: reviewed}
-  InventoryTransactionTypeCode: {match: const, transform: const(I800), note: 폐기 출고, status: reviewed}
-  LotID: {from: lot_no, match: normalized, status: reviewed}
-  ItemUnitQuantity: {from: scrap_qty, match: manual, status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  GoodsIssueID: {from: scrap_no, match: manual, status: approved}
+  InventoryTransactionTypeCode: {match: const, transform: const(I800), note: 폐기 출고, status: approved}
+  LotID: {from: lot_no, match: normalized, status: approved}
+  ItemUnitQuantity: {from: scrap_qty, match: manual, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
 extension:
-  InventoryTransactionDate: {from: scrap_dt, match: manual, transform: to_date8(scrap_dt), status: reviewed}
+  InventoryTransactionDate: {from: scrap_dt, match: manual, transform: to_date8(scrap_dt), status: approved}
 excluded:
 - {column: proc_cd, reason: 폐기 발생 공정 — S3에서 ProductionPerformanceQuality(LOT+공정)로 연결}
 - {column: defect_cd, reason: 폐기 사유 불량 — 같은 LOT·공정의 ProductionPerformanceQuality가 원본}

@@ -13,21 +13,21 @@ identity:
 - ProductionPerformanceID
 - ProductionPerformanceSequence
 attributes:
-  ProductionPerformanceID: {from: trk_out_id, match: manual, transform: 'concat(''PP-'',trk_out_id)', status: reviewed}
-  ProductionPerformanceSequence: {match: const, transform: const(1), status: reviewed}
-  LotID: {from: lot_no, match: normalized, status: reviewed}
-  OperationID: {from: proc_cd, match: normalized, status: reviewed}
-  ItemID: {from: l.item_cd, match: normalized, transform: upper_trim(l.item_cd), status: reviewed}
-  ProductionOrderID: {from: l.mo_no, match: normalized, status: reviewed}
-  ProductionOrderSequence: {from: l.mo_seq, match: normalized, status: reviewed}
-  ExecutionStartDateTime: {from: i.trk_in_dtm, match: manual, transform: to_ts14(i.trk_in_dtm), status: reviewed}
-  ExecutionEndDateTime: {from: trk_out_dtm, match: manual, transform: to_ts14(trk_out_dtm), status: reviewed}
-  ProductionPerformanceDate: {from: trk_out_dtm, match: manual, transform: to_date(to_ts14(trk_out_dtm)), status: reviewed}
-  PersonnelID: {from: oper_emp_no, match: component, status: reviewed}
-  ProducedQuantity: {from: good_qty, match: normalized, status: reviewed}
-  DefectQuantity: {from: ng_qty, match: normalized, status: reviewed}
+  ProductionPerformanceID: {from: trk_out_id, match: manual, transform: 'concat(''PP-'',trk_out_id)', status: approved}
+  ProductionPerformanceSequence: {match: const, transform: const(1), status: approved}
+  LotID: {from: lot_no, match: normalized, status: approved}
+  OperationID: {from: proc_cd, match: normalized, status: approved}
+  ItemID: {from: l.item_cd, match: normalized, transform: upper_trim(l.item_cd), status: approved}
+  ProductionOrderID: {from: l.mo_no, match: normalized, status: approved}
+  ProductionOrderSequence: {from: l.mo_seq, match: normalized, status: approved}
+  ExecutionStartDateTime: {from: i.trk_in_dtm, match: manual, transform: to_ts14(i.trk_in_dtm), status: approved}
+  ExecutionEndDateTime: {from: trk_out_dtm, match: manual, transform: to_ts14(trk_out_dtm), status: approved}
+  ProductionPerformanceDate: {from: trk_out_dtm, match: manual, transform: to_date(to_ts14(trk_out_dtm)), status: approved}
+  PersonnelID: {from: oper_emp_no, match: component, status: approved}
+  ProducedQuantity: {from: good_qty, match: normalized, status: approved}
+  DefectQuantity: {from: ng_qty, match: normalized, status: approved}
 extension:
-  InspectionResult: {from: q.judge, match: manual, code: QC_JUDGE -> InspectionResult, status: reviewed}
-  InspectionQuantity: {from: q.insp_qty, match: normalized, status: reviewed}
+  InspectionResult: {from: q.judge, match: manual, code: QC_JUDGE -> InspectionResult, status: approved}
+  InspectionQuantity: {from: q.insp_qty, match: normalized, status: approved}
 excluded:
 - {column: eqp_id, reason: 설비 — ProductionPerformanceEquipment에서 매핑}

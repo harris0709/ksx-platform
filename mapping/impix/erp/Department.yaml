@@ -8,9 +8,9 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, plan
 identity:
 - DepartmentID
 attributes:
-  DepartmentID: {from: dept_cd, match: normalized, status: reviewed}
-  DepartmentName: {from: dept_nm, match: normalized, status: reviewed}
-  ParentDepartmentID: {from: upper_dept_cd, match: normalized, status: reviewed}
+  DepartmentID: {from: dept_cd, match: normalized, status: approved}
+  DepartmentName: {from: dept_nm, match: normalized, status: approved}
+  ParentDepartmentID: {from: upper_dept_cd, match: normalized, status: approved}
 extension: {}
 excluded:
 - {column: use_yn, reason: 표준 부서에 사용여부 없음 — 전 건 Y(적재 필터)}

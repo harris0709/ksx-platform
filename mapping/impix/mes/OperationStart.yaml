@@ -8,12 +8,12 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, fac_
 identity:
 - OperationStartID
 attributes:
-  OperationStartID: {from: trk_in_id, match: manual, transform: 'concat(''TI-'',trk_in_id)', status: reviewed}
-  LotID: {from: lot_no, match: normalized, status: reviewed}
-  LotCreatedQuantity: {from: in_qty, match: manual, note: 착공 투입 수량, status: reviewed}
-  OperationStartTime: {from: trk_in_dtm, match: manual, transform: to_ts14(trk_in_dtm), status: reviewed}
-  PersonnelID: {from: oper_emp_no, match: component, status: reviewed}
-  OperationID: {from: proc_cd, match: normalized, status: reviewed}
-  EquipmentID: {from: eqp_id, match: normalized, status: reviewed}
+  OperationStartID: {from: trk_in_id, match: manual, transform: 'concat(''TI-'',trk_in_id)', status: approved}
+  LotID: {from: lot_no, match: normalized, status: approved}
+  LotCreatedQuantity: {from: in_qty, match: manual, note: 착공 투입 수량, status: approved}
+  OperationStartTime: {from: trk_in_dtm, match: manual, transform: to_ts14(trk_in_dtm), status: approved}
+  PersonnelID: {from: oper_emp_no, match: component, status: approved}
+  OperationID: {from: proc_cd, match: normalized, status: approved}
+  EquipmentID: {from: eqp_id, match: normalized, status: approved}
 extension: {}
 excluded: []

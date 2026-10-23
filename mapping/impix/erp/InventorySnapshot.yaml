@@ -11,8 +11,8 @@ identity:
 - ItemID
 attributes: {}
 extension:
-  InventorySnapshotDate: {from: stk_dt, match: component, transform: to_date8(stk_dt), status: reviewed}
-  WarehouseID: {from: wh_cd, match: normalized, status: reviewed}
-  InventoryQuantity: {from: stk_qty, match: normalized, status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  InventorySnapshotDate: {from: stk_dt, match: component, transform: to_date8(stk_dt), status: approved}
+  WarehouseID: {from: wh_cd, match: normalized, status: approved}
+  InventoryQuantity: {from: stk_qty, match: normalized, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
 excluded: []

@@ -8,10 +8,10 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, w
 identity:
 - LotID
 attributes:
-  LotID: {from: 'lot_no,item_cd', match: derived, transform: 'mat_lot(lot_no,item_cd)', status: reviewed}
-  LotCreatedQuantity: {from: stk_qty, match: manual, note: 이관 시점 재고, status: reviewed}
-  CreationDateTime: {from: rcv_dt, match: manual, transform: to_date8(rcv_dt), status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  LotID: {from: 'lot_no,item_cd', match: derived, transform: 'mat_lot(lot_no,item_cd)', status: approved}
+  LotCreatedQuantity: {from: stk_qty, match: manual, note: 이관 시점 재고, status: approved}
+  CreationDateTime: {from: rcv_dt, match: manual, transform: to_date8(rcv_dt), status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
 extension:
-  LotOriginType: {match: const, transform: const(LEGACY), status: reviewed}
+  LotOriginType: {match: const, transform: const(LEGACY), status: approved}
 excluded: []

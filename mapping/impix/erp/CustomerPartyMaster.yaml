@@ -8,13 +8,13 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: const(P2)}
 identity:
 - CustomerID
 attributes:
-  BusinessRegistrationNumber: {from: biz_reg_no, match: normalized, status: reviewed}
-  CountryID: {from: nation_cd, match: normalized, code: NATION -> CountryID, status: reviewed}
-  CustomerID: {from: cust_cd, match: normalized, status: reviewed}
-  CustomerName: {from: cust_nm, match: normalized, status: reviewed}
-  PersonInChargeName: {from: chrg_nm, match: normalized, status: reviewed}
-  PersonInChargeEmail: {from: chrg_email, match: normalized, status: reviewed}
-  UseIndicator: {from: use_yn, match: normalized, transform: yn(use_yn), status: reviewed}
+  BusinessRegistrationNumber: {from: biz_reg_no, match: normalized, status: approved}
+  CountryID: {from: nation_cd, match: normalized, code: NATION -> CountryID, status: approved}
+  CustomerID: {from: cust_cd, match: normalized, status: approved}
+  CustomerName: {from: cust_nm, match: normalized, status: approved}
+  PersonInChargeName: {from: chrg_nm, match: normalized, status: approved}
+  PersonInChargeEmail: {from: chrg_email, match: normalized, status: approved}
+  UseIndicator: {from: use_yn, match: normalized, transform: yn(use_yn), status: approved}
 extension:
-  CustomerGroupCode: {from: cust_grp, match: manual, code: CUST_GRP -> CustomerGroupCode, status: reviewed}
+  CustomerGroupCode: {from: cust_grp, match: manual, code: CUST_GRP -> CustomerGroupCode, status: approved}
 excluded: []

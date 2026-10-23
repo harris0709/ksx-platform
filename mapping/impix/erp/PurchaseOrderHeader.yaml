@@ -8,10 +8,10 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: const(P2)}
 identity:
 - PurchaseDocumentNumber
 attributes:
-  PurchaseDocumentNumber: {from: po_no, match: normalized, status: reviewed}
-  PurchaseOrderDate: {from: po_dt, match: normalized, transform: to_date8(po_dt), status: reviewed}
-  PersonnelID: {from: emp_no, match: normalized, status: reviewed}
-  PurchaseOrderClosingIndicator: {from: po_stat, match: manual, transform: 'eq(po_stat,''40'')', note: 40 입고완료 → 마감, status: reviewed}
-  VendorID: {from: vend_cd, match: normalized, status: reviewed}
+  PurchaseDocumentNumber: {from: po_no, match: normalized, status: approved}
+  PurchaseOrderDate: {from: po_dt, match: normalized, transform: to_date8(po_dt), status: approved}
+  PersonnelID: {from: emp_no, match: normalized, status: approved}
+  PurchaseOrderClosingIndicator: {from: po_stat, match: manual, transform: 'eq(po_stat,''40'')', note: 40 입고완료 → 마감, status: approved}
+  VendorID: {from: vend_cd, match: normalized, status: approved}
 extension: {}
 excluded: []

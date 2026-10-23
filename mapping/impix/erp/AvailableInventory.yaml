@@ -10,13 +10,13 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, o.pl
 identity:
 - AvailableInventoryID
 attributes:
-  AvailableInventoryID: {from: 'chk_dt,mo_no,comp_cd', match: derived, transform: 'concat(chk_dt,''_'',mo_no,''_'',upper_trim(comp_cd))', status: reviewed}
-  ItemID: {from: comp_cd, match: manual, transform: upper_trim(comp_cd), note: comp_cd = 구성 자재(회사코드 아님), status: reviewed}
-  AvailableInventoryQuantity: {from: avail_qty, match: component, status: reviewed}
+  AvailableInventoryID: {from: 'chk_dt,mo_no,comp_cd', match: derived, transform: 'concat(chk_dt,''_'',mo_no,''_'',upper_trim(comp_cd))', status: approved}
+  ItemID: {from: comp_cd, match: manual, transform: upper_trim(comp_cd), note: comp_cd = 구성 자재(회사코드 아님), status: approved}
+  AvailableInventoryQuantity: {from: avail_qty, match: component, status: approved}
 extension:
-  ProductionOrderID: {from: mo_no, match: normalized, status: reviewed}
-  ProductionOrderSequence: {match: const, transform: const(1), status: reviewed}
-  AvailabilityCheckDateTime: {from: chk_dt, match: manual, transform: 'to_ts(to_date8(chk_dt) + ''06:00'')', note: '점검 배치 06:00', status: reviewed}
-  MaterialRequirementQuantity: {from: req_qty, match: manual, status: reviewed}
-  ShortageQuantity: {from: short_qty, match: component, status: reviewed}
+  ProductionOrderID: {from: mo_no, match: normalized, status: approved}
+  ProductionOrderSequence: {match: const, transform: const(1), status: approved}
+  AvailabilityCheckDateTime: {from: chk_dt, match: manual, transform: 'to_ts(to_date8(chk_dt) + ''06:00'')', note: '점검 배치 06:00', status: approved}
+  MaterialRequirementQuantity: {from: req_qty, match: manual, status: approved}
+  ShortageQuantity: {from: short_qty, match: component, status: approved}
 excluded: []

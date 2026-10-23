@@ -10,15 +10,15 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, e.fa
 identity:
 - EquipmentStateID
 attributes:
-  EquipmentStateID: {from: stat_seq, match: manual, transform: 'concat(''ES-'',stat_seq)', status: reviewed}
-  EquipmentState: {from: stat_cd, match: manual, code: EQP_STAT -> EquipmentState, status: reviewed}
-  ErrorCode: {from: err_cd, match: normalized, code: ERR_CD -> EquipmentErrorCode, status: reviewed}
-  EquipmentID: {from: eqp_id, match: normalized, status: reviewed}
-  EquipmentControlMode: {from: ctrl_mode, match: manual, code: CTRL_MODE -> EquipmentControlMode, status: reviewed}
-  EquipmentOperationMode: {from: oper_mode, match: manual, code: OPER_MODE -> EquipmentOperationMode, status: reviewed}
-  LastProcessedLotID: {from: lot_no, match: component, status: reviewed}
-  ErrorMessage: {from: rmk, match: manual, note: 조치 메모, status: reviewed}
+  EquipmentStateID: {from: stat_seq, match: manual, transform: 'concat(''ES-'',stat_seq)', status: approved}
+  EquipmentState: {from: stat_cd, match: manual, code: EQP_STAT -> EquipmentState, status: approved}
+  ErrorCode: {from: err_cd, match: normalized, code: ERR_CD -> EquipmentErrorCode, status: approved}
+  EquipmentID: {from: eqp_id, match: normalized, status: approved}
+  EquipmentControlMode: {from: ctrl_mode, match: manual, code: CTRL_MODE -> EquipmentControlMode, status: approved}
+  EquipmentOperationMode: {from: oper_mode, match: manual, code: OPER_MODE -> EquipmentOperationMode, status: approved}
+  LastProcessedLotID: {from: lot_no, match: component, status: approved}
+  ErrorMessage: {from: rmk, match: manual, note: 조치 메모, status: approved}
 extension:
-  StateStartDateTime: {from: st_dtm, match: manual, transform: to_ts(st_dtm), status: reviewed}
-  StateEndDateTime: {from: ed_dtm, match: manual, transform: to_ts(ed_dtm), status: reviewed}
+  StateStartDateTime: {from: st_dtm, match: manual, transform: to_ts(st_dtm), status: approved}
+  StateEndDateTime: {from: ed_dtm, match: manual, transform: to_ts(ed_dtm), status: approved}
 excluded: []

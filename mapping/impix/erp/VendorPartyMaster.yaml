@@ -8,11 +8,11 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: const(P2)}
 identity:
 - VendorID
 attributes:
-  BusinessRegistrationNumber: {from: biz_reg_no, match: normalized, status: reviewed}
-  VendorID: {from: vend_cd, match: normalized, status: reviewed}
-  VendorName: {from: vend_nm, match: normalized, status: reviewed}
-  PersonInChargeName: {from: chrg_nm, match: normalized, status: reviewed}
-  PersonInChargeEmail: {from: chrg_email, match: normalized, status: reviewed}
-  UseIndicator: {from: use_yn, match: normalized, transform: yn(use_yn), status: reviewed}
+  BusinessRegistrationNumber: {from: biz_reg_no, match: normalized, status: approved}
+  VendorID: {from: vend_cd, match: normalized, status: approved}
+  VendorName: {from: vend_nm, match: normalized, status: approved}
+  PersonInChargeName: {from: chrg_nm, match: normalized, status: approved}
+  PersonInChargeEmail: {from: chrg_email, match: normalized, status: approved}
+  UseIndicator: {from: use_yn, match: normalized, transform: yn(use_yn), status: approved}
 extension: {}
 excluded: []

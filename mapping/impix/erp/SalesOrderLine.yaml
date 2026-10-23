@@ -9,16 +9,16 @@ identity:
 - SalesDocumentNumber
 - SalesDocumentSequence
 attributes:
-  SalesDocumentNumber: {from: so_no, match: normalized, status: reviewed}
-  SalesDocumentSequence: {from: so_seq, match: normalized, status: reviewed}
-  ItemQuantity: {from: so_qty, match: manual, status: reviewed}
-  ItemUOMCode: {from: unit, match: manual, uom: unit, status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
-  RequestedDeliveryDate: {from: req_dlv_dt, match: normalized, transform: to_date8(req_dlv_dt), status: reviewed}
+  SalesDocumentNumber: {from: so_no, match: normalized, status: approved}
+  SalesDocumentSequence: {from: so_seq, match: normalized, status: approved}
+  ItemQuantity: {from: so_qty, match: manual, status: approved}
+  ItemUOMCode: {from: unit, match: manual, uom: unit, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
+  RequestedDeliveryDate: {from: req_dlv_dt, match: normalized, transform: to_date8(req_dlv_dt), status: approved}
 extension:
-  CurrencyCode: {match: const, transform: const(KRW), note: 원천 통화 없음 — 원화 단일, status: reviewed}
-  SalesAmount: {from: 'so_qty,unit_prc', match: derived, transform: so_qty * unit_prc, status: reviewed}
-  UnitPrice: {from: unit_prc, match: normalized, status: reviewed}
+  CurrencyCode: {match: const, transform: const(KRW), note: 원천 통화 없음 — 원화 단일, status: approved}
+  SalesAmount: {from: 'so_qty,unit_prc', match: derived, transform: so_qty * unit_prc, status: approved}
+  UnitPrice: {from: unit_prc, match: normalized, status: approved}
 excluded:
 - {column: dlv_qty, reason: 납품 누계 — DeliveryLine 합계로 계산(파생 값 적재 안 함)}
 - {column: cls_yn, reason: 마감 표식 — 출하 완료는 SalesStatus·DeliveryLine으로 도출}

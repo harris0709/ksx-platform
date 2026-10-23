@@ -9,9 +9,9 @@ identity:
 - OperationID
 - EquipmentID
 attributes:
-  EquipmentID: {from: eqp_id, match: normalized, status: reviewed}
-  EquipmentName: {from: eqp_nm, match: normalized, status: reviewed}
-  OperationID: {from: proc_cd, match: normalized, status: reviewed}
+  EquipmentID: {from: eqp_id, match: normalized, status: approved}
+  EquipmentName: {from: eqp_nm, match: normalized, status: approved}
+  OperationID: {from: proc_cd, match: normalized, status: approved}
 extension: {}
 excluded:
 - {column: eqp_grp, reason: Equipment 명세에서 판정}

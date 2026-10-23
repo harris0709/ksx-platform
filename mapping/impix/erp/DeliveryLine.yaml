@@ -9,15 +9,15 @@ identity:
 - DeliveryID
 - DeliveryLineSequence
 attributes:
-  DeliveryID: {from: dlv_no, match: normalized, status: reviewed}
-  DeliveryLineSequence: {match: const, transform: const(1), status: reviewed}
-  ProductReleaseID: {from: dlv_no, match: manual, status: reviewed}
-  ProductReleaseSequence: {match: const, transform: const(1), status: reviewed}
-  SalesDocumentNumber: {from: so_no, match: normalized, status: reviewed}
-  SalesDocumentSequence: {from: so_seq, match: normalized, status: reviewed}
-  LotID: {from: lot_no, match: normalized, status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
-  ProductDeliveryQuantity: {from: dlv_qty, match: component, status: reviewed}
+  DeliveryID: {from: dlv_no, match: normalized, status: approved}
+  DeliveryLineSequence: {match: const, transform: const(1), status: approved}
+  ProductReleaseID: {from: dlv_no, match: manual, status: approved}
+  ProductReleaseSequence: {match: const, transform: const(1), status: approved}
+  SalesDocumentNumber: {from: so_no, match: normalized, status: approved}
+  SalesDocumentSequence: {from: so_seq, match: normalized, status: approved}
+  LotID: {from: lot_no, match: normalized, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
+  ProductDeliveryQuantity: {from: dlv_qty, match: component, status: approved}
 extension: {}
 excluded:
 - {column: dlv_dt, reason: '실제 납품일 — DeliveryHeader.DeliveryDateTime(요청납품일 RequestedDeliveryDate 아님: 결정론 오매칭 차단)'}

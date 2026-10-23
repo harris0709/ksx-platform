@@ -8,10 +8,10 @@ base: {EnterpriseID: 'xref(enterprise, comp_cd)', SiteID: 'xref(site, bizarea_cd
 identity:
 - SiteID
 attributes:
-  BusinessRegistrationNumber: {from: biz_reg_no, match: normalized, status: reviewed}
-  DialNumber: {from: tel_no, match: normalized, status: reviewed}
-  SiteName: {from: bizarea_nm, match: korean, status: reviewed}
-  BaseAddress: {from: addr1, match: normalized, status: reviewed}
-  UseIndicator: {from: use_yn, match: normalized, transform: yn(use_yn), status: reviewed}
+  BusinessRegistrationNumber: {from: biz_reg_no, match: normalized, status: approved}
+  DialNumber: {from: tel_no, match: normalized, status: approved}
+  SiteName: {from: bizarea_nm, match: korean, status: approved}
+  BaseAddress: {from: addr1, match: normalized, status: approved}
+  UseIndicator: {from: use_yn, match: normalized, transform: yn(use_yn), status: approved}
 extension: {}
 excluded: []

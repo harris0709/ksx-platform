@@ -10,12 +10,12 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, e.fa
 identity:
 - AlarmID
 attributes:
-  AlarmID: {from: alm_seq, match: manual, transform: 'concat(''AL-'',alm_seq,''-'',ev)', note: ev = ON(발생)·OFF(해제), status: reviewed}
-  EventDateTime: {from: 'occur_dtm,clear_dtm', match: derived, transform: 'unpivot(occur_dtm→ON, clear_dtm→OFF)', status: reviewed}
-  AlarmState: {from: 'occur_dtm,clear_dtm', match: derived, transform: 'case(ev=''ON'', ALARM, NORMAL)', status: reviewed}
-  ErrorCode: {from: alm_cd, match: manual, code: ALM_CD -> EquipmentErrorCode, status: reviewed}
-  ErrorMessage: {from: alm_msg, match: manual, status: reviewed}
-  EquipmentID: {from: eqp_id, match: normalized, status: reviewed}
+  AlarmID: {from: alm_seq, match: manual, transform: 'concat(''AL-'',alm_seq,''-'',ev)', note: ev = ON(발생)·OFF(해제), status: approved}
+  EventDateTime: {from: 'occur_dtm,clear_dtm', match: derived, transform: 'unpivot(occur_dtm→ON, clear_dtm→OFF)', status: approved}
+  AlarmState: {from: 'occur_dtm,clear_dtm', match: derived, transform: 'case(ev=''ON'', ALARM, NORMAL)', status: approved}
+  ErrorCode: {from: alm_cd, match: manual, code: ALM_CD -> EquipmentErrorCode, status: approved}
+  ErrorMessage: {from: alm_msg, match: manual, status: approved}
+  EquipmentID: {from: eqp_id, match: normalized, status: approved}
 extension:
-  AlarmSeverityCode: {from: alm_lvl, match: manual, code: ALM_LVL -> AlarmSeverityCode, status: reviewed}
+  AlarmSeverityCode: {from: alm_lvl, match: manual, code: ALM_LVL -> AlarmSeverityCode, status: approved}
 excluded: []

@@ -215,6 +215,11 @@ class Engine:
                     r.missing.append(a.en)
             self.results.append(r)
         self._check_codes_units_xref()
+        ap = self.plan.get("approval") or {}
+        if ap.get("status") == "approved":            # 업무 승인(⑦) — 계획의 승인 기록으로 모든 매핑을 approved로
+            for r in self.results:
+                for m in r.maps.values():
+                    m.status = "approved"
         return self
 
     # ------------------------------------------------------------------ 필터 점검

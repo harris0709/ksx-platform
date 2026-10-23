@@ -8,10 +8,10 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, w
 identity:
 - LotID
 attributes:
-  LotID: {from: lot_no, match: normalized, note: MES 도입(2026-09-21) 전 생산 LOT — 생산 이력 없이 LOT만 등록(S1 품질 이슈), status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  LotID: {from: lot_no, match: normalized, note: MES 도입(2026-09-21) 전 생산 LOT — 생산 이력 없이 LOT만 등록(S1 품질 이슈), status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
 extension:
-  LotOriginType: {match: const, transform: const(LEGACY), status: reviewed}
+  LotOriginType: {match: const, transform: const(LEGACY), status: approved}
 excluded:
 - {column: dlv_no, reason: ProductRelease 명세에서 판정}
 - {column: so_no, reason: ProductRelease 명세에서 판정}

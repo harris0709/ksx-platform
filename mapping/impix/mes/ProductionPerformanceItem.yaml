@@ -14,14 +14,14 @@ identity:
 - ProductionPerformanceSequence
 - ItemID
 attributes:
-  ProductionPerformanceID: {from: o.trk_out_id, match: manual, transform: 'concat(''PP-'',o.trk_out_id)', note: 조립 첫 공정(A100) 실적, status: reviewed}
-  ProductionPerformanceSequence: {match: const, transform: const(1), status: reviewed}
-  ItemID: {from: f.item_cd, match: normalized, transform: upper_trim(f.item_cd), note: 투입 LOT의 품목(LOT·품목당 1행 — 중복 0건), status: reviewed}
-  LotID: {from: from_lot_no, match: component, status: reviewed}
-  IssuedQuantity: {from: link_qty, match: manual, transform: int(link_qty), status: reviewed}
-  IssuedIndicator: {match: const, transform: const(true), status: reviewed}
-  OperationID: {from: o.proc_cd, match: normalized, status: reviewed}
-  ProductionOrderID: {from: t.mo_no, match: normalized, status: reviewed}
+  ProductionPerformanceID: {from: o.trk_out_id, match: manual, transform: 'concat(''PP-'',o.trk_out_id)', note: 조립 첫 공정(A100) 실적, status: approved}
+  ProductionPerformanceSequence: {match: const, transform: const(1), status: approved}
+  ItemID: {from: f.item_cd, match: normalized, transform: upper_trim(f.item_cd), note: 투입 LOT의 품목(LOT·품목당 1행 — 중복 0건), status: approved}
+  LotID: {from: from_lot_no, match: component, status: approved}
+  IssuedQuantity: {from: link_qty, match: manual, transform: int(link_qty), status: approved}
+  IssuedIndicator: {match: const, transform: const(true), status: approved}
+  OperationID: {from: o.proc_cd, match: normalized, status: approved}
+  ProductionOrderID: {from: t.mo_no, match: normalized, status: approved}
 extension: {}
 excluded:
 - {column: link_tp, reason: 연결 유형 — 전 건 CONSUME(필터)}

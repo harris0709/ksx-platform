@@ -89,5 +89,5 @@ extension:
 excluded: []
 ```
 
-상태 흐름: `draft`(자동, `accept_auto: false`) → `reviewed`(데이터 엔지니어) → `approved`(도메인·현업 승인 후 계획의 status로 올림).
+상태 흐름: `draft`(자동, `accept_auto: false`) → `reviewed`(데이터 엔지니어, `accept_auto: true`) → `approved`(업무 승인 후 계획에 `approval: {status: approved, date, signers}`를 적으면 모든 명세에 반영되고 검토본 승인 시트가 채워짐).
 S3(dbt 스테이징)는 이 명세의 `from`·`transform`·`code`·`uom`을 그대로 SQL로 옮긴다.

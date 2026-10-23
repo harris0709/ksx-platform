@@ -7,17 +7,17 @@ source: {system: ERP, table: erp.tb_cm_comp}
 base: {EnterpriseID: 'xref(enterprise, comp_cd)'}
 identity: []
 attributes:
-  DialNumber: {from: tel_no, match: normalized, status: reviewed}
-  BaseCurrencyCode: {from: curr_cd, match: component, code: CURR -> CurrencyCode, status: reviewed}
-  EnterpriseName: {from: comp_nm, match: korean, status: reviewed}
-  BusinessRegistrationNumber: {from: biz_reg_no, match: normalized, status: reviewed}
-  CorporateRegistrationNumber: {from: corp_reg_no, match: normalized, status: reviewed}
-  RepresentativeName: {from: ceo_nm, match: normalized, status: reviewed}
-  PostalCode: {from: zip_cd, match: normalized, status: reviewed}
-  BaseAddress: {from: addr1, match: normalized, status: reviewed}
-  DetailAddress: {from: addr2, match: normalized, status: reviewed}
-  UseIndicator: {from: use_yn, match: normalized, transform: yn(use_yn), status: reviewed}
-  CreationDateTime: {from: reg_dt, match: normalized, transform: to_ts(reg_dt), status: reviewed}
-  CreatorID: {from: reg_id, match: normalized, status: reviewed}
+  DialNumber: {from: tel_no, match: normalized, status: approved}
+  BaseCurrencyCode: {from: curr_cd, match: component, code: CURR -> CurrencyCode, status: approved}
+  EnterpriseName: {from: comp_nm, match: korean, status: approved}
+  BusinessRegistrationNumber: {from: biz_reg_no, match: normalized, status: approved}
+  CorporateRegistrationNumber: {from: corp_reg_no, match: normalized, status: approved}
+  RepresentativeName: {from: ceo_nm, match: normalized, status: approved}
+  PostalCode: {from: zip_cd, match: normalized, status: approved}
+  BaseAddress: {from: addr1, match: normalized, status: approved}
+  DetailAddress: {from: addr2, match: normalized, status: approved}
+  UseIndicator: {from: use_yn, match: normalized, transform: yn(use_yn), status: approved}
+  CreationDateTime: {from: reg_dt, match: normalized, transform: to_ts(reg_dt), status: approved}
+  CreatorID: {from: reg_id, match: normalized, status: approved}
 extension: {}
 excluded: []

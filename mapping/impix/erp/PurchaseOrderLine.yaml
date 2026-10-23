@@ -11,13 +11,13 @@ identity:
 - PurchaseDocumentNumber
 - PurchaseDocumentSequence
 attributes:
-  PurchaseDocumentNumber: {from: po_no, match: normalized, status: reviewed}
-  PurchaseDocumentSequence: {from: po_seq, match: normalized, status: reviewed}
-  PurchaseOrderQuantity: {from: po_qty, match: normalized, status: reviewed}
-  PurchaseOrderUnitPrice: {from: unit_prc, match: manual, status: reviewed}
-  ExpectedDeliveryDate: {from: due_dt, match: manual, transform: to_date8(due_dt), status: reviewed}
-  PurchaseGoodsReceiptQuantity: {from: gr_qty, match: component, status: reviewed}
-  PurchaseOrderLineStatusCode: {from: h.po_stat, match: manual, code: PO_STAT -> PurchaseOrderLineStatusCode, note: 라인 상태 없음 — 헤더 상태 상속, status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  PurchaseDocumentNumber: {from: po_no, match: normalized, status: approved}
+  PurchaseDocumentSequence: {from: po_seq, match: normalized, status: approved}
+  PurchaseOrderQuantity: {from: po_qty, match: normalized, status: approved}
+  PurchaseOrderUnitPrice: {from: unit_prc, match: manual, status: approved}
+  ExpectedDeliveryDate: {from: due_dt, match: manual, transform: to_date8(due_dt), status: approved}
+  PurchaseGoodsReceiptQuantity: {from: gr_qty, match: component, status: approved}
+  PurchaseOrderLineStatusCode: {from: h.po_stat, match: manual, code: PO_STAT -> PurchaseOrderLineStatusCode, note: 라인 상태 없음 — 헤더 상태 상속, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
 extension: {}
 excluded: []

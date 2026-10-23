@@ -9,16 +9,16 @@ identity:
 - ProductReleaseID
 - ProductReleaseSequence
 attributes:
-  ProductReleaseID: {from: dlv_no, match: normalized, status: reviewed}
-  ProductReleaseSequence: {match: const, transform: const(1), note: 원천 1행 = 1출고, status: reviewed}
-  SalesDocumentNumber: {from: so_no, match: normalized, status: reviewed}
-  SalesDocumentSequence: {from: so_seq, match: normalized, status: reviewed}
-  SalesQuantity: {from: dlv_qty, match: manual, status: reviewed}
-  InventoryTransactionDate: {from: dlv_dt, match: manual, transform: to_date8(dlv_dt), status: reviewed}
-  LotID: {from: lot_no, match: normalized, status: reviewed}
-  ReturnIndicator: {from: rtn_yn, match: normalized, transform: yn(rtn_yn), status: reviewed}
-  WarehouseID: {from: wh_cd, match: normalized, status: reviewed}
-  CustomerID: {from: cust_cd, match: normalized, status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  ProductReleaseID: {from: dlv_no, match: normalized, status: approved}
+  ProductReleaseSequence: {match: const, transform: const(1), note: 원천 1행 = 1출고, status: approved}
+  SalesDocumentNumber: {from: so_no, match: normalized, status: approved}
+  SalesDocumentSequence: {from: so_seq, match: normalized, status: approved}
+  SalesQuantity: {from: dlv_qty, match: manual, status: approved}
+  InventoryTransactionDate: {from: dlv_dt, match: manual, transform: to_date8(dlv_dt), status: approved}
+  LotID: {from: lot_no, match: normalized, status: approved}
+  ReturnIndicator: {from: rtn_yn, match: normalized, transform: yn(rtn_yn), status: approved}
+  WarehouseID: {from: wh_cd, match: normalized, status: approved}
+  CustomerID: {from: cust_cd, match: normalized, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
 extension: {}
 excluded: []

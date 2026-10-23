@@ -9,14 +9,14 @@ identity:
 - ReturnID
 - ReturnSequence
 attributes:
-  ReturnID: {from: claim_no, match: manual, status: reviewed}
-  ReturnSequence: {match: const, transform: const(1), status: reviewed}
-  ReturnDateTime: {from: rcv_dt, match: manual, transform: to_date8(rcv_dt), status: reviewed}
-  ReturnQuantity: {from: claim_qty, match: manual, status: reviewed}
-  LotID: {from: lot_no, match: normalized, status: reviewed}
-  ReturnType: {match: const, transform: const(SAL-DEF), note: 필드 반송 = 판매 불량 반품, status: reviewed}
-  CustomerID: {from: cust_cd, match: normalized, status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  ReturnID: {from: claim_no, match: manual, status: approved}
+  ReturnSequence: {match: const, transform: const(1), status: approved}
+  ReturnDateTime: {from: rcv_dt, match: manual, transform: to_date8(rcv_dt), status: approved}
+  ReturnQuantity: {from: claim_qty, match: manual, status: approved}
+  LotID: {from: lot_no, match: normalized, status: approved}
+  ReturnType: {match: const, transform: const(SAL-DEF), note: 필드 반송 = 판매 불량 반품, status: approved}
+  CustomerID: {from: cust_cd, match: normalized, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
 extension: {}
 excluded:
 - {column: claim_tp, reason: CustomerComplaint 명세에서 판정}

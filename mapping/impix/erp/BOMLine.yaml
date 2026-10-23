@@ -12,15 +12,15 @@ identity:
 - BOMRevisionNumber
 - BOMLineSequence
 attributes:
-  BOMID: {from: prnt_item_cd, match: manual, transform: upper_trim(prnt_item_cd), status: reviewed}
-  BOMRevisionNumber: {from: bom_rev, match: normalized, status: reviewed}
-  BOMLineSequence: {from: seq, match: manual, status: reviewed}
-  ActualRequirementQuantity: {from: req_qty, match: manual, status: reviewed}
-  ChildItemUOMCode: {from: unit, match: manual, uom: unit, status: reviewed}
-  ValidStartDateTime: {from: valid_fr, match: normalized, transform: to_date8(valid_fr), status: reviewed}
-  ValidEndDateTime: {from: valid_to, match: normalized, transform: to_date8(valid_to), note: 99991231 = 무기한 → 비움, status: reviewed}
-  ChildItemID: {from: chld_item_cd, match: normalized, transform: upper_trim(chld_item_cd), status: reviewed}
-  OperationSequence: {from: oper_seq, match: component, status: reviewed}
-  BackFlushedIndicator: {from: bf_yn, match: korean, transform: yn(bf_yn), status: reviewed}
+  BOMID: {from: prnt_item_cd, match: manual, transform: upper_trim(prnt_item_cd), status: approved}
+  BOMRevisionNumber: {from: bom_rev, match: normalized, status: approved}
+  BOMLineSequence: {from: seq, match: manual, status: approved}
+  ActualRequirementQuantity: {from: req_qty, match: manual, status: approved}
+  ChildItemUOMCode: {from: unit, match: manual, uom: unit, status: approved}
+  ValidStartDateTime: {from: valid_fr, match: normalized, transform: to_date8(valid_fr), status: approved}
+  ValidEndDateTime: {from: valid_to, match: normalized, transform: to_date8(valid_to), note: 99991231 = 무기한 → 비움, status: approved}
+  ChildItemID: {from: chld_item_cd, match: normalized, transform: upper_trim(chld_item_cd), status: approved}
+  OperationSequence: {from: oper_seq, match: component, status: approved}
+  BackFlushedIndicator: {from: bf_yn, match: korean, transform: yn(bf_yn), status: approved}
 extension: {}
 excluded: []

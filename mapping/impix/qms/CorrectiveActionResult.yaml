@@ -8,12 +8,12 @@ base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: const(P2)}
 identity:
 - CorrectiveActionResultID
 attributes:
-  CorrectiveActionResultID: {from: ncr_no, match: manual, transform: 'concat(ncr_no,''-R'')', status: reviewed}
-  CorrectiveActionRequestID: {from: ncr_no, match: normalized, status: reviewed}
-  CorrectiveActionDateTime: {from: car_cls_dt, match: manual, transform: to_date8(car_cls_dt), status: reviewed}
-  CorrectiveActionStatusCode: {match: const, transform: const(COMPLETED), note: 종결일 있음 = 완료, status: reviewed}
-  VendorID: {from: vend_cd, match: normalized, status: reviewed}
-  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  CorrectiveActionResultID: {from: ncr_no, match: manual, transform: 'concat(ncr_no,''-R'')', status: approved}
+  CorrectiveActionRequestID: {from: ncr_no, match: normalized, status: approved}
+  CorrectiveActionDateTime: {from: car_cls_dt, match: manual, transform: to_date8(car_cls_dt), status: approved}
+  CorrectiveActionStatusCode: {match: const, transform: const(COMPLETED), note: 종결일 있음 = 완료, status: approved}
+  VendorID: {from: vend_cd, match: normalized, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
 extension: {}
 excluded:
 - {column: iqc_no, reason: CorrectiveActionRequest 명세에서 판정}
