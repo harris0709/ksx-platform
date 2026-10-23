@@ -1,0 +1,19 @@
+# OperationStart ← mes.tb_trk_in (이력→이벤트) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: OperationStart
+layer: core
+structure: 이력→이벤트
+source: {system: MES, table: mes.tb_trk_in}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, fac_id)'}
+identity:
+- OperationStartID
+attributes:
+  OperationStartID: {from: trk_in_id, match: manual, transform: 'concat(''TI-'',trk_in_id)', status: reviewed}
+  LotID: {from: lot_no, match: normalized, status: reviewed}
+  LotCreatedQuantity: {from: in_qty, match: manual, note: 착공 투입 수량, status: reviewed}
+  OperationStartTime: {from: trk_in_dtm, match: manual, transform: to_ts14(trk_in_dtm), status: reviewed}
+  PersonnelID: {from: oper_emp_no, match: component, status: reviewed}
+  OperationID: {from: proc_cd, match: normalized, status: reviewed}
+  EquipmentID: {from: eqp_id, match: normalized, status: reviewed}
+extension: {}
+excluded: []

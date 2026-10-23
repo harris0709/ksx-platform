@@ -1,0 +1,26 @@
+# GoodsReceipt ← erp.tb_mm_gr (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: GoodsReceipt
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_mm_gr}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, wh_cd)'}
+identity:
+- GoodsReceiptID
+- GoodsReceiptSequence
+attributes:
+  GoodsReceiptID: {from: gr_no, match: normalized, status: reviewed}
+  GoodsReceiptSequence: {match: const, transform: const(1), status: reviewed}
+  GoodsReceiptDate: {from: gr_dt, match: normalized, transform: to_date8(gr_dt), status: reviewed}
+  GoodsReceiptQuantity: {from: gr_qty, match: normalized, status: reviewed}
+  WarehouseID: {from: wh_cd, match: normalized, status: reviewed}
+  IncomingInspectionIndicator: {from: iqc_yn, match: normalized, transform: yn(iqc_yn), status: reviewed}
+  IncomingInspectionAcceptedQuantity: {from: 'gr_qty,iqc_stat', match: derived, transform: 'case(iqc_stat IN (''10'',''30''), gr_qty, 0)', note: 10 합격·30 특채, status: reviewed}
+  IncomingInspectionRejectedQuantity: {from: 'gr_qty,iqc_stat', match: derived, transform: 'case(iqc_stat = ''20'', gr_qty, 0)', status: reviewed}
+  VendorID: {from: vend_cd, match: normalized, status: reviewed}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+extension:
+  PurchaseDocumentNumber: {from: po_no, match: normalized, status: reviewed}
+  PurchaseDocumentSequence: {from: po_seq, match: normalized, status: reviewed}
+  LotID: {from: vend_lot, match: manual, note: 공급사 LOT, status: reviewed}
+excluded: []

@@ -1,0 +1,26 @@
+# OperationEquipment ← mes.tm_eqp (파생(설비→공정 배정)) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: OperationEquipment
+layer: core
+structure: 파생(설비→공정 배정)
+source: {system: MES, table: mes.tm_eqp}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, fac_id)'}
+identity:
+- OperationID
+- EquipmentID
+attributes:
+  EquipmentID: {from: eqp_id, match: normalized, status: reviewed}
+  EquipmentName: {from: eqp_nm, match: normalized, status: reviewed}
+  OperationID: {from: proc_cd, match: normalized, status: reviewed}
+extension: {}
+excluded:
+- {column: eqp_grp, reason: Equipment 명세에서 판정}
+- {column: eqp_kind, reason: Equipment 명세에서 판정}
+- {column: line_id, reason: Equipment 명세에서 판정}
+- {column: maker, reason: Equipment 명세에서 판정}
+- {column: model_no, reason: Equipment 명세에서 판정}
+- {column: serial_no, reason: Equipment 명세에서 판정}
+- {column: install_dt, reason: Equipment 명세에서 판정}
+- {column: plc_ip, reason: Equipment 명세에서 판정}
+- {column: mgr_emp_no, reason: Equipment 명세에서 판정}
+- {column: use_flag, reason: Equipment 명세에서 판정}

@@ -1,0 +1,28 @@
+# EquipmentParameter ← mes.tm_param (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: EquipmentParameter
+layer: core
+structure: '1:1'
+source: {system: MES, table: mes.tm_param}
+join:
+- {table: mes.tm_eqp, as: e, 'on': eqp_id = e.eqp_id}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, e.fac_id)'}
+identity:
+- ParameterID
+attributes:
+  EquipmentID: {from: eqp_id, match: normalized, status: reviewed}
+  ParameterType: {from: param_kind, match: normalized, code: PARAM_KIND -> ParameterType, status: reviewed}
+  ParameterGrade: {from: grade, match: manual, code: PARAM_GRADE -> ParameterGrade, status: reviewed}
+  ParameterUOMCode: {from: unit, match: manual, uom: unit, status: reviewed}
+  DataCollectionPeriod: {from: coll_cycle_sec, match: manual, transform: seconds(coll_cycle_sec), status: reviewed}
+  PeriodicDataCollectionIndicator: {from: coll_cycle_sec, match: manual, transform: 'case(coll_cycle_sec > 0, true, false)', status: reviewed}
+  ParameterID: {from: param_id, match: normalized, status: reviewed}
+  ParameterName: {from: param_nm, match: normalized, status: reviewed}
+  LSL: {from: lsl, match: exact, status: reviewed}
+  USL: {from: usl, match: exact, status: reviewed}
+extension:
+  LCL: {from: lcl, match: exact, status: reviewed}
+  UCL: {from: ucl, match: exact, status: reviewed}
+excluded:
+- {column: param_cd, reason: '파라미터 약호 — 라벨 보조(S4 skos:altLabel)'}
+- {column: use_flag, reason: 표준 설비파라미터에 사용여부 없음 — 전 건 Y(적재 필터)}

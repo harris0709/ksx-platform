@@ -1,0 +1,19 @@
+# ProductionPlanning ← erp.tb_pp_plan (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: ProductionPlanning
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_pp_plan, filter: plan_ver = (SELECT max(plan_ver) FROM erp.tb_pp_plan)}
+join:
+- {table: erp.tb_pp_line, as: l, 'on': line_cd = l.line_cd}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, l.plant_cd)'}
+identity:
+- ProductionPlanID
+attributes:
+  ProductionPlanID: {from: 'plan_dt,line_cd,item_cd', match: derived, transform: 'concat(plan_dt,''_'',line_cd,''_'',upper_trim(item_cd))', status: reviewed}
+  ScheduleStartDateTime: {from: plan_dt, match: manual, transform: to_date8(plan_dt), status: reviewed}
+  ScheduleEndDateTime: {from: plan_dt, match: manual, transform: to_date8(plan_dt), status: reviewed}
+  ProductionPlanQuantity: {from: plan_qty, match: component, transform: int(plan_qty), status: reviewed}
+extension: {}
+excluded:
+- {column: plan_ver, reason: 계획 버전 — 최신 버전만 적재(필터)}

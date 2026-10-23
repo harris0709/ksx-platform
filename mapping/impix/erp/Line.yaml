@@ -1,0 +1,19 @@
+# Line ← erp.tb_pp_line (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: Line
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_pp_line}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, plant_cd)'}
+identity:
+- LineID
+attributes:
+  LineType: {from: line_tp, match: normalized, code: LINE_TP -> LineType, status: reviewed}
+  StandardCapacity: {from: capa_qty, match: manual, note: 일 표준능력, status: reviewed}
+  CapacityUOMCode: {from: capa_unit, match: normalized, transform: const(EA/d), note: 원천 EA(일 기준) → EA/d, status: reviewed}
+  LineID: {from: line_cd, match: normalized, status: reviewed}
+  LineName: {from: line_nm, match: normalized, status: reviewed}
+  ShiftCount: {from: shift_cnt, match: normalized, status: reviewed}
+  UseIndicator: {from: use_yn, match: normalized, transform: yn(use_yn), status: reviewed}
+extension: {}
+excluded: []

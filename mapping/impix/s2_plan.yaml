@@ -1,0 +1,738 @@
+# =====================================================================
+# IMPIX S2 표준 매핑 계획 — automap 입력(구현안내서 5장)
+#   PYTHONPATH=tools/automap python -m automap run --plan mapping/impix/s2_plan.yaml
+# 사람이 판단한 것만 적는다: 구조 유형·조인·필터·기본 속성·덮어쓰기(map)·제외·코드·단위·식별 대응.
+# 나머지 컬럼은 결정론 매처(①정확 ②정규화 ③컴포넌트 ④국문명)가 채운다.
+#
+# 변환(transform) 어휘 — S3 dbt 매크로로 구현
+#   upper_trim(x)          앞뒤 공백 제거 + 대문자(품목코드 중복 이슈 Q001)
+#   to_date8(x)            'YYYYMMDD' → date            to_ts14(x)  'YYYYMMDDHH24MISS' → timestamp(Asia/Seoul)
+#   to_ts(x)               timestamp → KS X ISO 8601(Asia/Seoul)          to_date(x)  timestamp → date
+#   ym_first(x)/ym_last(x) 'YYYYMM' → 월 첫날/말일      yn(x)       'Y'/'N'(·'1'/'0') → boolean
+#   concat(a,'_',b)        식별자 조합                   int(x)      정수 변환
+#   seconds(x)/minutes(x)/days(x) → duration(KS X ISO 8601, PT…)
+#   eq(x,'v')              x = 'v' → boolean             case(조건, 참, 거짓)  조건식
+#   unpivot(c1→E1, c2→E2)  한 원천 행 → 이벤트 여러 행(ev 열로 구분)
+#   const(v)               상수                          xref(대응표, 컬럼)  식별 대응표(xref.csv)
+# 변환을 적지 않으면 엔진이 원천 형식·표준 자료형으로 추론한다(char(8)→to_date8, varchar(14)→to_ts14,
+# timestamp→to_ts, Y/N→yn, numeric→int). 코드(code)는 아래 codes 대응표, 단위(uom)는 units 대응표로 점검한다.
+# =====================================================================
+enterprise: IMPIX
+std: standards
+ext: extensions/impix
+s1_extract: mapping/impix/s1/s1_extract_IMPIX.json
+abbrev: mapping/impix/abbrev.yaml
+out: mapping/impix
+# 결정론 매핑을 검토자(⑥)가 확인했으면 true — reviewed로 기록. 업무 승인(⑦) 후 status를 approved로 올린다.
+accept_auto: true
+scope_tables: all          # S1 원천 56개 테이블의 모든 컬럼을 판정한다(완료 기준 ② 100%)
+
+defaults:
+  base: { EnterpriseID: const(IMPIX), SiteID: const(HQ) }
+  transform_by_column: { item_cd: upper_trim, chld_item_cd: upper_trim, prnt_item_cd: upper_trim }
+
+specs:
+  # ================= 기준정보 (SC01) =================
+  - noun: Enterprise
+    source: erp.tb_cm_comp
+    base: { EnterpriseID: "xref(enterprise, comp_cd)" }
+    map:
+      DialNumber: tel_no
+      BaseCurrencyCode: { from: curr_cd, code: CURR }
+  - noun: Site
+    source: erp.tb_cm_bizarea
+    base: { EnterpriseID: "xref(enterprise, comp_cd)", SiteID: "xref(site, bizarea_cd)" }
+    map: { BusinessRegistrationNumber: biz_reg_no, DialNumber: tel_no }
+  - noun: Plant
+    source: erp.tb_cm_plant
+    base: { EnterpriseID: "xref(enterprise, comp_cd)", SiteID: "xref(site, bizarea_cd)", PlantID: "xref(plant, plant_cd)" }
+    map: { DialNumber: tel_no }
+    exclude: { use_yn: "표준 공장에 사용여부 없음 — 전 건 Y(적재 필터)" }
+  - noun: Department
+    source: erp.tb_cm_dept
+    base: { PlantID: "xref(plant, plant_cd)" }
+    exclude: { use_yn: "표준 부서에 사용여부 없음 — 전 건 Y(적재 필터)" }
+  - noun: Personnel
+    source: erp.tb_hr_emp
+    base: { PlantID: "xref(plant, plant_cd)" }
+    map:
+      PersonnelID: emp_no
+      PersonInChargeEmail: email
+      PersonInChargeDialNumber: hp_no
+      EmploymentStatusType: { from: retire_yn, code: RETIRE_YN }
+    exclude: { join_dt: "입사일 — 표준 사원에 없음, KPI·질의 미사용(확장 불요)" }
+  - noun: ItemMaster
+    source: erp.tb_mm_item
+    filter: "item_cd NOT LIKE 'TEST%'"
+    base: { PlantID: "xref(plant, plant_cd)" }
+    map:
+      ItemType: { from: item_tp, code: ITEM_TP }
+      ItemLargeClass: { from: item_grp, code: ITEM_GRP }
+      ItemUOMCode: { from: unit, uom: unit, note: "ea·개 → EA 정규화(Q004)" }
+      WeightUOMCode: { from: wgt_unit, uom: wgt_unit }
+      SafetyStock: safety_qty
+      PurchaseLeadTime: { from: pur_lt, transform: days(pur_lt) }
+      ProductionLeadTime: { from: prd_lt, transform: days(prd_lt) }
+      DrawingNumber: drw_no
+      IncomingInspectionIndicator: iqc_yn
+      FinalInspectionIndicator: fqc_yn
+      OutgoingInspectionIndicator: oqc_yn
+  - noun: BOMHeader
+    source: erp.tb_pp_bom_h
+    base: { PlantID: "xref(plant, plant_cd)" }
+    map:
+      BOMID: { from: prnt_item_cd, transform: upper_trim(prnt_item_cd), note: "BOM 식별 = 모품목(개정은 BOMRevisionNumber)" }
+      ItemID: prnt_item_cd
+      BOMType: { from: bom_tp, code: BOM_TP }
+      BOMQuantity: base_qty
+      ItemUOMCode: { from: unit, uom: unit }
+  - noun: BOMLine
+    source: erp.tb_pp_bom_d
+    structure: "1:1(헤더 참조)"
+    join: [ { table: erp.tb_pp_bom_h, as: h, on: "prnt_item_cd = h.prnt_item_cd AND bom_rev = h.bom_rev" } ]
+    base: { PlantID: "xref(plant, h.plant_cd)" }
+    map:
+      BOMID: { from: prnt_item_cd, transform: upper_trim(prnt_item_cd) }
+      BOMRevisionNumber: bom_rev
+      BOMLineSequence: seq
+      ActualRequirementQuantity: req_qty
+      ChildItemUOMCode: { from: unit, uom: unit }
+      ValidStartDateTime: valid_fr
+      ValidEndDateTime: { from: valid_to, transform: "to_date8(valid_to)", note: "99991231 = 무기한 → 비움" }
+  - noun: RoutingHeader
+    source: erp.tb_pp_rout_h
+    base: { PlantID: "xref(plant, plant_cd)" }
+  - noun: RoutingLine
+    source: erp.tb_pp_rout_d
+    structure: "1:1(헤더 참조)"
+    join: [ { table: erp.tb_pp_rout_h, as: h, on: "rout_cd = h.rout_cd" }, { table: mes.tm_proc, as: p, on: "wc_cd = p.erp_wc_cd" } ]
+    base: { PlantID: "xref(plant, h.plant_cd)" }
+    map:
+      RoutingID: rout_cd
+      OperationID: { from: p.proc_cd, note: "ERP 작업장 → MES 공정(tm_proc.erp_wc_cd)" }
+      SetupTime: { from: setup_min, transform: minutes(setup_min) }
+      RunTime: { from: run_sec, transform: seconds(run_sec), note: "개당 작업시간" }
+      MoveTime: { from: move_min, transform: minutes(move_min) }
+  - noun: Operation
+    source: mes.tm_proc
+    structure: "N→1(MES 공정 + ERP 작업장)"
+    join: [ { table: erp.tb_pp_wc, as: w, on: "erp_wc_cd = w.wc_cd" } ]
+    base: { PlantID: "xref(plant, fac_id)" }
+    map:
+      OperationType: { from: proc_tp, code: PROC_TP }
+    exclude: { seq_no: "화면 표시 순서 — 공정 순서는 RoutingLine.OperationSequence" }
+  - noun: Line
+    source: erp.tb_pp_line
+    base: { PlantID: "xref(plant, plant_cd)" }
+    map:
+      LineType: { from: line_tp, code: LINE_TP }
+      StandardCapacity: { from: capa_qty, note: "일 표준능력" }
+      CapacityUOMCode: { from: capa_unit, transform: "const(EA/d)", note: "원천 EA(일 기준) → EA/d" }
+  - noun: WarehouseLocationHeader
+    source: erp.tb_mm_wh
+    base: { PlantID: "xref(plant, plant_cd)" }
+    map:
+      WarehouseType: { from: wh_tp, code: WH_TP }
+  - noun: Equipment
+    source: mes.tm_eqp
+    base: { PlantID: "xref(plant, fac_id)" }
+    map:
+      EquipmentType: { from: eqp_kind, code: EQP_KIND }
+      EquipmentLargeClass: { from: eqp_grp, code: EQP_GRP }
+      Manufacturer: maker
+      ModelNumber: model_no
+      SerialNumber: serial_no
+      AcquisitionDate: { from: install_dt, note: "설치일을 취득일로" }
+      DAQDevice: { from: plc_ip, note: "수집 PLC 주소" }
+      PersonInChargeID: mgr_emp_no
+    exclude: { line_id: "설비→라인 배치 — 표준 설비에 라인 속성 없음, 공정·라인 관계로 도출(S4 관계 후보)" }
+  - noun: OperationEquipment
+    source: mes.tm_eqp
+    structure: "파생(설비→공정 배정)"
+    file: OperationEquipment
+    base: { PlantID: "xref(plant, fac_id)" }
+    rest: "Equipment 명세에서 판정"
+  - noun: CustomerPartyMaster
+    source: erp.tb_sd_cust
+    base: { PlantID: const(P2) }
+    map:
+      BusinessRegistrationNumber: biz_reg_no
+      CountryID: { from: nation_cd, code: NATION }
+      CustomerGroupCode: { from: cust_grp, code: CUST_GRP }
+  - noun: VendorPartyMaster
+    source: erp.tb_mm_vend
+    base: { PlantID: const(P2) }
+    map: { BusinessRegistrationNumber: biz_reg_no }
+  - noun: BasePrice
+    source: erp.tb_mm_price
+    filter: "to_char(current_date,'YYYYMMDD') BETWEEN valid_fr AND valid_to"
+    base: { PlantID: const(P2) }
+    map:
+      CurrencyCode: { from: curr_cd, code: CURR }
+    exclude:
+      vend_cd: "품목당 단일 공급사 단가(중복 0건) — 공급사는 ItemMaster.MainVendorID로 연결(S3)"
+      valid_fr: "유효기간 — 적재 필터(현재 유효 행)"
+      valid_to: "유효기간 — 적재 필터(현재 유효 행)"
+  - noun: StandardCost
+    source: erp.tb_co_std_cost
+    join: [ { table: erp.tb_mm_item, as: i, on: "item_cd = i.item_cd" } ]
+    base: { PlantID: "xref(plant, i.plant_cd)" }
+    map:
+      StandardCostID: { from: "item_cd,cost_ym", transform: "concat(upper_trim(item_cd),'_',cost_ym)" }
+      ItemID: item_cd
+      CostPeriodStartDate: { from: cost_ym, transform: ym_first(cost_ym) }
+      CostPeriodEndDate: { from: cost_ym, transform: ym_last(cost_ym) }
+      StandardCostAmount: std_cost
+      MaterialCostAmount: mat_cost
+      LaborCostAmount: lab_cost
+      OverheadCostAmount: ovh_cost
+      CurrencyCode: { from: curr_cd, code: CURR }
+  - noun: EquipmentParameter
+    source: mes.tm_param
+    join: [ { table: mes.tm_eqp, as: e, on: "eqp_id = e.eqp_id" } ]
+    base: { PlantID: "xref(plant, e.fac_id)" }
+    map:
+      EquipmentID: eqp_id
+      ParameterType: { from: param_kind, code: PARAM_KIND }
+      ParameterGrade: { from: grade, code: PARAM_GRADE }
+      ParameterUOMCode: { from: unit, uom: unit }
+      LCL: lcl
+      UCL: ucl
+      DataCollectionPeriod: { from: coll_cycle_sec, transform: seconds(coll_cycle_sec) }
+      PeriodicDataCollectionIndicator: { from: coll_cycle_sec, transform: "case(coll_cycle_sec > 0, true, false)" }
+    exclude:
+      param_cd: "파라미터 약호 — 라벨 보조(S4 skos:altLabel)"
+      use_flag: "표준 설비파라미터에 사용여부 없음 — 전 건 Y(적재 필터)"
+  # ================= 영업·구매·재고 (SC07) =================
+  - noun: SalesPlan
+    source: erp.tb_sd_plan
+    base: { PlantID: const(P2) }
+    map:
+      SalesPlanID: { from: "plan_ym,plan_tp,plan_ver,cust_cd,item_cd", transform: "concat(plan_ym,'_',plan_tp,'_',plan_ver,'_',cust_cd,'_',upper_trim(item_cd))" }
+      SalesPlanType: { from: plan_tp, code: PLAN_TP }
+      SalesPlanVersion: plan_ver
+      SalesProjection: plan_qty
+      ProjectionStartDate: { from: plan_ym, transform: ym_first(plan_ym) }
+      ProjectionEndDate: { from: plan_ym, transform: ym_last(plan_ym) }
+  - noun: SalesOrderHeader
+    source: erp.tb_sd_so_h
+    base: { PlantID: const(P2) }
+    map:
+      SalesDocumentNumber: so_no
+      SalesDate: so_dt
+      SalesOrderType: { from: so_tp, code: SO_TP }
+      SalesStatus: { from: so_stat, code: SO_STAT }
+  - noun: SalesOrderLine
+    source: erp.tb_sd_so_d
+    base: { PlantID: const(P2) }
+    map:
+      SalesDocumentNumber: so_no
+      SalesDocumentSequence: so_seq
+      ItemQuantity: so_qty
+      ItemUOMCode: { from: unit, uom: unit }
+      CurrencyCode: { transform: const(KRW), note: "원천 통화 없음 — 원화 단일" }
+      SalesAmount: { from: "so_qty,unit_prc", transform: "so_qty * unit_prc" }
+    exclude:
+      dlv_qty: "납품 누계 — DeliveryLine 합계로 계산(파생 값 적재 안 함)"
+      cls_yn: "마감 표식 — 출하 완료는 SalesStatus·DeliveryLine으로 도출"
+  - noun: ProductRelease
+    source: erp.tb_sd_dlv
+    base: { PlantID: "xref(wh_plant, wh_cd)" }
+    map:
+      ProductReleaseID: dlv_no
+      ProductReleaseSequence: { transform: const(1), note: "원천 1행 = 1출고" }
+      SalesDocumentNumber: so_no
+      SalesDocumentSequence: so_seq
+      SalesQuantity: dlv_qty
+      InventoryTransactionDate: dlv_dt
+      LotID: lot_no
+      ReturnIndicator: rtn_yn
+      WarehouseID: wh_cd
+  - noun: DeliveryHeader
+    source: erp.tb_sd_dlv
+    structure: "1→헤더·라인(헤더)"
+    base: { PlantID: "xref(wh_plant, wh_cd)" }
+    map: { DeliveryID: dlv_no }
+    rest: "ProductRelease 명세에서 판정"
+  - noun: DeliveryLine
+    source: erp.tb_sd_dlv
+    structure: "1→헤더·라인(라인)"
+    base: { PlantID: "xref(wh_plant, wh_cd)" }
+    map:
+      DeliveryID: dlv_no
+      DeliveryLineSequence: { transform: const(1) }
+      ProductReleaseID: dlv_no
+      ProductReleaseSequence: { transform: const(1) }
+      SalesDocumentNumber: so_no
+      SalesDocumentSequence: so_seq
+      LotID: lot_no
+    exclude: { dlv_dt: "실제 납품일 — DeliveryHeader.DeliveryDateTime(요청납품일 RequestedDeliveryDate 아님: 결정론 오매칭 차단)" }
+    rest: "ProductRelease 명세에서 판정"
+  - noun: PurchaseOrderHeader
+    source: erp.tb_mm_po_h
+    base: { PlantID: const(P2) }
+    map:
+      PurchaseDocumentNumber: po_no
+      PurchaseOrderDate: po_dt
+      PersonnelID: emp_no
+      PurchaseOrderClosingIndicator: { from: po_stat, transform: "eq(po_stat,'40')", note: "40 입고완료 → 마감" }
+  - noun: PurchaseOrderLine
+    source: erp.tb_mm_po_d
+    join: [ { table: erp.tb_mm_po_h, as: h, on: "po_no = h.po_no" } ]
+    base: { PlantID: const(P2) }
+    map:
+      PurchaseDocumentNumber: po_no
+      PurchaseDocumentSequence: po_seq
+      PurchaseOrderQuantity: po_qty
+      PurchaseOrderUnitPrice: unit_prc
+      ExpectedDeliveryDate: due_dt
+      PurchaseGoodsReceiptQuantity: gr_qty
+      PurchaseOrderLineStatusCode: { from: h.po_stat, code: PO_STAT, note: "라인 상태 없음 — 헤더 상태 상속" }
+  - noun: GoodsReceipt
+    source: erp.tb_mm_gr
+    base: { PlantID: "xref(wh_plant, wh_cd)" }
+    map:
+      GoodsReceiptID: gr_no
+      GoodsReceiptSequence: { transform: const(1) }
+      GoodsReceiptDate: gr_dt
+      GoodsReceiptQuantity: gr_qty
+      WarehouseID: wh_cd
+      PurchaseDocumentNumber: po_no
+      PurchaseDocumentSequence: po_seq
+      LotID: { from: vend_lot, note: "공급사 LOT" }
+      IncomingInspectionIndicator: iqc_yn
+      IncomingInspectionAcceptedQuantity: { from: "gr_qty,iqc_stat", transform: "case(iqc_stat IN ('10','30'), gr_qty, 0)", note: "10 합격·30 특채" }
+      IncomingInspectionRejectedQuantity: { from: "gr_qty,iqc_stat", transform: "case(iqc_stat = '20', gr_qty, 0)" }
+  - noun: GoodsIssue
+    source: erp.tb_mm_gi
+    base: { PlantID: "xref(wh_plant, wh_cd)" }
+    map:
+      GoodsIssueID: gi_no
+      InventoryTransactionDate: gi_dt
+      InventoryTransactionTypeCode: { from: gi_tp, code: GI_TP }
+      ItemUnitQuantity: gi_qty
+      WarehouseID: wh_cd
+      ProductionOrderID: mo_no
+      ProductionOrderSequence: { transform: const(1), note: "오더 순번 고정 1 — mo_no가 있는 행(생산 투입)만" }
+      Note: rmk
+  - noun: ProductionPlanning
+    source: erp.tb_pp_plan
+    join: [ { table: erp.tb_pp_line, as: l, on: "line_cd = l.line_cd" } ]
+    filter: "plan_ver = (SELECT max(plan_ver) FROM erp.tb_pp_plan)"
+    base: { PlantID: "xref(plant, l.plant_cd)" }
+    map:
+      ProductionPlanID: { from: "plan_dt,line_cd,item_cd", transform: "concat(plan_dt,'_',line_cd,'_',upper_trim(item_cd))" }
+      ScheduleStartDateTime: plan_dt
+      ScheduleEndDateTime: plan_dt
+    exclude: { plan_ver: "계획 버전 — 최신 버전만 적재(필터)" }
+  - noun: ProductionOrder
+    source: erp.tb_pp_mo
+    base: { PlantID: "xref(plant, plant_cd)" }
+    map:
+      ProductionOrderID: mo_no
+      ProductionOrderSequence: mo_seq
+      ProductionOrderQuantity: mo_qty
+      ItemUOMCode: { from: unit, uom: unit }
+      ScheduleStartDateTime: plan_st_dt
+      ScheduleEndDateTime: plan_ed_dt
+      SalesDocumentNumber: so_no
+      SalesDocumentSequence: so_seq
+      ProductionOrderStatusCode: { from: mo_stat, code: MO_STAT }
+  - noun: ProductIncoming
+    source: erp.tb_pp_rcpt
+    base: { PlantID: "xref(wh_plant, wh_cd)" }
+    map:
+      ProductIncomingID: rcpt_no
+      ProductIncomingSequence: { transform: const(1) }
+      InventoryTransactionDate: rcpt_dt
+      ItemUnitQuantity: rcpt_qty
+      WarehouseID: wh_cd
+      ProductionOrderID: mo_no
+      ProductionOrderSequence: { transform: const(1) }
+      InventoryTransactionTypeCode: { transform: const(R200), note: "생산입고" }
+    exclude: { src: "적재 경로 표식(HIST·MES·MAN) — 기술 컬럼, audit에 기록(확장정의서 판정)" }
+  - noun: AvailableInventory
+    source: erp.tb_pp_mat_chk
+    join: [ { table: erp.tb_pp_mo, as: o, on: "mo_no = o.mo_no" } ]
+    base: { PlantID: "xref(plant, o.plant_cd)" }
+    map:
+      AvailableInventoryID: { from: "chk_dt,mo_no,comp_cd", transform: "concat(chk_dt,'_',mo_no,'_',upper_trim(comp_cd))" }
+      ItemID: { from: comp_cd, transform: upper_trim(comp_cd), note: "comp_cd = 구성 자재(회사코드 아님)" }
+      ProductionOrderID: mo_no
+      ProductionOrderSequence: { transform: const(1) }
+      AvailabilityCheckDateTime: { from: chk_dt, transform: "to_ts(to_date8(chk_dt) + '06:00')", note: "점검 배치 06:00" }
+      MaterialRequirementQuantity: req_qty
+  - noun: Inventory
+    source: erp.tb_mm_stock_day
+    structure: "이력→현재(마지막 기준일)"
+    filter: "stk_dt = (SELECT max(stk_dt) FROM erp.tb_mm_stock_day)"
+    base: { PlantID: "xref(wh_plant, wh_cd)" }
+    map: { WarehouseID: wh_cd, InventoryQuantity: stk_qty }
+    exclude: { stk_dt: "기준일 — 필터(마지막 기준일)에 사용, 이력은 InventorySnapshot" }
+  - noun: InventorySnapshot
+    source: erp.tb_mm_stock_day
+    base: { PlantID: "xref(wh_plant, wh_cd)" }
+    map: { InventorySnapshotDate: stk_dt, WarehouseID: wh_cd, InventoryQuantity: stk_qty }
+  - noun: LotInventory
+    source: erp.tb_mm_stock_lot
+    base: { PlantID: "xref(wh_plant, wh_cd)" }
+    map: { WarehouseID: wh_cd, LotID: lot_no, GoodsReceiptDate: rcv_dt, InventoryQuantity: stk_qty }
+  - noun: InventoryCount
+    source: erp.tb_mm_cnt
+    base: { PlantID: "xref(wh_plant, wh_cd)" }
+    map: { InventoryCountDocumentNumber: cnt_no, WarehouseID: wh_cd, InventoryQuantity: { from: book_qty, note: "장부 수량" } }
+  # ================= 생산 실행 (SC02·SC04·SC05) =================
+  - noun: Lot
+    source: mes.tb_lot
+    base: { PlantID: "xref(plant, fac_id)" }
+    map:
+      LotID: lot_no
+      LotType: { from: lot_tp, code: LOT_TP }
+      LotState: { from: lot_stat, code: LOT_STAT }
+      ProductionOrderID: mo_no
+      ProductionOrderSequence: mo_seq
+      ProducedQuantity: { from: cur_qty, note: "현재 양품 잔량" }
+      CurrentOperationID: cur_proc_cd
+      LotPriority: prior_no
+      CreatorID: crt_user
+  - noun: OperationStart
+    source: mes.tb_trk_in
+    structure: "이력→이벤트"
+    base: { PlantID: "xref(plant, fac_id)" }
+    map:
+      OperationStartID: { from: trk_in_id, transform: "concat('TI-',trk_in_id)" }
+      LotID: lot_no
+      LotCreatedQuantity: { from: in_qty, note: "착공 투입 수량" }
+      OperationStartTime: trk_in_dtm
+      PersonnelID: oper_emp_no
+  - noun: OperationEnd
+    source: mes.tb_trk_out
+    structure: "이력→이벤트"
+    join: [ { table: mes.tb_trk_in, as: i, on: "trk_in_id = i.trk_in_id" } ]
+    base: { PlantID: "xref(plant, i.fac_id)" }
+    map:
+      OperationEndID: { from: trk_out_id, transform: "concat('TO-',trk_out_id)" }
+      LotID: lot_no
+      OperationEndTime: trk_out_dtm
+      PersonnelID: oper_emp_no
+  - noun: ProductionPerformance
+    source: mes.tb_trk_out
+    structure: "N→1(완공+착공+LOT+검사)"
+    join: [ { table: mes.tb_trk_in, as: i, on: "trk_in_id = i.trk_in_id" },
+            { table: mes.tb_lot, as: l, on: "lot_no = l.lot_no" },
+            { table: mes.tb_qc_insp, as: q, on: "lot_no = q.lot_no AND proc_cd = q.proc_cd" } ]
+    base: { PlantID: "xref(plant, i.fac_id)" }
+    map:
+      ProductionPerformanceID: { from: trk_out_id, transform: "concat('PP-',trk_out_id)" }
+      ProductionPerformanceSequence: { transform: const(1) }
+      LotID: lot_no
+      OperationID: proc_cd
+      ItemID: { from: l.item_cd, transform: upper_trim(l.item_cd) }
+      ProductionOrderID: l.mo_no
+      ProductionOrderSequence: l.mo_seq
+      ExecutionStartDateTime: { from: i.trk_in_dtm, transform: to_ts14(i.trk_in_dtm) }
+      ExecutionEndDateTime: trk_out_dtm
+      ProductionPerformanceDate: { from: trk_out_dtm, transform: "to_date(to_ts14(trk_out_dtm))" }
+      PersonnelID: oper_emp_no
+      InspectionResult: { from: q.judge, code: QC_JUDGE }
+      InspectionQuantity: q.insp_qty
+    exclude: { eqp_id: "설비 — ProductionPerformanceEquipment에서 매핑" }
+  - noun: ProductionPerformanceEquipment
+    source: mes.tb_trk_out
+    structure: "1:1(생산실적 설비)"
+    join: [ { table: mes.tb_trk_in, as: i, on: "trk_in_id = i.trk_in_id" }, { table: mes.tb_lot, as: l, on: "lot_no = l.lot_no" } ]
+    base: { PlantID: "xref(plant, i.fac_id)" }
+    map:
+      ProductionPerformanceID: { from: trk_out_id, transform: "concat('PP-',trk_out_id)" }
+      ProductionPerformanceSequence: { transform: const(1) }
+      ProductionOrderID: l.mo_no
+      ExecutionStartDateTime: { from: i.trk_in_dtm, transform: to_ts14(i.trk_in_dtm) }
+      ExecutionEndDateTime: trk_out_dtm
+      PersonnelID: oper_emp_no
+    rest: "ProductionPerformance 명세에서 판정"
+  - noun: ProductionPerformanceQuality
+    source: mes.tb_qc_defect
+    structure: "N→1(검사+불량)"
+    join: [ { table: mes.tb_qc_insp, as: q, on: "insp_no = q.insp_no" },
+            { table: mes.tb_lot, as: l, on: "q.lot_no = l.lot_no" },
+            { table: mes.tb_trk_out, as: o, on: "q.lot_no = o.lot_no AND q.proc_cd = o.proc_cd" } ]
+    base: { PlantID: "xref(plant, l.fac_id)" }
+    map:
+      ProductionPerformanceID: { from: o.trk_out_id, transform: "concat('PP-',o.trk_out_id)" }
+      ProductionPerformanceSequence: { transform: const(1) }
+      DefectTypeCode: { from: defect_cd, code: "DEFECT_CD:TYPE" }
+      DefectTypeDetailCode: { from: defect_cd, code: DEFECT_CD }
+      OperationID: q.proc_cd
+      LotID: q.lot_no
+      ItemID: { from: l.item_cd, transform: upper_trim(l.item_cd) }
+      ProductionOrderID: l.mo_no
+  - noun: ProductionPerformanceItem
+    source: mes.tb_lot_link
+    structure: "1:1(LOT 소비 → 투입품목)"
+    filter: "link_tp = 'CONSUME'"
+    join: [ { table: mes.tb_lot, as: f, on: "from_lot_no = f.lot_no" },
+            { table: mes.tb_lot, as: t, on: "to_lot_no = t.lot_no" },
+            { table: mes.tb_trk_out, as: o, on: "to_lot_no = o.lot_no AND o.proc_cd = 'A100'" } ]
+    base: { PlantID: "xref(plant, t.fac_id)" }
+    map:
+      ProductionPerformanceID: { from: o.trk_out_id, transform: "concat('PP-',o.trk_out_id)", note: "조립 첫 공정(A100) 실적" }
+      ProductionPerformanceSequence: { transform: const(1) }
+      ItemID: { from: f.item_cd, transform: upper_trim(f.item_cd), note: "투입 LOT의 품목(LOT·품목당 1행 — 중복 0건)" }
+      LotID: from_lot_no
+      IssuedQuantity: link_qty
+      IssuedIndicator: { transform: const(true) }
+      OperationID: o.proc_cd
+      ProductionOrderID: t.mo_no
+    exclude:
+      link_tp: "연결 유형 — 전 건 CONSUME(필터)"
+      link_dtm: "투입 시각 — 착공 시각(ExecutionStartDateTime)과 동일"
+  - noun: EquipmentState
+    source: mes.tb_eqp_stat
+    structure: "이력(구간)→이벤트"
+    join: [ { table: mes.tm_eqp, as: e, on: "eqp_id = e.eqp_id" } ]
+    base: { PlantID: "xref(plant, e.fac_id)" }
+    map:
+      EquipmentStateID: { from: stat_seq, transform: "concat('ES-',stat_seq)" }
+      EquipmentState: { from: stat_cd, code: EQP_STAT }
+      ErrorCode: { from: err_cd, code: ERR_CD }
+      EquipmentID: eqp_id
+      EquipmentControlMode: { from: ctrl_mode, code: CTRL_MODE }
+      EquipmentOperationMode: { from: oper_mode, code: OPER_MODE }
+      LastProcessedLotID: lot_no
+      ErrorMessage: { from: rmk, note: "조치 메모" }
+      StateStartDateTime: st_dtm
+      StateEndDateTime: ed_dtm
+  - noun: Alarm
+    source: mes.tb_alarm
+    structure: "이력(발생·해제)→이벤트 2행"
+    join: [ { table: mes.tm_eqp, as: e, on: "eqp_id = e.eqp_id" } ]
+    base: { PlantID: "xref(plant, e.fac_id)" }
+    map:
+      AlarmID: { from: alm_seq, transform: "concat('AL-',alm_seq,'-',ev)", note: "ev = ON(발생)·OFF(해제)" }
+      EventDateTime: { from: "occur_dtm,clear_dtm", transform: "unpivot(occur_dtm→ON, clear_dtm→OFF)" }
+      AlarmState: { from: "occur_dtm,clear_dtm", transform: "case(ev='ON', ALARM, NORMAL)" }
+      ErrorCode: { from: alm_cd, code: ALM_CD }
+      AlarmSeverityCode: { from: alm_lvl, code: ALM_LVL }
+      ErrorMessage: alm_msg
+      EquipmentID: eqp_id
+  - noun: TraceParameter
+    source: mes.tb_param_val
+    structure: "이력→이벤트"
+    join: [ { table: mes.tm_eqp, as: e, on: "eqp_id = e.eqp_id" }, { table: mes.tm_param, as: p, on: "param_id = p.param_id" } ]
+    base: { PlantID: "xref(plant, e.fac_id)" }
+    map:
+      TraceParameterID: { from: "param_id,coll_dtm", transform: "concat(param_id,'_',to_char(coll_dtm,'YYYYMMDDHH24MISS'))" }
+      EquipmentID: eqp_id
+      ParameterID: param_id
+      EventDateTime: coll_dtm
+      ParameterValue: val
+      ParameterUOMCode: { from: p.unit, uom: p.unit }
+      ValidationResultCode: { from: "val,p.lsl,p.usl", transform: "case(val > p.usl, OVER_USL, val < p.lsl, UNDER_LSL, NORMAL)" }
+      LotID: lot_no
+  # ================= 품질 (SC05·SC06) =================
+  - noun: CustomerComplaint
+    source: qms.qm_claim
+    base: { PlantID: const(P2) }
+    map:
+      CustomerComplaintID: claim_no
+      CustomerComplaintType: { from: claim_tp, code: CLAIM_TP }
+      ResponseDueDate: resp_due_dt
+      LotID: lot_no
+      ComplaintReceiptDate: rcv_dt
+      DefectTypeCode: { from: defect_cd, code: "CLAIM_DEFECT:TYPE" }
+      DefectTypeDetailCode: { from: defect_cd, code: CLAIM_DEFECT }
+      ComplaintQuantity: claim_qty
+      ResponseDate: resp_dt
+      CustomerComplaintStatusCode: { from: status, code: CLAIM_STAT }
+      ComplaintAmount: claim_amt
+      CurrencyCode: { transform: const(KRW) }
+      CauseOperationID: cause_proc
+      ComplaintDescription: descr
+  - noun: Return
+    source: qms.qm_claim
+    filter: "claim_tp = 'FR'"
+    structure: "1:1(필드 반송분)"
+    base: { PlantID: const(P2) }
+    map:
+      ReturnID: claim_no
+      ReturnSequence: { transform: const(1) }
+      ReturnDateTime: rcv_dt
+      ReturnQuantity: claim_qty
+      LotID: lot_no
+      ReturnType: { transform: const(SAL-DEF), note: "필드 반송 = 판매 불량 반품" }
+    rest: "CustomerComplaint 명세에서 판정"
+  - noun: SupplierInspectionResult
+    source: qms.qm_iqc
+    join: [ { table: erp.tb_mm_gr, as: g, on: "gr_no = g.gr_no" } ]
+    base: { PlantID: "xref(wh_plant, g.wh_cd)" }
+    map:
+      InspectionResultID: iqc_no
+      GoodsReceiptID: gr_no
+      GoodsReceiptSequence: { transform: const(1) }
+      LotID: { from: vend_lot, note: "공급사 LOT" }
+      InspectionQuantity: { from: smpl_qty, note: "시료 수량" }
+      InspectionResult: { from: judge, code: IQC_JUDGE }
+      DefectTypeCode: { from: defect_cd, code: "IQC_DEFECT:TYPE" }
+      DefectTypeDetailCode: { from: defect_cd, code: IQC_DEFECT }
+      Inspector: insp_emp
+    exclude: { rcv_qty: "입고 수량 — GoodsReceipt.GoodsReceiptQuantity와 동일(중복)" }
+  - noun: CorrectiveActionRequest
+    source: qms.qm_vend_ncr
+    base: { PlantID: const(P2) }
+    map:
+      CorrectiveActionRequestID: ncr_no
+      DetectionLocationType: { from: found_at, code: FOUND_AT }
+      InspectionResultID: iqc_no
+      OccurrenceDate: occur_dt
+      DefectTypeCode: { from: defect_cd, code: "IQC_DEFECT:TYPE" }
+      DefectTypeDetailCode: { from: defect_cd, code: IQC_DEFECT }
+      CorrectiveActionDueDate: car_due_dt
+  - noun: CorrectiveActionResult
+    source: qms.qm_vend_ncr
+    filter: "car_cls_dt IS NOT NULL"
+    base: { PlantID: const(P2) }
+    map:
+      CorrectiveActionResultID: { from: ncr_no, transform: "concat(ncr_no,'-R')" }
+      CorrectiveActionRequestID: ncr_no
+      CorrectiveActionDateTime: car_cls_dt
+      CorrectiveActionStatusCode: { transform: const(COMPLETED), note: "종결일 있음 = 완료" }
+    rest: "CorrectiveActionRequest 명세에서 판정"
+  - noun: GoodsIssue
+    source: qms.qm_scrap
+    file: GoodsIssue_scrap
+    structure: "1:1(폐기 출고)"
+    base: { PlantID: "xref(plant, plant_cd)" }
+    map:
+      GoodsIssueID: scrap_no
+      InventoryTransactionDate: scrap_dt
+      InventoryTransactionTypeCode: { transform: const(I800), note: "폐기 출고" }
+      LotID: lot_no
+      ItemUnitQuantity: scrap_qty
+    exclude:
+      proc_cd: "폐기 발생 공정 — S3에서 ProductionPerformanceQuality(LOT+공정)로 연결"
+      defect_cd: "폐기 사유 불량 — 같은 LOT·공정의 ProductionPerformanceQuality가 원본"
+      unit_cost: "폐기 단가 — StandardCost(공정 단계 원가)가 원본"
+      scrap_amt: "폐기 금액 — QualityCost(IF-SCRAP) 집계 원천, 파생 값"
+  - noun: QualityCost
+    source: qms.qm_qcost
+    base: { PlantID: const(P2) }
+    map:
+      QualityCostID: { from: "cost_ym,cost_cls,cost_itm", transform: "concat(cost_ym,'_',cost_cls,'_',code(cost_itm))" }
+      CostPeriodStartDate: { from: cost_ym, transform: ym_first(cost_ym) }
+      CostPeriodEndDate: { from: cost_ym, transform: ym_last(cost_ym) }
+      QualityCostClass: { from: cost_cls, code: COST_CLS }
+      QualityCostItem: { from: cost_itm, code: COST_ITM }
+      QualityCostAmount: amount
+      CurrencyCode: { transform: const(KRW) }
+      SourceDocumentReference: ref_no
+
+# ---------------------------------------------------------------- 매핑 대상 밖 테이블의 판정
+tables:
+  erp.tb_cm_code: { disposition: 코드 원천, note: "공통코드 — 코드 대응표(codes.csv)로 흡수" }
+  mes.tm_code:    { disposition: 코드 원천, note: "MES 코드 — 코드 대응표(codes.csv)로 흡수" }
+  qms.qm_code:    { disposition: 코드 원천, note: "QMS 코드 — 코드 대응표(codes.csv)로 흡수" }
+  mes.tm_factory: { disposition: 식별 대응, note: "MES 공장 ↔ ERP 플랜트(erp_plant_cd) — 식별 대응표 plant" }
+  mes.tm_line:    { disposition: 식별 대응, note: "MES 라인 ↔ ERP 라인(erp_line_cd) — 라인 원장은 ERP(Line)" }
+  mes.tm_item:    { disposition: 제외, note: "품목 원장은 ERP(tb_mm_item) — MES는 동기화 사본(Q001 중복 원인)" }
+  mes.tb_prod_rslt: { disposition: 제외, note: "일 집계(파생) — 생산실적은 LOT 착·완공(trk_in/out)에서 매핑, S6 검증 기준값으로만 사용" }
+  erp.tb_pp_wc:   { disposition: 조인 원천, note: "ERP 작업장 — Operation(MES 공정)에 흡수, 작업장유형은 공정유형과 중복" }
+  mes.tb_qc_insp:
+    exclude:
+      insp_tp: "검사 유형 — 공정 코드로 구분(P300 누설·A400 최종)"
+      good_qty: "검사 양품수 — 생산실적 ProducedQuantity(완공)와 동일"
+      ng_qty: "검사 불량수 — ProductionPerformanceQuality 불량유형별 합계"
+      insp_dtm: "검사 일시 — 완공 시각(ExecutionEndDateTime)과 동일 단위"
+      insp_emp_no: "검사자 — 표준 생산실적에 검사자 없음, KPI 미사용"
+
+# ---------------------------------------------------------------- 코드 대응(codes.csv)
+# rule: equal(같은 의미)·merge(여러 원천 → 한 표준)·approx(근사, 비고 필수)·ext(확장 코드)
+codes:
+  - { system: ERP, group: ITEM_TP, ksx_group: ItemType, map: { "10": FG, "20": SFG, "30": RM, "40": SM, "50": PKG, "60": CON } }
+  - { system: ERP, group: ITEM_GRP, ksx_group: ItemLargeClass, map: { EWP: PRD, HSG: MEC, PRT: MEC, MTR: ELC, ELC: ELC, PKG: PKG, RAW: MTL, CSM: CSM },
+      rule: { HSG: merge, PRT: merge, MTR: merge, ELC: merge, CSM: ext }, note: "CSM 소모품 — 확장 하위 코드" }
+  - { system: ERP, group: LINE_TP, ksx_group: LineType, map: { A: ASSEMBLY, M: MACHINING } }
+  - { system: ERP, group: BOM_TP, ksx_group: BOMType, map: { M: MBOM, E: EBOM } }
+  - { system: ERP, group: WH_TP, ksx_group: WarehouseType, map: { RM: RM, FG: FG, QH: DEF }, rule: { QH: approx }, note: "QH 품질보류창고 → 불량창고(DEF)" }
+  - { system: ERP, group: SO_TP, ksx_group: SalesOrderType, map: { N: DOMESTIC, S: DOMESTIC }, rule: merge, note: "S 보수용 — 고객군(CustomerGroupCode AM)으로 보존" }
+  - { system: ERP, group: SO_STAT, ksx_group: SalesStatus, map: { "10": REGISTERED, "20": CONFIRMED, "40": SHIPPED, "90": CANCELLED } }
+  - { system: ERP, group: PO_STAT, ksx_group: PurchaseOrderLineStatusCode, map: { "20": OPEN, "40": RECEIVED } }
+  - { system: ERP, group: MO_STAT, ksx_group: ProductionOrderStatusCode, map: { "10": PLANNED, "20": RELEASED, "30": IN_PROGRESS, "40": COMPLETED, "90": CANCELLED }, rule: ext }
+  - { system: ERP, group: GI_TP, ksx_group: InventoryTransactionTypeCode, map: { PRD: I200, SAL: I100, SCR: I800, ADJ: A101 } }
+  - { system: ERP, group: RETIRE_YN, ksx_group: EmploymentStatusType, map: { N: ACTIVE, Y: RETIRED } }
+  - { system: ERP, group: NATION, ksx_group: CountryID, map: { KR: KR } }
+  - { system: ERP, group: CURR, ksx_group: CurrencyCode, map: { KRW: KRW } }
+  - { system: ERP, group: PLAN_TP, ksx_group: SalesPlanType, map: { FCST: FCST, PLAN: PLAN }, rule: ext }
+  - { system: ERP, group: CUST_GRP, ksx_group: CustomerGroupCode, map: { OE: OE, AM: AM }, rule: ext }
+  - { system: MES, group: PROC_TP, ksx_group: OperationType, map: { DC: PROD, MC: PROD, WS: PROD, AS: PROD, IN: INSP, PK: PACK }, rule: { DC: merge, MC: merge, WS: merge, AS: merge },
+      note: "주조·가공·세척·조립 → 생산(PROD), 세부는 설비대분류" }
+  - { system: MES, group: LOT_STAT, ksx_group: LotState, map: { W: RELEASE, R: START, H: HOLD, C: CLOSING, S: SCRAP } }
+  - { system: MES, group: LOT_TP, ksx_group: LotType, map: { N: PRODUCTION } }
+  - { system: MES, group: EQP_STAT, ksx_group: EquipmentState, map: { "1": RUN, "2": IDLE, "3": DOWN, "4": PM, "5": SETUP, "6": NONSCHED } }
+  - { system: MES, group: ERR_CD, ksx_group: EquipmentErrorCode, map: { E01: EQ-001, E02: EQ-002, E03: EQ-003, E04: EQ-004, E05: EQ-005, E06: EQ-006, E07: EQ-007 } }
+  - { system: MES, group: ALM_CD, ksx_group: EquipmentErrorCode, map: { A001: EQ-001, A101: EQ-003, A102: EQ-004, A201: EQ-002, A202: EQ-008, A301: EQ-004, A900: EQ-005 },
+      rule: { A102: merge, A301: merge, A202: ext }, note: "A202 진동 과다 — 확장 하위 코드 EQ-008" }
+  - { system: MES, group: ALM_LVL, ksx_group: AlarmSeverityCode, map: { H: HIGH, M: MEDIUM, L: LOW }, rule: ext }
+  - { system: MES, group: CTRL_MODE, ksx_group: EquipmentControlMode, map: { R: ONLINE, L: LOCAL } }
+  - { system: MES, group: OPER_MODE, ksx_group: EquipmentOperationMode, map: { A: FULL_AUTO, M: MANUAL } }
+  - { system: MES, group: EQP_KIND, ksx_group: EquipmentType, map: { P: PROD, I: INSP, L: LOGI } }
+  - { system: MES, group: EQP_GRP, ksx_group: EquipmentLargeClass, map: { CNC: MCH, LKT: TST, VIS: TST, DCM: CST, WSH: CLN, ASM: ASM, PKG: PKM },
+      rule: { LKT: merge, VIS: merge, DCM: ext, WSH: ext, ASM: ext, PKG: ext }, note: "주조기·세척기·조립기·포장기 — 확장 하위 코드" }
+  - { system: MES, group: PARAM_KIND, ksx_group: ParameterType, map: { C: CYCLE, K: FLOW, L: POWER, P: PRESS, Q: TORQUE, T: TEMP, V: VIB },
+      rule: { L: approx }, note: "L 스핀들 부하(%) → 동력(POWER) 근사" }
+  - { system: MES, group: PARAM_GRADE, ksx_group: ParameterGrade, map: { A: CRITICAL, B: MAJOR, C: MINOR } }
+  - { system: MES, group: QC_JUDGE, ksx_group: InspectionResult, map: { OK: PASS, NG: FAIL } }
+  - { system: MES, group: DEFECT_CD, ksx_group: DefectTypeDetailCode,
+      map: { D-BURR: APP-BUR, D-SCR: APP-SCR, D-DIM: DIM-OVR, D-FUNC: FUNC-NOP, D-LEAK: FUNC-LEK, D-NOISE: FUNC-NOI, D-PORO: MAT-POR, D-SHORT: MAT-SHT, D-ASSY: ASSY-MIS },
+      rule: { D-DIM: approx, D-PORO: ext, D-SHORT: ext }, note: "D-DIM 치수 → 치수 초과(DIM-OVR) 근사 — 원천에 초과·미달 구분 없음" }
+  - { system: MES, group: "DEFECT_CD:TYPE", ksx_group: DefectTypeCode,
+      map: { D-BURR: APP, D-SCR: APP, D-DIM: DIM, D-FUNC: FUNC, D-LEAK: FUNC, D-NOISE: FUNC, D-PORO: MAT, D-SHORT: MAT, D-ASSY: ASSY }, rule: merge }
+  - { system: QMS, group: CLAIM_TP, ksx_group: CustomerComplaintType, map: { NC: NC, LS: LS, FR: FR }, rule: ext }
+  - { system: QMS, group: CLAIM_STAT, ksx_group: CustomerComplaintStatusCode, map: { OPEN: OPEN, RESP: RESPONDED, CLOSE: CLOSED }, rule: ext }
+  - { system: QMS, group: CLAIM_DEFECT, ksx_group: DefectTypeDetailCode, map: { C-LEAK: FUNC-LEK, C-NOISE: FUNC-NOI, C-CONN: FUNC-NOP, C-LABEL: PKG-LBL },
+      rule: { C-CONN: approx }, note: "C-CONN 커넥터 접촉불량 → 기능 불량(FUNC-NOP) 근사" }
+  - { system: QMS, group: "CLAIM_DEFECT:TYPE", ksx_group: DefectTypeCode, map: { C-LEAK: FUNC, C-NOISE: FUNC, C-CONN: FUNC, C-LABEL: PKG }, rule: merge }
+  - { system: QMS, group: IQC_JUDGE, ksx_group: InspectionResult, map: { A: PASS, R: FAIL, S: CONDITIONAL } }
+  - { system: QMS, group: IQC_DEFECT, ksx_group: DefectTypeDetailCode, map: { I-SOLDER: ASSY-SLD, I-APP: "-", I-DIM: "-" },
+      note: "I-APP 외관·I-DIM 치수 — 상세 구분 없음(대분류만 매핑, 상세는 비움)" }
+  - { system: QMS, group: "IQC_DEFECT:TYPE", ksx_group: DefectTypeCode, map: { I-APP: APP, I-DIM: DIM, I-SOLDER: ASSY } }
+  - { system: QMS, group: FOUND_AT, ksx_group: DetectionLocationType, map: { IQC: IQC, LINE: LINE, CUST: CUST }, rule: ext }
+  - { system: QMS, group: COST_CLS, ksx_group: QualityCostClass, map: { P: P, A: A, IF: IF, EF: EF }, rule: ext }
+  - { system: QMS, group: COST_ITM, ksx_group: QualityCostItem,
+      map: { "품질교육": P-EDU, "FMEA·예방활동": P-FMEA, "수입검사": A-IQC, "공정·출하검사": A-INSP, "계측기교정": A-CAL, "신뢰성시험": A-REL,
+             "폐기": IF-SCRAP, "재작업": IF-REWORK, "클레임": EF-CLAIM, "반품운송": EF-RTNFRT }, rule: ext, note: "원천은 국문 항목명 — 코드화" }
+
+# ---------------------------------------------------------------- 단위 대응(units.csv)
+units:
+  - { src_unit: EA, ksx_uom: EA }
+  - { src_unit: ea, ksx_uom: EA, note: "소문자 표기(Q004)" }
+  - { src_unit: "개", ksx_uom: EA, note: "국문 표기(Q004)" }
+  - { src_unit: SET, ksx_uom: SET }
+  - { src_unit: KG, ksx_uom: kg }
+  - { src_unit: L, ksx_uom: L }
+  - { src_unit: "%", ksx_uom: PCT }
+  - { src_unit: mm/s, ksx_uom: mm/s }
+  - { src_unit: mm/sec, ksx_uom: mm/s }
+  - { src_unit: bar, ksx_uom: bar }
+  - { src_unit: kPa, ksx_uom: kPa }
+  - { src_unit: "℃", ksx_uom: Cel }
+  - { src_unit: degC, ksx_uom: Cel }
+  - { src_unit: sec, ksx_uom: s }
+  - { src_unit: "N·m", ksx_uom: "N.m", ext: true, note: "체결 토크 — 표준 단위코드 없음(확장 단위 후보, S3 원천 문자열 보존)" }
+  - { src_unit: cc/min, ksx_uom: "cm3/min", ext: true, note: "누설량 — 표준 단위코드 없음(확장 단위 후보)" }
+
+# ---------------------------------------------------------------- 식별 대응(xref.csv)
+xref:
+  enterprise:
+    - { system: ERP, src: IMPIX, ksx: IMPIX }
+  site:
+    - { system: ERP, src: "1000", ksx: HQ, note: "본사 사업장" }
+  plant:
+    - { system: ERP, src: "1100", ksx: P1, note: "제1공장(주조·가공)" }
+    - { system: ERP, src: "1200", ksx: P2, note: "제2공장(조립·검사)" }
+    - { system: MES, src: IMP1, ksx: P1 }
+    - { system: MES, src: IMP2, ksx: P2 }
+  wh_plant:
+    - { system: ERP, src: W100, ksx: P1, note: "1공장 자재·반제품창고" }
+    - { system: ERP, src: W200, ksx: P2 }
+    - { system: ERP, src: W300, ksx: P2 }
+    - { system: ERP, src: W900, ksx: P2 }

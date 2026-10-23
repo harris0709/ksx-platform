@@ -1,0 +1,18 @@
+# InventorySnapshot ← erp.tb_mm_stock_day (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: InventorySnapshot
+layer: ext
+structure: '1:1'
+source: {system: ERP, table: erp.tb_mm_stock_day}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, wh_cd)'}
+identity:
+- InventorySnapshotDate
+- WarehouseID
+- ItemID
+attributes: {}
+extension:
+  InventorySnapshotDate: {from: stk_dt, match: component, transform: to_date8(stk_dt), status: reviewed}
+  WarehouseID: {from: wh_cd, match: normalized, status: reviewed}
+  InventoryQuantity: {from: stk_qty, match: normalized, status: reviewed}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+excluded: []

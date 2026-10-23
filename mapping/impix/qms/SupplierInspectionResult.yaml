@@ -1,0 +1,28 @@
+# SupplierInspectionResult ← qms.qm_iqc (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: SupplierInspectionResult
+layer: core
+structure: '1:1'
+source: {system: QMS, table: qms.qm_iqc}
+join:
+- {table: erp.tb_mm_gr, as: g, 'on': gr_no = g.gr_no}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, g.wh_cd)'}
+identity:
+- InspectionResultID
+attributes:
+  InspectionResultID: {from: iqc_no, match: manual, status: reviewed}
+  LotID: {from: vend_lot, match: manual, note: 공급사 LOT, status: reviewed}
+  InspectionQuantity: {from: smpl_qty, match: manual, note: 시료 수량, status: reviewed}
+  InspectionResult: {from: judge, match: manual, code: IQC_JUDGE -> InspectionResult, status: reviewed}
+  Inspector: {from: insp_emp, match: manual, status: reviewed}
+  VendorID: {from: vend_cd, match: normalized, status: reviewed}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  InspectionDate: {from: insp_dt, match: normalized, transform: to_date8(insp_dt), status: reviewed}
+extension:
+  GoodsReceiptID: {from: gr_no, match: normalized, status: reviewed}
+  GoodsReceiptSequence: {match: const, transform: const(1), status: reviewed}
+  DefectTypeCode: {from: defect_cd, match: manual, code: 'IQC_DEFECT:TYPE -> DefectTypeCode', status: reviewed}
+  DefectTypeDetailCode: {from: defect_cd, match: manual, code: IQC_DEFECT -> DefectTypeDetailCode, status: reviewed}
+  DefectQuantity: {from: ng_qty, match: normalized, status: reviewed}
+excluded:
+- {column: rcv_qty, reason: 입고 수량 — GoodsReceipt.GoodsReceiptQuantity와 동일(중복)}

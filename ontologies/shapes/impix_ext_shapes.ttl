@@ -161,6 +161,7 @@ impixs:AvailableInventoryExtShape a sh:NodeShape ; sh:targetClass ksx:AvailableI
     sh:property [ sh:path ksx:productionOrderSequence ; sh:maxCount 1 ; sh:datatype xsd:integer ] ;
     sh:property [ sh:path impix:availabilityCheckDateTime ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
     sh:property [ sh:path impix:shortageQuantity ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path impix:materialRequirementQuantity ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
     sh:property [ sh:path ksx:refProductionOrder ; sh:class ksx:ProductionOrder ] .
 
 impixs:ProductionPerformanceExtShape a sh:NodeShape ; sh:targetClass ksx:ProductionPerformance ;
@@ -180,10 +181,50 @@ impixs:CorrectiveActionRequestExtShape a sh:NodeShape ; sh:targetClass ksx:Corre
     sh:property [ sh:path ksx:defectQuantity ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
     sh:property [ sh:path ksx:defectTypeCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
     sh:property [ sh:path ksx:defectTypeDetailCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
-    sh:property [ sh:path impix:correctiveActionDueDate ; sh:maxCount 1 ; sh:datatype xsd:date ] .
+    sh:property [ sh:path impix:correctiveActionDueDate ; sh:maxCount 1 ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path impix:occurrenceDate ; sh:maxCount 1 ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path ksx:inspectionResultID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path impix:refInspectionResult ; sh:class ksx:SupplierInspectionResult ] .
 
 impixs:EquipmentExtShape a sh:NodeShape ; sh:targetClass ksx:Equipment ;
     sh:property [ sh:path impix:standardUnitsPerMinute ; sh:maxCount 1 ; sh:datatype xsd:decimal ] .
 
 impixs:EquipmentStateExtShape a sh:NodeShape ; sh:targetClass ksx:EquipmentState ;
+    sh:property [ sh:path impix:stateStartDateTime ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path impix:stateEndDateTime ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
     sh:property [ sh:path impix:equipmentIdleReasonCode ; sh:maxCount 1 ; sh:class skos:Concept ] .
+
+impixs:ProductionOrderExtShape a sh:NodeShape ; sh:targetClass ksx:ProductionOrder ;
+    sh:property [ sh:path impix:productionOrderStatusCode ; sh:maxCount 1 ; sh:class skos:Concept ] .
+
+impixs:AlarmExtShape a sh:NodeShape ; sh:targetClass ksx:Alarm ;
+    sh:property [ sh:path impix:alarmSeverityCode ; sh:maxCount 1 ; sh:class skos:Concept ] .
+
+impixs:CustomerPartyMasterExtShape a sh:NodeShape ; sh:targetClass ksx:CustomerPartyMaster ;
+    sh:property [ sh:path impix:customerGroupCode ; sh:maxCount 1 ; sh:class skos:Concept ] .
+
+impixs:GoodsReceiptExtShape a sh:NodeShape ; sh:targetClass ksx:GoodsReceipt ;
+    sh:property [ sh:path ksx:purchaseDocumentNumber ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:purchaseDocumentSequence ; sh:maxCount 1 ; sh:datatype xsd:integer ] ;
+    sh:property [ sh:path ksx:lotID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:refPurchaseOrderLine ; sh:class ksx:PurchaseOrderLine ] ;
+    sh:property [ sh:path ksx:refLot ; sh:class ksx:Lot ] .
+
+impixs:GoodsIssueExtShape a sh:NodeShape ; sh:targetClass ksx:GoodsIssue ;
+    sh:property [ sh:path ksx:inventoryTransactionDate ; sh:maxCount 1 ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path ksx:productionOrderID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:productionOrderSequence ; sh:maxCount 1 ; sh:datatype xsd:integer ] ;
+    sh:property [ sh:path ksx:refProductionOrder ; sh:class ksx:ProductionOrder ] .
+
+impixs:ProductIncomingExtShape a sh:NodeShape ; sh:targetClass ksx:ProductIncoming ;
+    sh:property [ sh:path ksx:productionOrderID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:productionOrderSequence ; sh:maxCount 1 ; sh:datatype xsd:integer ] ;
+    sh:property [ sh:path ksx:refProductionOrder ; sh:class ksx:ProductionOrder ] .
+
+impixs:TraceParameterExtShape a sh:NodeShape ; sh:targetClass ksx:TraceParameter ;
+    sh:property [ sh:path ksx:lotID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:refLot ; sh:class ksx:Lot ] .
+
+impixs:EquipmentParameterExtShape a sh:NodeShape ; sh:targetClass ksx:EquipmentParameter ;
+    sh:property [ sh:path impix:lcl ; sh:maxCount 1 ; sh:datatype xsd:decimal ] ;
+    sh:property [ sh:path impix:ucl ; sh:maxCount 1 ; sh:datatype xsd:decimal ] .

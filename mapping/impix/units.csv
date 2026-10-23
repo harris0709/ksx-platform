@@ -1,0 +1,17 @@
+src_unit,ksx_uom,factor,note
+EA,EA,1,
+ea,EA,1,소문자 표기(Q004)
+개,EA,1,국문 표기(Q004)
+SET,SET,1,
+KG,kg,1,
+L,L,1,
+%,PCT,1,
+mm/s,mm/s,1,
+mm/sec,mm/s,1,
+bar,bar,1,
+kPa,kPa,1,
+℃,Cel,1,
+degC,Cel,1,
+sec,s,1,
+N·m,N.m,1,"체결 토크 — 표준 단위코드 없음(확장 단위 후보, S3 원천 문자열 보존)"
+cc/min,cm3/min,1,누설량 — 표준 단위코드 없음(확장 단위 후보)

@@ -3,12 +3,12 @@
 | 항목 | 값 |
 |---|---|
 | 확장 명사(클래스) | 5 — StandardCost, CustomerComplaint, QualityCost, InventorySnapshot, LotInventory |
-| 확장 속성 테이블(대상 Core 명사) | 8 — SalesPlan, SalesOrderLine, AvailableInventory, ProductionPerformance, SupplierInspectionResult, CorrectiveActionRequest, Equipment, EquipmentState |
-| 확장 컬럼 | 73 |
-| 속성: 표준 공유 재사용 / 신규 | 38 / 36 |
-| 관계(물리 FK) | 47 |
-| 확장 코드 그룹 / 코드 | 8 / 33 |
-| 판정 기록 | 28 |
+| 확장 속성 테이블(대상 Core 명사) | 16 — SalesPlan, SalesOrderLine, AvailableInventory, ProductionPerformance, SupplierInspectionResult, CorrectiveActionRequest, Equipment, EquipmentState, ProductionOrder, Alarm, CustomerPartyMaster, GoodsReceipt, GoodsIssue, ProductIncoming, TraceParameter, EquipmentParameter |
+| 확장 컬럼 | 92 |
+| 속성: 표준 공유 재사용 / 신규 | 43 / 45 |
+| 관계(물리 FK) | 61 |
+| 확장 코드 그룹 / 코드 | 14 / 49 |
+| 판정 기록 | 44 |
 | 오류 / 경고 | 0 / 0 |
 
 ## 속성 대응(확장 컬럼 → 온톨로지 속성)
@@ -74,6 +74,7 @@
 | AvailableInventoryExt | ProductionOrderSequence | `ksx:productionOrderSequence` | 표준 재사용 |
 | AvailableInventoryExt | AvailabilityCheckDateTime | `impix:availabilityCheckDateTime` | 신규 |
 | AvailableInventoryExt | ShortageQuantity | `impix:shortageQuantity` | 신규 |
+| AvailableInventoryExt | MaterialRequirementQuantity | `impix:materialRequirementQuantity` | 신규 |
 | ProductionPerformanceExt | InspectionResult | `ksx:inspectionResult` | 표준 재사용 |
 | ProductionPerformanceExt | InspectionQuantity | `ksx:inspectionQuantity` | 표준 재사용 |
 | SupplierInspectionResultExt | GoodsReceiptID | `ksx:goodsReceiptID` | 표준 재사용 |
@@ -86,8 +87,26 @@
 | CorrectiveActionRequestExt | DefectTypeCode | `ksx:defectTypeCode` | 표준 재사용 |
 | CorrectiveActionRequestExt | DefectTypeDetailCode | `ksx:defectTypeDetailCode` | 표준 재사용 |
 | CorrectiveActionRequestExt | CorrectiveActionDueDate | `impix:correctiveActionDueDate` | 신규 |
+| CorrectiveActionRequestExt | OccurrenceDate | `impix:occurrenceDate` | 신규 |
+| CorrectiveActionRequestExt | InspectionResultID | `ksx:inspectionResultID` | 표준 재사용 |
 | EquipmentExt | StandardUnitsPerMinute | `impix:standardUnitsPerMinute` | 신규 |
+| EquipmentStateExt | StateStartDateTime | `impix:stateStartDateTime` | 신규 |
+| EquipmentStateExt | StateEndDateTime | `impix:stateEndDateTime` | 신규 |
 | EquipmentStateExt | EquipmentIdleReasonCode | `impix:equipmentIdleReasonCode` | 신규 |
+| ProductionOrderExt | ProductionOrderStatusCode | `impix:productionOrderStatusCode` | 신규 |
+| AlarmExt | AlarmSeverityCode | `impix:alarmSeverityCode` | 신규 |
+| CustomerPartyMasterExt | CustomerGroupCode | `impix:customerGroupCode` | 신규 |
+| GoodsReceiptExt | PurchaseDocumentNumber | `ksx:purchaseDocumentNumber` | 표준 재사용 |
+| GoodsReceiptExt | PurchaseDocumentSequence | `ksx:purchaseDocumentSequence` | 표준 재사용 |
+| GoodsReceiptExt | LotID | `ksx:lotID` | 표준 재사용 |
+| GoodsIssueExt | InventoryTransactionDate | `ksx:inventoryTransactionDate` | 표준 재사용 |
+| GoodsIssueExt | ProductionOrderID | `ksx:productionOrderID` | 표준 재사용 |
+| GoodsIssueExt | ProductionOrderSequence | `ksx:productionOrderSequence` | 표준 재사용 |
+| ProductIncomingExt | ProductionOrderID | `ksx:productionOrderID` | 표준 재사용 |
+| ProductIncomingExt | ProductionOrderSequence | `ksx:productionOrderSequence` | 표준 재사용 |
+| TraceParameterExt | LotID | `ksx:lotID` | 표준 재사용 |
+| EquipmentParameterExt | LCL | `impix:lcl` | 신규 |
+| EquipmentParameterExt | UCL | `impix:ucl` | 신규 |
 
 ## 검사 결과
 

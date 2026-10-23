@@ -1,0 +1,111 @@
+# IMPIX 약어 사전 — 정규화 일치(구현안내서 5.2 ②)·컴포넌트 일치(③)에 쓴다.
+# 값이 목록이면 순서대로 시도한다. 승인된 매핑에서 새 약어를 보강한다.
+CD: [ID, Code]
+NM: Name
+"NO": [Number, ID]
+QTY: Quantity
+DT: [Date, DateTime]
+DTM: DateTime
+SEQ: Sequence
+STAT: [State, Status]
+TP: Type
+YN: Indicator
+FLAG: Indicator
+PRC: Price
+AMT: Amount
+LT: LeadTime
+WGT: Weight
+SPEC: Specification
+DRW: Drawing
+EMP: Personnel
+CUST: Customer
+VEND: Vendor
+WH: Warehouse
+PROC: Operation
+EQP: Equipment
+ITEM: Item
+PRNT: Parent
+CHLD: Child
+UPPER: Parent
+DEPT: Department
+ROUT: Routing
+REV: RevisionNumber
+REQ: [Requested, Required]
+DLV: Delivery
+REG: [Creation, Creator, Registration]
+UPD: [Modification, Modifier]
+CRT: [Creation, Creator]
+ALM: Alarm
+ERR: Error
+MSG: Message
+INSP: Inspection
+PARAM: Parameter
+VAL: Value
+LVL: Level
+ADDR1: BaseAddress
+ADDR2: DetailAddress
+TEL: Dial
+HP: Dial
+ZIP: Postal
+BIZ: Business
+CORP: Corporate
+CEO: Representative
+CURR: Currency
+CHRG: PersonInCharge
+EMAIL: Email
+MODEL: Model
+SERIAL: Serial
+MGR: PersonInCharge
+SAFETY: Safety
+LSL: LSL
+USL: USL
+CAPA: Capacity
+SHIFT: Shift
+CNT: Count
+SMPL: Sample
+NG: Defect
+GOOD: Produced
+# --- S2에서 보강(승인 대상): 문서·이벤트 약어 → 표준 명사 접두
+SO: SalesDocument
+PO: [PurchaseDocument, PurchaseOrder]
+GR: GoodsReceipt
+GI: GoodsIssue
+MO: ProductionOrder
+LOT: Lot
+DLV: [Delivery, ProductRelease]
+RCPT: [ProductIncoming, Receipt]
+RCV: [GoodsReceipt, Receipt]
+CLAIM: CustomerComplaint
+NCR: CorrectiveActionRequest
+CAR: CorrectiveAction
+RESP: Response
+RTN: Return
+STK: Inventory
+CUR: Current
+NATION: Country
+PUR: Purchase
+PRD: [Production, Product]
+IQC: IncomingInspection
+FQC: FinalInspection
+OQC: OutgoingInspection
+KIND: Type
+GRP: [LargeClass, Group]
+UNIT: [Unit, UOMCode]
+MIN: [Time, Minute]
+SEC: [Time, Second]
+VALID: Valid
+FR: [Start, StartDateTime, StartDate]
+TO: [End, EndDateTime, EndDate]
+USER: [ID, User]
+COST: [Cost, CostAmount]
+STD: Standard
+MAT: Material
+LAB: Labor
+OVH: Overhead
+CLS: Class
+ITM: Item
+# 국문 동의어(④ 국문명 일치)
+_ko:
+  코드: 식별자
+  번호: 식별자
+  명: 명

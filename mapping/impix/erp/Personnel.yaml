@@ -1,0 +1,19 @@
+# Personnel ← erp.tb_hr_emp (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: Personnel
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_hr_emp}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, plant_cd)'}
+identity:
+- PersonnelID
+attributes:
+  PersonnelID: {from: emp_no, match: normalized, status: reviewed}
+  PersonInChargeEmail: {from: email, match: manual, status: reviewed}
+  PersonInChargeDialNumber: {from: hp_no, match: component, status: reviewed}
+  EmploymentStatusType: {from: retire_yn, match: manual, code: RETIRE_YN -> EmploymentStatusType, status: reviewed}
+  PersonnelName: {from: emp_nm, match: normalized, status: reviewed}
+  DepartmentID: {from: dept_cd, match: normalized, status: reviewed}
+extension: {}
+excluded:
+- {column: join_dt, reason: '입사일 — 표준 사원에 없음, KPI·질의 미사용(확장 불요)'}

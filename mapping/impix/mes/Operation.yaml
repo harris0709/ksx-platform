@@ -1,0 +1,19 @@
+# Operation ← mes.tm_proc (N→1(MES 공정 + ERP 작업장)) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: Operation
+layer: core
+structure: N→1(MES 공정 + ERP 작업장)
+source: {system: MES, table: mes.tm_proc}
+join:
+- {table: erp.tb_pp_wc, as: w, 'on': erp_wc_cd = w.wc_cd}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, fac_id)'}
+identity:
+- OperationID
+attributes:
+  OperationType: {from: proc_tp, match: normalized, code: PROC_TP -> OperationType, status: reviewed}
+  OperationID: {from: proc_cd, match: normalized, status: reviewed}
+  OperationName: {from: proc_nm, match: normalized, status: reviewed}
+  UseIndicator: {from: use_flag, match: normalized, transform: yn(use_flag), status: reviewed}
+extension: {}
+excluded:
+- {column: seq_no, reason: 화면 표시 순서 — 공정 순서는 RoutingLine.OperationSequence}

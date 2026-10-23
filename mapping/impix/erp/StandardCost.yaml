@@ -1,0 +1,23 @@
+# StandardCost ← erp.tb_co_std_cost (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: StandardCost
+layer: ext
+structure: '1:1'
+source: {system: ERP, table: erp.tb_co_std_cost}
+join:
+- {table: erp.tb_mm_item, as: i, 'on': item_cd = i.item_cd}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, i.plant_cd)'}
+identity:
+- StandardCostID
+attributes: {}
+extension:
+  StandardCostID: {from: 'item_cd,cost_ym', match: derived, transform: 'concat(upper_trim(item_cd),''_'',cost_ym)', status: reviewed}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  CostPeriodStartDate: {from: cost_ym, match: manual, transform: ym_first(cost_ym), status: reviewed}
+  CostPeriodEndDate: {from: cost_ym, match: manual, transform: ym_last(cost_ym), status: reviewed}
+  StandardCostAmount: {from: std_cost, match: normalized, status: reviewed}
+  MaterialCostAmount: {from: mat_cost, match: normalized, status: reviewed}
+  LaborCostAmount: {from: lab_cost, match: normalized, status: reviewed}
+  OverheadCostAmount: {from: ovh_cost, match: normalized, status: reviewed}
+  CurrencyCode: {from: curr_cd, match: normalized, code: CURR -> CurrencyCode, status: reviewed}
+excluded: []

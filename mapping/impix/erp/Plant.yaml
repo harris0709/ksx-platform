@@ -1,0 +1,16 @@
+# Plant ← erp.tb_cm_plant (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: Plant
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_cm_plant}
+base: {EnterpriseID: 'xref(enterprise, comp_cd)', SiteID: 'xref(site, bizarea_cd)', PlantID: 'xref(plant, plant_cd)'}
+identity:
+- PlantID
+attributes:
+  DialNumber: {from: tel_no, match: normalized, status: reviewed}
+  PlantName: {from: plant_nm, match: normalized, status: reviewed}
+  BaseAddress: {from: addr1, match: normalized, status: reviewed}
+extension: {}
+excluded:
+- {column: use_yn, reason: 표준 공장에 사용여부 없음 — 전 건 Y(적재 필터)}

@@ -1,0 +1,17 @@
+# Site ← erp.tb_cm_bizarea (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: Site
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_cm_bizarea}
+base: {EnterpriseID: 'xref(enterprise, comp_cd)', SiteID: 'xref(site, bizarea_cd)'}
+identity:
+- SiteID
+attributes:
+  BusinessRegistrationNumber: {from: biz_reg_no, match: normalized, status: reviewed}
+  DialNumber: {from: tel_no, match: normalized, status: reviewed}
+  SiteName: {from: bizarea_nm, match: korean, status: reviewed}
+  BaseAddress: {from: addr1, match: normalized, status: reviewed}
+  UseIndicator: {from: use_yn, match: normalized, transform: yn(use_yn), status: reviewed}
+extension: {}
+excluded: []

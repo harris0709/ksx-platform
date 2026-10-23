@@ -1,0 +1,23 @@
+# ProductIncoming ← erp.tb_pp_rcpt (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: ProductIncoming
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_pp_rcpt}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, wh_cd)'}
+identity:
+- ProductIncomingID
+- ProductIncomingSequence
+attributes:
+  ProductIncomingID: {from: rcpt_no, match: normalized, status: reviewed}
+  ProductIncomingSequence: {match: const, transform: const(1), status: reviewed}
+  InventoryTransactionDate: {from: rcpt_dt, match: manual, transform: to_date8(rcpt_dt), status: reviewed}
+  ItemUnitQuantity: {from: rcpt_qty, match: manual, status: reviewed}
+  WarehouseID: {from: wh_cd, match: normalized, status: reviewed}
+  InventoryTransactionTypeCode: {match: const, transform: const(R200), note: 생산입고, status: reviewed}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+extension:
+  ProductionOrderID: {from: mo_no, match: normalized, status: reviewed}
+  ProductionOrderSequence: {match: const, transform: const(1), status: reviewed}
+excluded:
+- {column: src, reason: '적재 경로 표식(HIST·MES·MAN) — 기술 컬럼, audit에 기록(확장정의서 판정)'}

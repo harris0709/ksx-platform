@@ -1,0 +1,21 @@
+# DeliveryHeader ← erp.tb_sd_dlv (1→헤더·라인(헤더)) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: DeliveryHeader
+layer: core
+structure: 1→헤더·라인(헤더)
+source: {system: ERP, table: erp.tb_sd_dlv}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, wh_cd)'}
+identity:
+- DeliveryID
+attributes:
+  DeliveryID: {from: dlv_no, match: normalized, status: reviewed}
+  CustomerID: {from: cust_cd, match: normalized, status: reviewed}
+  DeliveryDateTime: {from: dlv_dt, match: normalized, transform: to_date8(dlv_dt), status: reviewed}
+extension: {}
+excluded:
+- {column: so_no, reason: ProductRelease 명세에서 판정}
+- {column: so_seq, reason: ProductRelease 명세에서 판정}
+- {column: item_cd, reason: ProductRelease 명세에서 판정}
+- {column: dlv_qty, reason: ProductRelease 명세에서 판정}
+- {column: lot_no, reason: ProductRelease 명세에서 판정}
+- {column: rtn_yn, reason: ProductRelease 명세에서 판정}

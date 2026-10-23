@@ -337,6 +337,13 @@ def validate(ext: Ext, core: Model) -> list[Issue]:
         seen.add((c.group, c.code))
         if c.parent_group and c.parent_code and (c.parent_group, c.parent_code) not in core_codes | ext_codes:
             E(where, f"상위 코드 {c.parent_group}/{c.parent_code} 없음")
+    # 참조 완결성: 부모 UK가 복합(문서번호+순번 등)이면 참조 컬럼이 UK 전체를 덮어야 FK가 성립한다
+    for r in derive_relations(ext, core):
+        parent = _lookup(ext, core, r.parent)
+        if parent and set(r.parent_cols) != set(parent.uk):
+            miss = [k for k in parent.uk if k not in r.parent_cols]
+            E(f"{r.child}.{'+'.join(r.fk_cols[1:])}",
+              f"{r.parent} 참조가 부모 UK 일부만 가리킴 — 누락 {', '.join(miss)} 컬럼을 이어서 추가(참조 대상 {r.parent})")
     return out
 
 

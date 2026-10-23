@@ -1,0 +1,18 @@
+# VendorPartyMaster ← erp.tb_mm_vend (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: VendorPartyMaster
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_mm_vend}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: const(P2)}
+identity:
+- VendorID
+attributes:
+  BusinessRegistrationNumber: {from: biz_reg_no, match: normalized, status: reviewed}
+  VendorID: {from: vend_cd, match: normalized, status: reviewed}
+  VendorName: {from: vend_nm, match: normalized, status: reviewed}
+  PersonInChargeName: {from: chrg_nm, match: normalized, status: reviewed}
+  PersonInChargeEmail: {from: chrg_email, match: normalized, status: reviewed}
+  UseIndicator: {from: use_yn, match: normalized, transform: yn(use_yn), status: reviewed}
+extension: {}
+excluded: []

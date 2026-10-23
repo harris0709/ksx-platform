@@ -1,0 +1,17 @@
+# PurchaseOrderHeader ← erp.tb_mm_po_h (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: PurchaseOrderHeader
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_mm_po_h}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: const(P2)}
+identity:
+- PurchaseDocumentNumber
+attributes:
+  PurchaseDocumentNumber: {from: po_no, match: normalized, status: reviewed}
+  PurchaseOrderDate: {from: po_dt, match: normalized, transform: to_date8(po_dt), status: reviewed}
+  PersonnelID: {from: emp_no, match: normalized, status: reviewed}
+  PurchaseOrderClosingIndicator: {from: po_stat, match: manual, transform: 'eq(po_stat,''40'')', note: 40 입고완료 → 마감, status: reviewed}
+  VendorID: {from: vend_cd, match: normalized, status: reviewed}
+extension: {}
+excluded: []

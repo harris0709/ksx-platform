@@ -24,6 +24,10 @@ jobs:
         run: python tools/build_web.py && git diff --exit-code web/
       - name: 생성기 회귀 시험
         run: python tests/coverage/test_ksxgen.py
+      - name: S2 표준 매핑 완료 기준·최신 여부 (automap check)
+        run: PYTHONPATH=tools/automap python -m automap check --plan mapping/impix/s2_plan.yaml
+      - name: automap 회귀 시험
+        run: python tests/coverage/test_automap.py
       - name: E2E 최소 시험 (DDL → 시드 → OBDA → SHACL → 규칙)
         env:
           PGPASSWORD: ci

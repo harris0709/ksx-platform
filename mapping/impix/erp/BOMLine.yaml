@@ -1,0 +1,26 @@
+# BOMLine ← erp.tb_pp_bom_d (1:1(헤더 참조)) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: BOMLine
+layer: core
+structure: 1:1(헤더 참조)
+source: {system: ERP, table: erp.tb_pp_bom_d}
+join:
+- {table: erp.tb_pp_bom_h, as: h, 'on': prnt_item_cd = h.prnt_item_cd AND bom_rev = h.bom_rev}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, h.plant_cd)'}
+identity:
+- BOMID
+- BOMRevisionNumber
+- BOMLineSequence
+attributes:
+  BOMID: {from: prnt_item_cd, match: manual, transform: upper_trim(prnt_item_cd), status: reviewed}
+  BOMRevisionNumber: {from: bom_rev, match: normalized, status: reviewed}
+  BOMLineSequence: {from: seq, match: manual, status: reviewed}
+  ActualRequirementQuantity: {from: req_qty, match: manual, status: reviewed}
+  ChildItemUOMCode: {from: unit, match: manual, uom: unit, status: reviewed}
+  ValidStartDateTime: {from: valid_fr, match: normalized, transform: to_date8(valid_fr), status: reviewed}
+  ValidEndDateTime: {from: valid_to, match: normalized, transform: to_date8(valid_to), note: 99991231 = 무기한 → 비움, status: reviewed}
+  ChildItemID: {from: chld_item_cd, match: normalized, transform: upper_trim(chld_item_cd), status: reviewed}
+  OperationSequence: {from: oper_seq, match: component, status: reviewed}
+  BackFlushedIndicator: {from: bf_yn, match: korean, transform: yn(bf_yn), status: reviewed}
+extension: {}
+excluded: []

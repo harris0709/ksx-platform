@@ -126,6 +126,9 @@ impix:availabilityCheckDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime
 impix:shortageQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
     rdfs:label "부족수량"@ko, "ShortageQuantity"@en ;
     ksx:sourceAttribute "ShortageQuantity" .
+impix:materialRequirementQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "자재소요량"@ko, "MaterialRequirementQuantity"@en ;
+    ksx:sourceAttribute "MaterialRequirementQuantity" .
 impix:detectionLocationType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "DetectionLocationType" ;
     rdfs:label "발견위치유형"@ko, "DetectionLocationType"@en ;
     ksx:sourceAttribute "DetectionLocationType" .
@@ -135,9 +138,30 @@ impix:correctiveActionDueDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
 impix:standardUnitsPerMinute a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
     rdfs:label "표준분당생산수량"@ko, "StandardUnitsPerMinute"@en ;
     ksx:sourceAttribute "StandardUnitsPerMinute" .
+impix:stateStartDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "상태시작일시"@ko, "StateStartDateTime"@en ;
+    ksx:sourceAttribute "StateStartDateTime" .
+impix:stateEndDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "상태종료일시"@ko, "StateEndDateTime"@en ;
+    ksx:sourceAttribute "StateEndDateTime" .
 impix:equipmentIdleReasonCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "EquipmentIdleReasonCode" ;
     rdfs:label "대기사유코드"@ko, "EquipmentIdleReasonCode"@en ;
     ksx:sourceAttribute "EquipmentIdleReasonCode" .
+impix:productionOrderStatusCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ProductionOrderStatusCode" ;
+    rdfs:label "생산지시상태코드"@ko, "ProductionOrderStatusCode"@en ;
+    ksx:sourceAttribute "ProductionOrderStatusCode" .
+impix:alarmSeverityCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "AlarmSeverityCode" ;
+    rdfs:label "알람중요도코드"@ko, "AlarmSeverityCode"@en ;
+    ksx:sourceAttribute "AlarmSeverityCode" .
+impix:customerGroupCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "CustomerGroupCode" ;
+    rdfs:label "고객군코드"@ko, "CustomerGroupCode"@en ;
+    ksx:sourceAttribute "CustomerGroupCode" .
+impix:lcl a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "관리하한"@ko, "LCL"@en ;
+    ksx:sourceAttribute "LCL" .
+impix:ucl a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "관리상한"@ko, "UCL"@en ;
+    ksx:sourceAttribute "UCL" .
 impix:refCauseOperation a owl:ObjectProperty ; rdfs:range ksx:Operation ; owl:inverseOf impix:refCauseOperationInverse ;
     rdfs:label "원인공정식별자 참조"@ko, "refCauseOperation"@en ;
     ksx:sourceAttribute "CauseOperationID" .
@@ -146,3 +170,7 @@ impix:refGoodsReceipt a owl:ObjectProperty ; rdfs:range ksx:GoodsReceipt ; owl:i
     rdfs:label "입고식별자 참조"@ko, "refGoodsReceipt"@en ;
     ksx:sourceAttribute "GoodsReceiptID" .
 impix:refGoodsReceiptInverse a owl:ObjectProperty ; rdfs:label "입고식별자 참조(역)"@ko .
+impix:refInspectionResult a owl:ObjectProperty ; rdfs:range ksx:SupplierInspectionResult ; owl:inverseOf impix:refInspectionResultInverse ;
+    rdfs:label "검사결과식별자 참조"@ko, "refInspectionResult"@en ;
+    ksx:sourceAttribute "InspectionResultID" .
+impix:refInspectionResultInverse a owl:ObjectProperty ; rdfs:label "검사결과식별자 참조(역)"@ko .

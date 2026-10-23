@@ -1,0 +1,22 @@
+# GoodsIssue ← qms.qm_scrap (1:1(폐기 출고)) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: GoodsIssue
+layer: core
+structure: 1:1(폐기 출고)
+source: {system: QMS, table: qms.qm_scrap}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, plant_cd)'}
+identity:
+- GoodsIssueID
+attributes:
+  GoodsIssueID: {from: scrap_no, match: manual, status: reviewed}
+  InventoryTransactionTypeCode: {match: const, transform: const(I800), note: 폐기 출고, status: reviewed}
+  LotID: {from: lot_no, match: normalized, status: reviewed}
+  ItemUnitQuantity: {from: scrap_qty, match: manual, status: reviewed}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+extension:
+  InventoryTransactionDate: {from: scrap_dt, match: manual, transform: to_date8(scrap_dt), status: reviewed}
+excluded:
+- {column: proc_cd, reason: 폐기 발생 공정 — S3에서 ProductionPerformanceQuality(LOT+공정)로 연결}
+- {column: defect_cd, reason: 폐기 사유 불량 — 같은 LOT·공정의 ProductionPerformanceQuality가 원본}
+- {column: unit_cost, reason: 폐기 단가 — StandardCost(공정 단계 원가)가 원본}
+- {column: scrap_amt, reason: '폐기 금액 — QualityCost(IF-SCRAP) 집계 원천, 파생 값'}

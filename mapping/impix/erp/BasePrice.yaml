@@ -1,0 +1,19 @@
+# BasePrice ← erp.tb_mm_price (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: BasePrice
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_mm_price, filter: 'to_char(current_date,''YYYYMMDD'') BETWEEN valid_fr AND valid_to'}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: const(P2)}
+identity:
+- ItemID
+- CurrencyCode
+attributes:
+  CurrencyCode: {from: curr_cd, match: normalized, code: CURR -> CurrencyCode, status: reviewed}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  UnitPrice: {from: unit_prc, match: normalized, status: reviewed}
+extension: {}
+excluded:
+- {column: vend_cd, reason: 품목당 단일 공급사 단가(중복 0건) — 공급사는 ItemMaster.MainVendorID로 연결(S3)}
+- {column: valid_fr, reason: 유효기간 — 적재 필터(현재 유효 행)}
+- {column: valid_to, reason: 유효기간 — 적재 필터(현재 유효 행)}

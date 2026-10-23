@@ -1,0 +1,29 @@
+# ProductionOrder ← erp.tb_pp_mo (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: ProductionOrder
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_pp_mo}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, plant_cd)'}
+identity:
+- ProductionOrderID
+- ProductionOrderSequence
+attributes:
+  ProductionOrderID: {from: mo_no, match: normalized, status: reviewed}
+  ProductionOrderSequence: {from: mo_seq, match: normalized, status: reviewed}
+  ProductionOrderQuantity: {from: mo_qty, match: normalized, transform: int(mo_qty), status: reviewed}
+  ItemUOMCode: {from: unit, match: manual, uom: unit, status: reviewed}
+  ScheduleStartDateTime: {from: plan_st_dt, match: component, transform: to_date8(plan_st_dt), status: reviewed}
+  ScheduleEndDateTime: {from: plan_ed_dt, match: manual, transform: to_date8(plan_ed_dt), status: reviewed}
+  SalesDocumentNumber: {from: so_no, match: normalized, status: reviewed}
+  SalesDocumentSequence: {from: so_seq, match: normalized, status: reviewed}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+  LineID: {from: line_cd, match: normalized, status: reviewed}
+  RoutingID: {from: rout_cd, match: normalized, status: reviewed}
+  BOMRevisionNumber: {from: bom_rev, match: normalized, status: reviewed}
+  ProductionDueDateTime: {from: due_dt, match: component, transform: to_date8(due_dt), status: reviewed}
+  CreationDateTime: {from: reg_dt, match: normalized, transform: to_ts(reg_dt), status: reviewed}
+  CreatorID: {from: reg_id, match: normalized, status: reviewed}
+extension:
+  ProductionOrderStatusCode: {from: mo_stat, match: manual, code: MO_STAT -> ProductionOrderStatusCode, status: reviewed}
+excluded: []

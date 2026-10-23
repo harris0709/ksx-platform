@@ -55,7 +55,7 @@ def test_extension_impix():
     issues = X.validate(e, m)
     assert not [i for i in issues if i.level == "오류"], issues
     kinds = [t.ext_type for t in e.tables.values()]
-    assert kinds.count("확장 명사") == 5 and kinds.count("확장 속성") == 8
+    assert kinds.count("확장 명사") == 5 and kinds.count("확장 속성") == 16   # S1 8 + S2 매핑 8
     props, _, _, viss = X.ext_vocab(e, m, v)
     assert not viss
     assert all(p.name.startswith("impix:") for p in props.values() if p.new)
@@ -65,7 +65,7 @@ def test_extension_impix():
 
 
 def test_extension_prohibitions():
-    """금지 규칙: Core 테이블명·속성 타입 재정의, 고정형 표준 그룹 코드 추가는 오류."""
+    """금지 규칙: Core 테이블명·속성 타입 재정의, 고정형 표준 그룹 코드 추가, 복합 UK 부분 참조는 오류."""
     import openpyxl
     import shutil
     with tempfile.TemporaryDirectory() as tmp:
@@ -78,12 +78,15 @@ def test_extension_prohibitions():
         wb["테이블정의서"].append(["CustomerComplaint", "x", None, None, "x", "LotCreatedQuantity", None, "확장", "string",
                                   None, None, None, None, None, None, None, None, "x", "x", None, "초안"])
         wb["코드그룹목록"].append([None, "x", "EquipmentState", "x", "고정형", None, "x", "x", "x", "표준 그룹 하위 확장", "초안"])
+        wb["테이블정의서"].append(["CustomerComplaint", "x", None, None, "x", "ProductionOrderID", None, "확장", "IDREF",
+                                  None, None, None, None, None, "ProductionOrder.ProductionOrderID", None, None, "x", "x", None, "초안"])
         wb.save(p)
         m = load(STD)
         e = X.read(p, m, X.ext_config(d))
         X.complete(e, m)
         msgs = " | ".join(i.msg for i in X.validate(e, m) if i.level == "오류")
     assert "표준 테이블명" in msgs and "재정의 금지" in msgs and "고정형 표준 그룹" in msgs, msgs
+    assert "부모 UK 일부만" in msgs, msgs                    # 복합 UK 부모를 한 컬럼으로만 참조
 
 
 def test_extension_turtle_parses():

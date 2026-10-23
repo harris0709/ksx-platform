@@ -35,8 +35,8 @@ target		d:{enterpriseid}/SalesOrder/{salesdocumentnumber}/line/{salesdocumentseq
 source		SELECT "EnterpriseID" AS enterpriseid, "SalesDocumentNumber" AS salesdocumentnumber, "SalesDocumentSequence" AS salesdocumentsequence, "UnitPrice" AS unitprice, "CurrencyCode" AS currencycode, "SalesAmount" AS salesamount FROM ext."SalesOrderLineExt"
 
 mappingId	IMPIX_AvailableInventoryExt
-target		d:{enterpriseid}/AvailableInventory/{availableinventoryid} ksx:productionOrderID {productionorderid} ; ksx:productionOrderSequence {productionordersequence}^^xsd:integer ; impix:availabilityCheckDateTime {availabilitycheckdatetime}^^xsd:dateTime ; impix:shortageQuantity {shortagequantity}^^xsd:decimal ; ksx:refProductionOrder d:{enterpriseid}/ProductionOrder/{productionorderid}_{productionordersequence} .
-source		SELECT "EnterpriseID" AS enterpriseid, "AvailableInventoryID" AS availableinventoryid, "ProductionOrderID" AS productionorderid, "ProductionOrderSequence" AS productionordersequence, "AvailabilityCheckDateTime" AS availabilitycheckdatetime, "ShortageQuantity" AS shortagequantity FROM ext."AvailableInventoryExt"
+target		d:{enterpriseid}/AvailableInventory/{availableinventoryid} ksx:productionOrderID {productionorderid} ; ksx:productionOrderSequence {productionordersequence}^^xsd:integer ; impix:availabilityCheckDateTime {availabilitycheckdatetime}^^xsd:dateTime ; impix:shortageQuantity {shortagequantity}^^xsd:decimal ; impix:materialRequirementQuantity {materialrequirementquantity}^^xsd:decimal ; ksx:refProductionOrder d:{enterpriseid}/ProductionOrder/{productionorderid}_{productionordersequence} .
+source		SELECT "EnterpriseID" AS enterpriseid, "AvailableInventoryID" AS availableinventoryid, "ProductionOrderID" AS productionorderid, "ProductionOrderSequence" AS productionordersequence, "AvailabilityCheckDateTime" AS availabilitycheckdatetime, "ShortageQuantity" AS shortagequantity, "MaterialRequirementQuantity" AS materialrequirementquantity FROM ext."AvailableInventoryExt"
 
 mappingId	IMPIX_ProductionPerformanceExt
 target		d:{enterpriseid}/ProductionPerformance/{productionperformanceid}_{productionperformancesequence} ksx:inspectionResult d:codelist/InspectionResult/{inspectionresult} ; ksx:inspectionQuantity {inspectionquantity}^^xsd:decimal .
@@ -47,15 +47,47 @@ target		d:{enterpriseid}/SupplierInspectionResult/{inspectionresultid} ksx:goods
 source		SELECT "EnterpriseID" AS enterpriseid, "InspectionResultID" AS inspectionresultid, "GoodsReceiptID" AS goodsreceiptid, "GoodsReceiptSequence" AS goodsreceiptsequence, "DefectQuantity" AS defectquantity, "DefectTypeCode" AS defecttypecode, "DefectTypeDetailCode" AS defecttypedetailcode FROM ext."SupplierInspectionResultExt"
 
 mappingId	IMPIX_CorrectiveActionRequestExt
-target		d:{enterpriseid}/CorrectiveActionRequest/{correctiveactionrequestid} impix:detectionLocationType d:codelist/DetectionLocationType/{detectionlocationtype} ; ksx:defectQuantity {defectquantity}^^xsd:decimal ; ksx:defectTypeCode d:codelist/DefectTypeCode/{defecttypecode} ; ksx:defectTypeDetailCode d:codelist/DefectTypeDetailCode/{defecttypedetailcode} ; impix:correctiveActionDueDate {correctiveactionduedate}^^xsd:date .
-source		SELECT "EnterpriseID" AS enterpriseid, "CorrectiveActionRequestID" AS correctiveactionrequestid, "DetectionLocationType" AS detectionlocationtype, "DefectQuantity" AS defectquantity, "DefectTypeCode" AS defecttypecode, "DefectTypeDetailCode" AS defecttypedetailcode, "CorrectiveActionDueDate" AS correctiveactionduedate FROM ext."CorrectiveActionRequestExt"
+target		d:{enterpriseid}/CorrectiveActionRequest/{correctiveactionrequestid} impix:detectionLocationType d:codelist/DetectionLocationType/{detectionlocationtype} ; ksx:defectQuantity {defectquantity}^^xsd:decimal ; ksx:defectTypeCode d:codelist/DefectTypeCode/{defecttypecode} ; ksx:defectTypeDetailCode d:codelist/DefectTypeDetailCode/{defecttypedetailcode} ; impix:correctiveActionDueDate {correctiveactionduedate}^^xsd:date ; impix:occurrenceDate {occurrencedate}^^xsd:date ; ksx:inspectionResultID {inspectionresultid} ; impix:refInspectionResult d:{enterpriseid}/SupplierInspectionResult/{inspectionresultid} .
+source		SELECT "EnterpriseID" AS enterpriseid, "CorrectiveActionRequestID" AS correctiveactionrequestid, "DetectionLocationType" AS detectionlocationtype, "DefectQuantity" AS defectquantity, "DefectTypeCode" AS defecttypecode, "DefectTypeDetailCode" AS defecttypedetailcode, "CorrectiveActionDueDate" AS correctiveactionduedate, "OccurrenceDate" AS occurrencedate, "InspectionResultID" AS inspectionresultid FROM ext."CorrectiveActionRequestExt"
 
 mappingId	IMPIX_EquipmentExt
 target		d:{enterpriseid}/Equipment/{equipmentid} impix:standardUnitsPerMinute {standardunitsperminute}^^xsd:decimal .
 source		SELECT "EnterpriseID" AS enterpriseid, "EquipmentID" AS equipmentid, "StandardUnitsPerMinute" AS standardunitsperminute FROM ext."EquipmentExt"
 
 mappingId	IMPIX_EquipmentStateExt
-target		d:{enterpriseid}/EquipmentState/{equipmentstateid} impix:equipmentIdleReasonCode d:codelist/EquipmentIdleReasonCode/{equipmentidlereasoncode} .
-source		SELECT "EnterpriseID" AS enterpriseid, "EquipmentStateID" AS equipmentstateid, "EquipmentIdleReasonCode" AS equipmentidlereasoncode FROM ext."EquipmentStateExt"
+target		d:{enterpriseid}/EquipmentState/{equipmentstateid} impix:stateStartDateTime {statestartdatetime}^^xsd:dateTime ; impix:stateEndDateTime {stateenddatetime}^^xsd:dateTime ; impix:equipmentIdleReasonCode d:codelist/EquipmentIdleReasonCode/{equipmentidlereasoncode} .
+source		SELECT "EnterpriseID" AS enterpriseid, "EquipmentStateID" AS equipmentstateid, "StateStartDateTime" AS statestartdatetime, "StateEndDateTime" AS stateenddatetime, "EquipmentIdleReasonCode" AS equipmentidlereasoncode FROM ext."EquipmentStateExt"
+
+mappingId	IMPIX_ProductionOrderExt
+target		d:{enterpriseid}/ProductionOrder/{productionorderid}_{productionordersequence} impix:productionOrderStatusCode d:codelist/ProductionOrderStatusCode/{productionorderstatuscode} .
+source		SELECT "EnterpriseID" AS enterpriseid, "ProductionOrderID" AS productionorderid, "ProductionOrderSequence" AS productionordersequence, "ProductionOrderStatusCode" AS productionorderstatuscode FROM ext."ProductionOrderExt"
+
+mappingId	IMPIX_AlarmExt
+target		d:{enterpriseid}/Alarm/{alarmid} impix:alarmSeverityCode d:codelist/AlarmSeverityCode/{alarmseveritycode} .
+source		SELECT "EnterpriseID" AS enterpriseid, "AlarmID" AS alarmid, "AlarmSeverityCode" AS alarmseveritycode FROM ext."AlarmExt"
+
+mappingId	IMPIX_CustomerPartyMasterExt
+target		d:{enterpriseid}/CustomerPartyMaster/{customerid} impix:customerGroupCode d:codelist/CustomerGroupCode/{customergroupcode} .
+source		SELECT "EnterpriseID" AS enterpriseid, "CustomerID" AS customerid, "CustomerGroupCode" AS customergroupcode FROM ext."CustomerPartyMasterExt"
+
+mappingId	IMPIX_GoodsReceiptExt
+target		d:{enterpriseid}/GoodsReceipt/{goodsreceiptid}_{goodsreceiptsequence} ksx:purchaseDocumentNumber {purchasedocumentnumber} ; ksx:purchaseDocumentSequence {purchasedocumentsequence}^^xsd:integer ; ksx:lotID {lotid} ; ksx:refPurchaseOrderLine d:{enterpriseid}/PurchaseOrder/{purchasedocumentnumber}/line/{purchasedocumentsequence} ; ksx:refLot d:{enterpriseid}/Lot/{lotid} .
+source		SELECT "EnterpriseID" AS enterpriseid, "GoodsReceiptID" AS goodsreceiptid, "GoodsReceiptSequence" AS goodsreceiptsequence, "PurchaseDocumentNumber" AS purchasedocumentnumber, "PurchaseDocumentSequence" AS purchasedocumentsequence, "LotID" AS lotid FROM ext."GoodsReceiptExt"
+
+mappingId	IMPIX_GoodsIssueExt
+target		d:{enterpriseid}/GoodsIssue/{goodsissueid} ksx:inventoryTransactionDate {inventorytransactiondate}^^xsd:date ; ksx:productionOrderID {productionorderid} ; ksx:productionOrderSequence {productionordersequence}^^xsd:integer ; ksx:refProductionOrder d:{enterpriseid}/ProductionOrder/{productionorderid}_{productionordersequence} .
+source		SELECT "EnterpriseID" AS enterpriseid, "GoodsIssueID" AS goodsissueid, "InventoryTransactionDate" AS inventorytransactiondate, "ProductionOrderID" AS productionorderid, "ProductionOrderSequence" AS productionordersequence FROM ext."GoodsIssueExt"
+
+mappingId	IMPIX_ProductIncomingExt
+target		d:{enterpriseid}/ProductIncoming/{productincomingid}_{productincomingsequence} ksx:productionOrderID {productionorderid} ; ksx:productionOrderSequence {productionordersequence}^^xsd:integer ; ksx:refProductionOrder d:{enterpriseid}/ProductionOrder/{productionorderid}_{productionordersequence} .
+source		SELECT "EnterpriseID" AS enterpriseid, "ProductIncomingID" AS productincomingid, "ProductIncomingSequence" AS productincomingsequence, "ProductionOrderID" AS productionorderid, "ProductionOrderSequence" AS productionordersequence FROM ext."ProductIncomingExt"
+
+mappingId	IMPIX_TraceParameterExt
+target		d:{enterpriseid}/TraceParameter/{traceparameterid} ksx:lotID {lotid} ; ksx:refLot d:{enterpriseid}/Lot/{lotid} .
+source		SELECT "EnterpriseID" AS enterpriseid, "TraceParameterID" AS traceparameterid, "LotID" AS lotid FROM ext."TraceParameterExt"
+
+mappingId	IMPIX_EquipmentParameterExt
+target		d:{enterpriseid}/EquipmentParameter/{parameterid} impix:lcl {lcl}^^xsd:decimal ; impix:ucl {ucl}^^xsd:decimal .
+source		SELECT "EnterpriseID" AS enterpriseid, "ParameterID" AS parameterid, "LCL" AS lcl, "UCL" AS ucl FROM ext."EquipmentParameterExt"
 
 ]]

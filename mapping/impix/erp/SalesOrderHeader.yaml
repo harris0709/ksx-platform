@@ -1,0 +1,18 @@
+# SalesOrderHeader ← erp.tb_sd_so_h (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: SalesOrderHeader
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_sd_so_h}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: const(P2)}
+identity:
+- SalesDocumentNumber
+attributes:
+  SalesDocumentNumber: {from: so_no, match: normalized, status: reviewed}
+  SalesDate: {from: so_dt, match: manual, transform: to_date8(so_dt), status: reviewed}
+  SalesOrderType: {from: so_tp, match: manual, code: SO_TP -> SalesOrderType, status: reviewed}
+  SalesStatus: {from: so_stat, match: korean, code: SO_STAT -> SalesStatus, status: reviewed}
+  CustomerID: {from: cust_cd, match: normalized, status: reviewed}
+  CreatorID: {from: reg_id, match: normalized, status: reviewed}
+extension: {}
+excluded: []

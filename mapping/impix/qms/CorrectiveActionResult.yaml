@@ -1,0 +1,24 @@
+# CorrectiveActionResult ← qms.qm_vend_ncr (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: CorrectiveActionResult
+layer: core
+structure: '1:1'
+source: {system: QMS, table: qms.qm_vend_ncr, filter: car_cls_dt IS NOT NULL}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: const(P2)}
+identity:
+- CorrectiveActionResultID
+attributes:
+  CorrectiveActionResultID: {from: ncr_no, match: manual, transform: 'concat(ncr_no,''-R'')', status: reviewed}
+  CorrectiveActionRequestID: {from: ncr_no, match: normalized, status: reviewed}
+  CorrectiveActionDateTime: {from: car_cls_dt, match: manual, transform: to_date8(car_cls_dt), status: reviewed}
+  CorrectiveActionStatusCode: {match: const, transform: const(COMPLETED), note: 종결일 있음 = 완료, status: reviewed}
+  VendorID: {from: vend_cd, match: normalized, status: reviewed}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+extension: {}
+excluded:
+- {column: iqc_no, reason: CorrectiveActionRequest 명세에서 판정}
+- {column: found_at, reason: CorrectiveActionRequest 명세에서 판정}
+- {column: occur_dt, reason: CorrectiveActionRequest 명세에서 판정}
+- {column: ng_qty, reason: CorrectiveActionRequest 명세에서 판정}
+- {column: defect_cd, reason: CorrectiveActionRequest 명세에서 판정}
+- {column: car_due_dt, reason: CorrectiveActionRequest 명세에서 판정}

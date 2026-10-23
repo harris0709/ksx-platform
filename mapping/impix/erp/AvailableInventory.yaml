@@ -1,0 +1,22 @@
+# AvailableInventory ← erp.tb_pp_mat_chk (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: AvailableInventory
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_pp_mat_chk}
+join:
+- {table: erp.tb_pp_mo, as: o, 'on': mo_no = o.mo_no}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, o.plant_cd)'}
+identity:
+- AvailableInventoryID
+attributes:
+  AvailableInventoryID: {from: 'chk_dt,mo_no,comp_cd', match: derived, transform: 'concat(chk_dt,''_'',mo_no,''_'',upper_trim(comp_cd))', status: reviewed}
+  ItemID: {from: comp_cd, match: manual, transform: upper_trim(comp_cd), note: comp_cd = 구성 자재(회사코드 아님), status: reviewed}
+  AvailableInventoryQuantity: {from: avail_qty, match: component, status: reviewed}
+extension:
+  ProductionOrderID: {from: mo_no, match: normalized, status: reviewed}
+  ProductionOrderSequence: {match: const, transform: const(1), status: reviewed}
+  AvailabilityCheckDateTime: {from: chk_dt, match: manual, transform: 'to_ts(to_date8(chk_dt) + ''06:00'')', note: '점검 배치 06:00', status: reviewed}
+  MaterialRequirementQuantity: {from: req_qty, match: manual, status: reviewed}
+  ShortageQuantity: {from: short_qty, match: component, status: reviewed}
+excluded: []

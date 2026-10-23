@@ -1,0 +1,19 @@
+# LotInventory ← erp.tb_mm_stock_lot (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: LotInventory
+layer: ext
+structure: '1:1'
+source: {system: ERP, table: erp.tb_mm_stock_lot}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, wh_cd)'}
+identity:
+- WarehouseID
+- ItemID
+- LotID
+attributes: {}
+extension:
+  WarehouseID: {from: wh_cd, match: normalized, status: reviewed}
+  LotID: {from: lot_no, match: normalized, status: reviewed}
+  GoodsReceiptDate: {from: rcv_dt, match: normalized, transform: to_date8(rcv_dt), status: reviewed}
+  InventoryQuantity: {from: stk_qty, match: normalized, status: reviewed}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: reviewed}
+excluded: []

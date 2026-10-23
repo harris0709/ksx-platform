@@ -1,0 +1,24 @@
+# EquipmentState ← mes.tb_eqp_stat (이력(구간)→이벤트) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: EquipmentState
+layer: core
+structure: 이력(구간)→이벤트
+source: {system: MES, table: mes.tb_eqp_stat}
+join:
+- {table: mes.tm_eqp, as: e, 'on': eqp_id = e.eqp_id}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, e.fac_id)'}
+identity:
+- EquipmentStateID
+attributes:
+  EquipmentStateID: {from: stat_seq, match: manual, transform: 'concat(''ES-'',stat_seq)', status: reviewed}
+  EquipmentState: {from: stat_cd, match: manual, code: EQP_STAT -> EquipmentState, status: reviewed}
+  ErrorCode: {from: err_cd, match: normalized, code: ERR_CD -> EquipmentErrorCode, status: reviewed}
+  EquipmentID: {from: eqp_id, match: normalized, status: reviewed}
+  EquipmentControlMode: {from: ctrl_mode, match: manual, code: CTRL_MODE -> EquipmentControlMode, status: reviewed}
+  EquipmentOperationMode: {from: oper_mode, match: manual, code: OPER_MODE -> EquipmentOperationMode, status: reviewed}
+  LastProcessedLotID: {from: lot_no, match: component, status: reviewed}
+  ErrorMessage: {from: rmk, match: manual, note: 조치 메모, status: reviewed}
+extension:
+  StateStartDateTime: {from: st_dtm, match: manual, transform: to_ts(st_dtm), status: reviewed}
+  StateEndDateTime: {from: ed_dtm, match: manual, transform: to_ts(ed_dtm), status: reviewed}
+excluded: []

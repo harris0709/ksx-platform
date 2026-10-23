@@ -1,0 +1,28 @@
+# ProductionPerformanceItem ← mes.tb_lot_link (1:1(LOT 소비 → 투입품목)) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: ProductionPerformanceItem
+layer: core
+structure: 1:1(LOT 소비 → 투입품목)
+source: {system: MES, table: mes.tb_lot_link, filter: link_tp = 'CONSUME'}
+join:
+- {table: mes.tb_lot, as: f, 'on': from_lot_no = f.lot_no}
+- {table: mes.tb_lot, as: t, 'on': to_lot_no = t.lot_no}
+- {table: mes.tb_trk_out, as: o, 'on': to_lot_no = o.lot_no AND o.proc_cd = 'A100'}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, t.fac_id)'}
+identity:
+- ProductionPerformanceID
+- ProductionPerformanceSequence
+- ItemID
+attributes:
+  ProductionPerformanceID: {from: o.trk_out_id, match: manual, transform: 'concat(''PP-'',o.trk_out_id)', note: 조립 첫 공정(A100) 실적, status: reviewed}
+  ProductionPerformanceSequence: {match: const, transform: const(1), status: reviewed}
+  ItemID: {from: f.item_cd, match: normalized, transform: upper_trim(f.item_cd), note: 투입 LOT의 품목(LOT·품목당 1행 — 중복 0건), status: reviewed}
+  LotID: {from: from_lot_no, match: component, status: reviewed}
+  IssuedQuantity: {from: link_qty, match: manual, transform: int(link_qty), status: reviewed}
+  IssuedIndicator: {match: const, transform: const(true), status: reviewed}
+  OperationID: {from: o.proc_cd, match: normalized, status: reviewed}
+  ProductionOrderID: {from: t.mo_no, match: normalized, status: reviewed}
+extension: {}
+excluded:
+- {column: link_tp, reason: 연결 유형 — 전 건 CONSUME(필터)}
+- {column: link_dtm, reason: 투입 시각 — 착공 시각(ExecutionStartDateTime)과 동일}

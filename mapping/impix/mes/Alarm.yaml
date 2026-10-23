@@ -1,0 +1,21 @@
+# Alarm ← mes.tb_alarm (이력(발생·해제)→이벤트 2행) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: Alarm
+layer: core
+structure: 이력(발생·해제)→이벤트 2행
+source: {system: MES, table: mes.tb_alarm}
+join:
+- {table: mes.tm_eqp, as: e, 'on': eqp_id = e.eqp_id}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, e.fac_id)'}
+identity:
+- AlarmID
+attributes:
+  AlarmID: {from: alm_seq, match: manual, transform: 'concat(''AL-'',alm_seq,''-'',ev)', note: ev = ON(발생)·OFF(해제), status: reviewed}
+  EventDateTime: {from: 'occur_dtm,clear_dtm', match: derived, transform: 'unpivot(occur_dtm→ON, clear_dtm→OFF)', status: reviewed}
+  AlarmState: {from: 'occur_dtm,clear_dtm', match: derived, transform: 'case(ev=''ON'', ALARM, NORMAL)', status: reviewed}
+  ErrorCode: {from: alm_cd, match: manual, code: ALM_CD -> EquipmentErrorCode, status: reviewed}
+  ErrorMessage: {from: alm_msg, match: manual, status: reviewed}
+  EquipmentID: {from: eqp_id, match: normalized, status: reviewed}
+extension:
+  AlarmSeverityCode: {from: alm_lvl, match: manual, code: ALM_LVL -> AlarmSeverityCode, status: reviewed}
+excluded: []
