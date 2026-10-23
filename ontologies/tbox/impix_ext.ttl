@@ -1,0 +1,182 @@
+@prefix ksx:  <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix impix: <https://ontology.impix.co.kr/ext/impix/1.0/> .
+
+<https://ontology.impix.co.kr/ext/impix/1.0> a owl:Ontology ;
+    owl:imports <https://ontology.impix.co.kr/ksx9101/1.0> ;
+    rdfs:label "IMPIX 기업 확장(Extension)"@ko ;
+    dct:source "확장정의서.xlsx" .
+
+### 확장 명사
+impix:StandardCost a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "표준원가"@ko, "StandardCost"@en ;
+    skos:definition "품목(필요 시 공정 단계)의 원가 기간별 표준원가와 원가 요소를 의미한다. 재공·불량·재고 금액 환산의 기준이 된다."@ko ;
+    ksx:businessArea "원가관리(확장)"@ko ; ksx:physicalTable "ext.StandardCost" .
+impix:CustomerComplaint a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "고객클레임"@ko, "CustomerComplaint"@en ;
+    skos:definition "고객이 제기한 제품 부적합(입고검사 부적합·라인 중단·필드 반송)과 대책 회신·종결 이력을 의미한다."@ko ;
+    ksx:businessArea "품질관리(확장)"@ko ; ksx:physicalTable "ext.CustomerComplaint" .
+impix:QualityCost a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "품질비용"@ko, "QualityCost"@en ;
+    skos:definition "원가 기간별 품질비용(Q-COST)을 예방·평가·내부실패·외부실패 구분과 비용 항목으로 집계한 값을 의미한다."@ko ;
+    ksx:businessArea "품질관리(확장)"@ko ; ksx:physicalTable "ext.QualityCost" .
+impix:InventorySnapshot a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "일별재고"@ko, "InventorySnapshot"@en ;
+    skos:definition "기준일 마감 시점의 창고·품목별 재고수량을 의미한다. 표준 재고(Inventory)는 현재고만 정의하므로 기준일 이력을 별도로 둔다."@ko ;
+    ksx:businessArea "재고관리(확장)"@ko ; ksx:physicalTable "ext.InventorySnapshot" .
+impix:LotInventory a owl:Class ; rdfs:subClassOf ksx:Noun ;
+    rdfs:label "로트별재고"@ko, "LotInventory"@en ;
+    skos:definition "창고·품목의 현재고를 로트와 입고일 단위로 나눈 재고를 의미한다. 재고 경과일(장기 체화)·선입선출 판단의 근거가 된다."@ko ;
+    ksx:businessArea "재고관리(확장)"@ko ; ksx:physicalTable "ext.LotInventory" .
+
+### 확장 속성(표준 공유 속성은 Core 정의를 그대로 쓰고 여기서 다시 선언하지 않는다)
+impix:standardCostID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "표준원가식별자"@ko, "StandardCostID"@en ;
+    ksx:sourceAttribute "StandardCostID" .
+impix:costPeriodStartDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "원가기간시작일"@ko, "CostPeriodStartDate"@en ;
+    ksx:sourceAttribute "CostPeriodStartDate" .
+impix:costPeriodEndDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "원가기간종료일"@ko, "CostPeriodEndDate"@en ;
+    ksx:sourceAttribute "CostPeriodEndDate" .
+impix:standardCostAmount a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "표준원가"@ko, "StandardCostAmount"@en ;
+    ksx:sourceAttribute "StandardCostAmount" .
+impix:materialCostAmount a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "재료비"@ko, "MaterialCostAmount"@en ;
+    ksx:sourceAttribute "MaterialCostAmount" .
+impix:laborCostAmount a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "노무비"@ko, "LaborCostAmount"@en ;
+    ksx:sourceAttribute "LaborCostAmount" .
+impix:overheadCostAmount a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "경비"@ko, "OverheadCostAmount"@en ;
+    ksx:sourceAttribute "OverheadCostAmount" .
+impix:customerComplaintID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "고객클레임식별자"@ko, "CustomerComplaintID"@en ;
+    ksx:sourceAttribute "CustomerComplaintID" .
+impix:customerComplaintType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "CustomerComplaintType" ;
+    rdfs:label "고객클레임유형"@ko, "CustomerComplaintType"@en ;
+    ksx:sourceAttribute "CustomerComplaintType" .
+impix:occurrenceDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "발생일"@ko, "OccurrenceDate"@en ;
+    ksx:sourceAttribute "OccurrenceDate" .
+impix:complaintReceiptDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "접수일"@ko, "ComplaintReceiptDate"@en ;
+    ksx:sourceAttribute "ComplaintReceiptDate" .
+impix:complaintQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "클레임수량"@ko, "ComplaintQuantity"@en ;
+    ksx:sourceAttribute "ComplaintQuantity" .
+impix:responseDueDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "대책회신기한"@ko, "ResponseDueDate"@en ;
+    ksx:sourceAttribute "ResponseDueDate" .
+impix:responseDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "대책회신일"@ko, "ResponseDate"@en ;
+    ksx:sourceAttribute "ResponseDate" .
+impix:closeDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "종결일"@ko, "CloseDate"@en ;
+    ksx:sourceAttribute "CloseDate" .
+impix:customerComplaintStatusCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "CustomerComplaintStatusCode" ;
+    rdfs:label "고객클레임상태코드"@ko, "CustomerComplaintStatusCode"@en ;
+    ksx:sourceAttribute "CustomerComplaintStatusCode" .
+impix:complaintAmount a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "클레임금액"@ko, "ComplaintAmount"@en ;
+    ksx:sourceAttribute "ComplaintAmount" .
+impix:causeOperationID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "원인공정식별자"@ko, "CauseOperationID"@en ;
+    ksx:sourceAttribute "CauseOperationID" .
+impix:complaintDescription a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "클레임내용"@ko, "ComplaintDescription"@en ;
+    ksx:sourceAttribute "ComplaintDescription" .
+impix:qualityCostID a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "품질비용식별자"@ko, "QualityCostID"@en ;
+    ksx:sourceAttribute "QualityCostID" .
+impix:qualityCostClass a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "QualityCostClass" ;
+    rdfs:label "품질비용구분"@ko, "QualityCostClass"@en ;
+    ksx:sourceAttribute "QualityCostClass" .
+impix:qualityCostItem a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "QualityCostItem" ;
+    rdfs:label "품질비용항목"@ko, "QualityCostItem"@en ;
+    ksx:sourceAttribute "QualityCostItem" .
+impix:qualityCostAmount a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "품질비용금액"@ko, "QualityCostAmount"@en ;
+    ksx:sourceAttribute "QualityCostAmount" .
+impix:sourceDocumentReference a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "근거문서"@ko, "SourceDocumentReference"@en ;
+    ksx:sourceAttribute "SourceDocumentReference" .
+impix:inventorySnapshotDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "재고기준일"@ko, "InventorySnapshotDate"@en ;
+    ksx:sourceAttribute "InventorySnapshotDate" .
+impix:salesPlanType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "SalesPlanType" ;
+    rdfs:label "판매계획유형"@ko, "SalesPlanType"@en ;
+    ksx:sourceAttribute "SalesPlanType" .
+impix:salesPlanVersion a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "판매계획버전"@ko, "SalesPlanVersion"@en ;
+    ksx:sourceAttribute "SalesPlanVersion" .
+impix:salesAmount a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "판매금액"@ko, "SalesAmount"@en ;
+    ksx:sourceAttribute "SalesAmount" .
+impix:availabilityCheckDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "점검일시"@ko, "AvailabilityCheckDateTime"@en ;
+    ksx:sourceAttribute "AvailabilityCheckDateTime" .
+impix:shortageQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "부족수량"@ko, "ShortageQuantity"@en ;
+    ksx:sourceAttribute "ShortageQuantity" .
+impix:materialRequirementQuantity a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "자재소요량"@ko, "MaterialRequirementQuantity"@en ;
+    ksx:sourceAttribute "MaterialRequirementQuantity" .
+impix:detectionLocationType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "DetectionLocationType" ;
+    rdfs:label "발견위치유형"@ko, "DetectionLocationType"@en ;
+    ksx:sourceAttribute "DetectionLocationType" .
+impix:correctiveActionDueDate a owl:DatatypeProperty ; rdfs:range xsd:date ;
+    rdfs:label "시정조치기한"@ko, "CorrectiveActionDueDate"@en ;
+    ksx:sourceAttribute "CorrectiveActionDueDate" .
+impix:standardUnitsPerMinute a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "표준분당생산수량"@ko, "StandardUnitsPerMinute"@en ;
+    ksx:sourceAttribute "StandardUnitsPerMinute" .
+impix:stateStartDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "상태시작일시"@ko, "StateStartDateTime"@en ;
+    ksx:sourceAttribute "StateStartDateTime" .
+impix:stateEndDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
+    rdfs:label "상태종료일시"@ko, "StateEndDateTime"@en ;
+    ksx:sourceAttribute "StateEndDateTime" .
+impix:equipmentIdleReasonCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "EquipmentIdleReasonCode" ;
+    rdfs:label "대기사유코드"@ko, "EquipmentIdleReasonCode"@en ;
+    ksx:sourceAttribute "EquipmentIdleReasonCode" .
+impix:productionOrderStatusCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "ProductionOrderStatusCode" ;
+    rdfs:label "생산지시상태코드"@ko, "ProductionOrderStatusCode"@en ;
+    ksx:sourceAttribute "ProductionOrderStatusCode" .
+impix:alarmSeverityCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "AlarmSeverityCode" ;
+    rdfs:label "알람중요도코드"@ko, "AlarmSeverityCode"@en ;
+    ksx:sourceAttribute "AlarmSeverityCode" .
+impix:customerGroupCode a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "CustomerGroupCode" ;
+    rdfs:label "고객군코드"@ko, "CustomerGroupCode"@en ;
+    ksx:sourceAttribute "CustomerGroupCode" .
+impix:lcl a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "관리하한"@ko, "LCL"@en ;
+    ksx:sourceAttribute "LCL" .
+impix:ucl a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:label "관리상한"@ko, "UCL"@en ;
+    ksx:sourceAttribute "UCL" .
+impix:lotOriginType a owl:ObjectProperty ; rdfs:range skos:Concept ; ksx:codeGroup "LotOriginType" ;
+    rdfs:label "로트출처유형"@ko, "LotOriginType"@en ;
+    ksx:sourceAttribute "LotOriginType" .
+impix:vendorLotNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
+    rdfs:label "공급사로트번호"@ko, "VendorLotNumber"@en ;
+    ksx:sourceAttribute "VendorLotNumber" .
+impix:refCauseOperation a owl:ObjectProperty ; rdfs:range ksx:Operation ; owl:inverseOf impix:refCauseOperationInverse ;
+    rdfs:label "원인공정식별자 참조"@ko, "refCauseOperation"@en ;
+    ksx:sourceAttribute "CauseOperationID" .
+impix:refCauseOperationInverse a owl:ObjectProperty ; rdfs:label "원인공정식별자 참조(역)"@ko .
+impix:refGoodsReceipt a owl:ObjectProperty ; rdfs:range ksx:GoodsReceipt ; owl:inverseOf impix:refGoodsReceiptInverse ;
+    rdfs:label "입고식별자 참조"@ko, "refGoodsReceipt"@en ;
+    ksx:sourceAttribute "GoodsReceiptID" .
+impix:refGoodsReceiptInverse a owl:ObjectProperty ; rdfs:label "입고식별자 참조(역)"@ko .
+impix:refInspectionResult a owl:ObjectProperty ; rdfs:range ksx:SupplierInspectionResult ; owl:inverseOf impix:refInspectionResultInverse ;
+    rdfs:label "검사결과식별자 참조"@ko, "refInspectionResult"@en ;
+    ksx:sourceAttribute "InspectionResultID" .
+impix:refInspectionResultInverse a owl:ObjectProperty ; rdfs:label "검사결과식별자 참조(역)"@ko .

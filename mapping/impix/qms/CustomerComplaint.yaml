@@ -1,0 +1,30 @@
+# CustomerComplaint ← qms.qm_claim (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: CustomerComplaint
+layer: ext
+structure: '1:1'
+source: {system: QMS, table: qms.qm_claim}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: const(P2)}
+identity:
+- CustomerComplaintID
+attributes: {}
+extension:
+  CustomerComplaintID: {from: claim_no, match: normalized, status: approved}
+  CustomerComplaintType: {from: claim_tp, match: normalized, code: CLAIM_TP -> CustomerComplaintType, status: approved}
+  ResponseDueDate: {from: resp_due_dt, match: normalized, transform: to_date8(resp_due_dt), status: approved}
+  LotID: {from: lot_no, match: normalized, status: approved}
+  ComplaintReceiptDate: {from: rcv_dt, match: component, transform: to_date8(rcv_dt), status: approved}
+  DefectTypeCode: {from: defect_cd, match: manual, code: 'CLAIM_DEFECT:TYPE -> DefectTypeCode', status: approved}
+  DefectTypeDetailCode: {from: defect_cd, match: manual, code: CLAIM_DEFECT -> DefectTypeDetailCode, status: approved}
+  ComplaintQuantity: {from: claim_qty, match: manual, status: approved}
+  ResponseDate: {from: resp_dt, match: normalized, transform: to_date8(resp_dt), status: approved}
+  CustomerComplaintStatusCode: {from: status, match: manual, code: CLAIM_STAT -> CustomerComplaintStatusCode, status: approved}
+  ComplaintAmount: {from: claim_amt, match: manual, status: approved}
+  CurrencyCode: {match: const, transform: const(KRW), status: approved}
+  CauseOperationID: {from: cause_proc, match: manual, status: approved}
+  ComplaintDescription: {from: descr, match: manual, status: approved}
+  CustomerID: {from: cust_cd, match: normalized, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
+  OccurrenceDate: {from: occur_dt, match: component, transform: to_date8(occur_dt), status: approved}
+  CloseDate: {from: close_dt, match: normalized, transform: to_date8(close_dt), status: approved}
+excluded: []

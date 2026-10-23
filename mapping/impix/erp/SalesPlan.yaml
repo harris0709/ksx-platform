@@ -1,0 +1,22 @@
+# SalesPlan ← erp.tb_sd_plan (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: SalesPlan
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_sd_plan}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: const(P2)}
+identity:
+- SalesPlanID
+attributes:
+  SalesPlanID: {from: 'plan_ym,plan_tp,plan_ver,cust_cd,item_cd', match: derived, transform: 'concat(plan_ym,''_'',plan_tp,''_'',plan_ver,''_'',cust_cd,''_'',upper_trim(item_cd))',
+    status: approved}
+  SalesProjection: {from: plan_qty, match: manual, status: approved}
+  ProjectionStartDate: {from: plan_ym, match: manual, transform: ym_first(plan_ym), status: approved}
+  ProjectionEndDate: {from: plan_ym, match: manual, transform: ym_last(plan_ym), status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
+  CreationDateTime: {from: reg_dt, match: normalized, transform: to_ts(reg_dt), status: approved}
+extension:
+  SalesPlanType: {from: plan_tp, match: component, code: PLAN_TP -> SalesPlanType, status: approved}
+  SalesPlanVersion: {from: plan_ver, match: manual, status: approved}
+  CustomerID: {from: cust_cd, match: normalized, status: approved}
+excluded: []

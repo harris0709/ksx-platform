@@ -1,0 +1,166 @@
+src_system,src_group,src_code,ksx_group,ksx_code,rule,note
+ERP,ITEM_TP,10,ItemType,FG,equal,
+ERP,ITEM_TP,20,ItemType,SFG,equal,
+ERP,ITEM_TP,30,ItemType,RM,equal,
+ERP,ITEM_TP,40,ItemType,SM,equal,
+ERP,ITEM_TP,50,ItemType,PKG,equal,
+ERP,ITEM_TP,60,ItemType,CON,equal,
+ERP,ITEM_GRP,EWP,ItemLargeClass,PRD,equal,CSM 소모품 — 확장 하위 코드
+ERP,ITEM_GRP,HSG,ItemLargeClass,MEC,merge,CSM 소모품 — 확장 하위 코드
+ERP,ITEM_GRP,PRT,ItemLargeClass,MEC,merge,CSM 소모품 — 확장 하위 코드
+ERP,ITEM_GRP,MTR,ItemLargeClass,ELC,merge,CSM 소모품 — 확장 하위 코드
+ERP,ITEM_GRP,ELC,ItemLargeClass,ELC,merge,CSM 소모품 — 확장 하위 코드
+ERP,ITEM_GRP,PKG,ItemLargeClass,PKG,equal,CSM 소모품 — 확장 하위 코드
+ERP,ITEM_GRP,RAW,ItemLargeClass,MTL,equal,CSM 소모품 — 확장 하위 코드
+ERP,ITEM_GRP,CSM,ItemLargeClass,CSM,ext,CSM 소모품 — 확장 하위 코드
+ERP,LINE_TP,A,LineType,ASSEMBLY,equal,
+ERP,LINE_TP,M,LineType,MACHINING,equal,
+ERP,BOM_TP,M,BOMType,MBOM,equal,
+ERP,BOM_TP,E,BOMType,EBOM,equal,
+ERP,WH_TP,RM,WarehouseType,RM,equal,QH 품질보류창고 → 불량창고(DEF)
+ERP,WH_TP,FG,WarehouseType,FG,equal,QH 품질보류창고 → 불량창고(DEF)
+ERP,WH_TP,QH,WarehouseType,DEF,approx,QH 품질보류창고 → 불량창고(DEF)
+ERP,SO_TP,N,SalesOrderType,DOMESTIC,merge,S 보수용 — 고객군(CustomerGroupCode AM)으로 보존
+ERP,SO_TP,S,SalesOrderType,DOMESTIC,merge,S 보수용 — 고객군(CustomerGroupCode AM)으로 보존
+ERP,SO_STAT,10,SalesStatus,REGISTERED,equal,
+ERP,SO_STAT,20,SalesStatus,CONFIRMED,equal,
+ERP,SO_STAT,40,SalesStatus,SHIPPED,equal,
+ERP,SO_STAT,90,SalesStatus,CANCELLED,equal,
+ERP,PO_STAT,20,PurchaseOrderLineStatusCode,OPEN,equal,
+ERP,PO_STAT,40,PurchaseOrderLineStatusCode,RECEIVED,equal,
+ERP,MO_STAT,10,ProductionOrderStatusCode,PLANNED,ext,
+ERP,MO_STAT,20,ProductionOrderStatusCode,RELEASED,ext,
+ERP,MO_STAT,30,ProductionOrderStatusCode,IN_PROGRESS,ext,
+ERP,MO_STAT,40,ProductionOrderStatusCode,COMPLETED,ext,
+ERP,MO_STAT,90,ProductionOrderStatusCode,CANCELLED,ext,
+ERP,GI_TP,PRD,InventoryTransactionTypeCode,I200,equal,
+ERP,GI_TP,SAL,InventoryTransactionTypeCode,I100,equal,
+ERP,GI_TP,SCR,InventoryTransactionTypeCode,I800,equal,
+ERP,GI_TP,ADJ,InventoryTransactionTypeCode,A101,equal,
+ERP,RETIRE_YN,N,EmploymentStatusType,ACTIVE,equal,
+ERP,RETIRE_YN,Y,EmploymentStatusType,RETIRED,equal,
+ERP,NATION,KR,CountryID,KR,equal,
+ERP,CURR,KRW,CurrencyCode,KRW,equal,
+ERP,PLAN_TP,FCST,SalesPlanType,FCST,ext,
+ERP,PLAN_TP,PLAN,SalesPlanType,PLAN,ext,
+ERP,CUST_GRP,OE,CustomerGroupCode,OE,ext,
+ERP,CUST_GRP,AM,CustomerGroupCode,AM,ext,
+MES,PROC_TP,DC,OperationType,PROD,merge,"주조·가공·세척·조립 → 생산(PROD), 세부는 설비대분류"
+MES,PROC_TP,MC,OperationType,PROD,merge,"주조·가공·세척·조립 → 생산(PROD), 세부는 설비대분류"
+MES,PROC_TP,WS,OperationType,PROD,merge,"주조·가공·세척·조립 → 생산(PROD), 세부는 설비대분류"
+MES,PROC_TP,AS,OperationType,PROD,merge,"주조·가공·세척·조립 → 생산(PROD), 세부는 설비대분류"
+MES,PROC_TP,IN,OperationType,INSP,equal,"주조·가공·세척·조립 → 생산(PROD), 세부는 설비대분류"
+MES,PROC_TP,PK,OperationType,PACK,equal,"주조·가공·세척·조립 → 생산(PROD), 세부는 설비대분류"
+MES,LOT_STAT,W,LotState,RELEASE,equal,
+MES,LOT_STAT,R,LotState,START,equal,
+MES,LOT_STAT,H,LotState,HOLD,equal,
+MES,LOT_STAT,C,LotState,CLOSING,equal,
+MES,LOT_STAT,S,LotState,SCRAP,equal,
+MES,LOT_TP,N,LotType,PRODUCTION,equal,
+MES,EQP_STAT,1,EquipmentState,RUN,equal,
+MES,EQP_STAT,2,EquipmentState,IDLE,equal,
+MES,EQP_STAT,3,EquipmentState,DOWN,equal,
+MES,EQP_STAT,4,EquipmentState,PM,equal,
+MES,EQP_STAT,5,EquipmentState,SETUP,equal,
+MES,EQP_STAT,6,EquipmentState,NONSCHED,equal,
+MES,ERR_CD,E01,EquipmentErrorCode,EQ-001,equal,
+MES,ERR_CD,E02,EquipmentErrorCode,EQ-002,equal,
+MES,ERR_CD,E03,EquipmentErrorCode,EQ-003,equal,
+MES,ERR_CD,E04,EquipmentErrorCode,EQ-004,equal,
+MES,ERR_CD,E05,EquipmentErrorCode,EQ-005,equal,
+MES,ERR_CD,E06,EquipmentErrorCode,EQ-006,equal,
+MES,ERR_CD,E07,EquipmentErrorCode,EQ-007,equal,
+MES,ALM_CD,A001,EquipmentErrorCode,EQ-001,equal,A202 진동 과다 — 확장 하위 코드 EQ-008
+MES,ALM_CD,A101,EquipmentErrorCode,EQ-003,equal,A202 진동 과다 — 확장 하위 코드 EQ-008
+MES,ALM_CD,A102,EquipmentErrorCode,EQ-004,merge,A202 진동 과다 — 확장 하위 코드 EQ-008
+MES,ALM_CD,A201,EquipmentErrorCode,EQ-002,equal,A202 진동 과다 — 확장 하위 코드 EQ-008
+MES,ALM_CD,A202,EquipmentErrorCode,EQ-008,ext,A202 진동 과다 — 확장 하위 코드 EQ-008
+MES,ALM_CD,A301,EquipmentErrorCode,EQ-004,merge,A202 진동 과다 — 확장 하위 코드 EQ-008
+MES,ALM_CD,A900,EquipmentErrorCode,EQ-005,equal,A202 진동 과다 — 확장 하위 코드 EQ-008
+MES,ALM_LVL,H,AlarmSeverityCode,HIGH,ext,
+MES,ALM_LVL,M,AlarmSeverityCode,MEDIUM,ext,
+MES,ALM_LVL,L,AlarmSeverityCode,LOW,ext,
+MES,CTRL_MODE,R,EquipmentControlMode,ONLINE,equal,
+MES,CTRL_MODE,L,EquipmentControlMode,LOCAL,equal,
+MES,OPER_MODE,A,EquipmentOperationMode,FULL_AUTO,equal,
+MES,OPER_MODE,M,EquipmentOperationMode,MANUAL,equal,
+MES,EQP_KIND,P,EquipmentType,PROD,equal,
+MES,EQP_KIND,I,EquipmentType,INSP,equal,
+MES,EQP_KIND,L,EquipmentType,LOGI,equal,
+MES,EQP_GRP,CNC,EquipmentLargeClass,MCH,equal,주조기·세척기·조립기·포장기 — 확장 하위 코드
+MES,EQP_GRP,LKT,EquipmentLargeClass,TST,merge,주조기·세척기·조립기·포장기 — 확장 하위 코드
+MES,EQP_GRP,VIS,EquipmentLargeClass,TST,merge,주조기·세척기·조립기·포장기 — 확장 하위 코드
+MES,EQP_GRP,DCM,EquipmentLargeClass,CST,ext,주조기·세척기·조립기·포장기 — 확장 하위 코드
+MES,EQP_GRP,WSH,EquipmentLargeClass,CLN,ext,주조기·세척기·조립기·포장기 — 확장 하위 코드
+MES,EQP_GRP,ASM,EquipmentLargeClass,ASM,ext,주조기·세척기·조립기·포장기 — 확장 하위 코드
+MES,EQP_GRP,PKG,EquipmentLargeClass,PKM,ext,주조기·세척기·조립기·포장기 — 확장 하위 코드
+MES,PARAM_KIND,C,ParameterType,CYCLE,equal,L 스핀들 부하(%) → 동력(POWER) 근사
+MES,PARAM_KIND,K,ParameterType,FLOW,equal,L 스핀들 부하(%) → 동력(POWER) 근사
+MES,PARAM_KIND,L,ParameterType,POWER,approx,L 스핀들 부하(%) → 동력(POWER) 근사
+MES,PARAM_KIND,P,ParameterType,PRESS,equal,L 스핀들 부하(%) → 동력(POWER) 근사
+MES,PARAM_KIND,Q,ParameterType,TORQUE,equal,L 스핀들 부하(%) → 동력(POWER) 근사
+MES,PARAM_KIND,T,ParameterType,TEMP,equal,L 스핀들 부하(%) → 동력(POWER) 근사
+MES,PARAM_KIND,V,ParameterType,VIB,equal,L 스핀들 부하(%) → 동력(POWER) 근사
+MES,PARAM_GRADE,A,ParameterGrade,CRITICAL,equal,
+MES,PARAM_GRADE,B,ParameterGrade,MAJOR,equal,
+MES,PARAM_GRADE,C,ParameterGrade,MINOR,equal,
+MES,QC_JUDGE,OK,InspectionResult,PASS,equal,
+MES,QC_JUDGE,NG,InspectionResult,FAIL,equal,
+MES,DEFECT_CD,D-BURR,DefectTypeDetailCode,APP-BUR,equal,D-DIM 치수 → 치수 초과(DIM-OVR) 근사 — 원천에 초과·미달 구분 없음
+MES,DEFECT_CD,D-SCR,DefectTypeDetailCode,APP-SCR,equal,D-DIM 치수 → 치수 초과(DIM-OVR) 근사 — 원천에 초과·미달 구분 없음
+MES,DEFECT_CD,D-DIM,DefectTypeDetailCode,DIM-OVR,approx,D-DIM 치수 → 치수 초과(DIM-OVR) 근사 — 원천에 초과·미달 구분 없음
+MES,DEFECT_CD,D-FUNC,DefectTypeDetailCode,FUNC-NOP,equal,D-DIM 치수 → 치수 초과(DIM-OVR) 근사 — 원천에 초과·미달 구분 없음
+MES,DEFECT_CD,D-LEAK,DefectTypeDetailCode,FUNC-LEK,equal,D-DIM 치수 → 치수 초과(DIM-OVR) 근사 — 원천에 초과·미달 구분 없음
+MES,DEFECT_CD,D-NOISE,DefectTypeDetailCode,FUNC-NOI,equal,D-DIM 치수 → 치수 초과(DIM-OVR) 근사 — 원천에 초과·미달 구분 없음
+MES,DEFECT_CD,D-PORO,DefectTypeDetailCode,MAT-POR,ext,D-DIM 치수 → 치수 초과(DIM-OVR) 근사 — 원천에 초과·미달 구분 없음
+MES,DEFECT_CD,D-SHORT,DefectTypeDetailCode,MAT-SHT,ext,D-DIM 치수 → 치수 초과(DIM-OVR) 근사 — 원천에 초과·미달 구분 없음
+MES,DEFECT_CD,D-ASSY,DefectTypeDetailCode,ASSY-MIS,equal,D-DIM 치수 → 치수 초과(DIM-OVR) 근사 — 원천에 초과·미달 구분 없음
+MES,DEFECT_CD:TYPE,D-BURR,DefectTypeCode,APP,merge,
+MES,DEFECT_CD:TYPE,D-SCR,DefectTypeCode,APP,merge,
+MES,DEFECT_CD:TYPE,D-DIM,DefectTypeCode,DIM,merge,
+MES,DEFECT_CD:TYPE,D-FUNC,DefectTypeCode,FUNC,merge,
+MES,DEFECT_CD:TYPE,D-LEAK,DefectTypeCode,FUNC,merge,
+MES,DEFECT_CD:TYPE,D-NOISE,DefectTypeCode,FUNC,merge,
+MES,DEFECT_CD:TYPE,D-PORO,DefectTypeCode,MAT,merge,
+MES,DEFECT_CD:TYPE,D-SHORT,DefectTypeCode,MAT,merge,
+MES,DEFECT_CD:TYPE,D-ASSY,DefectTypeCode,ASSY,merge,
+QMS,CLAIM_TP,NC,CustomerComplaintType,NC,ext,
+QMS,CLAIM_TP,LS,CustomerComplaintType,LS,ext,
+QMS,CLAIM_TP,FR,CustomerComplaintType,FR,ext,
+QMS,CLAIM_STAT,OPEN,CustomerComplaintStatusCode,OPEN,ext,
+QMS,CLAIM_STAT,RESP,CustomerComplaintStatusCode,RESPONDED,ext,
+QMS,CLAIM_STAT,CLOSE,CustomerComplaintStatusCode,CLOSED,ext,
+QMS,CLAIM_DEFECT,C-LEAK,DefectTypeDetailCode,FUNC-LEK,equal,C-CONN 커넥터 접촉불량 → 기능 불량(FUNC-NOP) 근사
+QMS,CLAIM_DEFECT,C-NOISE,DefectTypeDetailCode,FUNC-NOI,equal,C-CONN 커넥터 접촉불량 → 기능 불량(FUNC-NOP) 근사
+QMS,CLAIM_DEFECT,C-CONN,DefectTypeDetailCode,FUNC-NOP,approx,C-CONN 커넥터 접촉불량 → 기능 불량(FUNC-NOP) 근사
+QMS,CLAIM_DEFECT,C-LABEL,DefectTypeDetailCode,PKG-LBL,equal,C-CONN 커넥터 접촉불량 → 기능 불량(FUNC-NOP) 근사
+QMS,CLAIM_DEFECT:TYPE,C-LEAK,DefectTypeCode,FUNC,merge,
+QMS,CLAIM_DEFECT:TYPE,C-NOISE,DefectTypeCode,FUNC,merge,
+QMS,CLAIM_DEFECT:TYPE,C-CONN,DefectTypeCode,FUNC,merge,
+QMS,CLAIM_DEFECT:TYPE,C-LABEL,DefectTypeCode,PKG,merge,
+QMS,IQC_JUDGE,A,InspectionResult,PASS,equal,
+QMS,IQC_JUDGE,R,InspectionResult,FAIL,equal,
+QMS,IQC_JUDGE,S,InspectionResult,CONDITIONAL,equal,
+QMS,IQC_DEFECT,I-SOLDER,DefectTypeDetailCode,ASSY-SLD,equal,"I-APP 외관·I-DIM 치수 — 상세 구분 없음(대분류만 매핑, 상세는 비움)"
+QMS,IQC_DEFECT,I-APP,DefectTypeDetailCode,-,equal,"I-APP 외관·I-DIM 치수 — 상세 구분 없음(대분류만 매핑, 상세는 비움)"
+QMS,IQC_DEFECT,I-DIM,DefectTypeDetailCode,-,equal,"I-APP 외관·I-DIM 치수 — 상세 구분 없음(대분류만 매핑, 상세는 비움)"
+QMS,IQC_DEFECT:TYPE,I-APP,DefectTypeCode,APP,equal,
+QMS,IQC_DEFECT:TYPE,I-DIM,DefectTypeCode,DIM,equal,
+QMS,IQC_DEFECT:TYPE,I-SOLDER,DefectTypeCode,ASSY,equal,
+QMS,FOUND_AT,IQC,DetectionLocationType,IQC,ext,
+QMS,FOUND_AT,LINE,DetectionLocationType,LINE,ext,
+QMS,FOUND_AT,CUST,DetectionLocationType,CUST,ext,
+QMS,COST_CLS,P,QualityCostClass,P,ext,
+QMS,COST_CLS,A,QualityCostClass,A,ext,
+QMS,COST_CLS,IF,QualityCostClass,IF,ext,
+QMS,COST_CLS,EF,QualityCostClass,EF,ext,
+QMS,COST_ITM,품질교육,QualityCostItem,P-EDU,ext,원천은 국문 항목명 — 코드화
+QMS,COST_ITM,FMEA·예방활동,QualityCostItem,P-FMEA,ext,원천은 국문 항목명 — 코드화
+QMS,COST_ITM,수입검사,QualityCostItem,A-IQC,ext,원천은 국문 항목명 — 코드화
+QMS,COST_ITM,공정·출하검사,QualityCostItem,A-INSP,ext,원천은 국문 항목명 — 코드화
+QMS,COST_ITM,계측기교정,QualityCostItem,A-CAL,ext,원천은 국문 항목명 — 코드화
+QMS,COST_ITM,신뢰성시험,QualityCostItem,A-REL,ext,원천은 국문 항목명 — 코드화
+QMS,COST_ITM,폐기,QualityCostItem,IF-SCRAP,ext,원천은 국문 항목명 — 코드화
+QMS,COST_ITM,재작업,QualityCostItem,IF-REWORK,ext,원천은 국문 항목명 — 코드화
+QMS,COST_ITM,클레임,QualityCostItem,EF-CLAIM,ext,원천은 국문 항목명 — 코드화
+QMS,COST_ITM,반품운송,QualityCostItem,EF-RTNFRT,ext,원천은 국문 항목명 — 코드화

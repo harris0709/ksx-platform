@@ -1,0 +1,27 @@
+# ProductionPerformanceEquipment ← mes.tb_trk_out (1:1(생산실적 설비)) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: ProductionPerformanceEquipment
+layer: core
+structure: 1:1(생산실적 설비)
+source: {system: MES, table: mes.tb_trk_out}
+join:
+- {table: mes.tb_trk_in, as: i, 'on': trk_in_id = i.trk_in_id}
+- {table: mes.tb_lot, as: l, 'on': lot_no = l.lot_no}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, i.fac_id)'}
+identity:
+- ProductionPerformanceID
+- ProductionPerformanceSequence
+- EquipmentID
+attributes:
+  ProductionPerformanceID: {from: trk_out_id, match: manual, transform: 'concat(''PP-'',trk_out_id)', status: approved}
+  ProductionPerformanceSequence: {match: const, transform: const(1), status: approved}
+  ProductionOrderID: {from: l.mo_no, match: normalized, status: approved}
+  ExecutionStartDateTime: {from: i.trk_in_dtm, match: manual, transform: to_ts14(i.trk_in_dtm), status: approved}
+  ExecutionEndDateTime: {from: trk_out_dtm, match: manual, transform: to_ts14(trk_out_dtm), status: approved}
+  PersonnelID: {from: oper_emp_no, match: component, status: approved}
+  OperationID: {from: proc_cd, match: normalized, status: approved}
+  EquipmentID: {from: eqp_id, match: normalized, status: approved}
+  ProducedQuantity: {from: good_qty, match: normalized, status: approved}
+  DefectQuantity: {from: ng_qty, match: normalized, status: approved}
+extension: {}
+excluded: []

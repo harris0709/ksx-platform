@@ -1,0 +1,25 @@
+# DeliveryLine ← erp.tb_sd_dlv (1→헤더·라인(라인)) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: DeliveryLine
+layer: core
+structure: 1→헤더·라인(라인)
+source: {system: ERP, table: erp.tb_sd_dlv}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, wh_cd)'}
+identity:
+- DeliveryID
+- DeliveryLineSequence
+attributes:
+  DeliveryID: {from: dlv_no, match: normalized, status: approved}
+  DeliveryLineSequence: {match: const, transform: const(1), status: approved}
+  ProductReleaseID: {from: dlv_no, match: manual, status: approved}
+  ProductReleaseSequence: {match: const, transform: const(1), status: approved}
+  SalesDocumentNumber: {from: so_no, match: normalized, status: approved}
+  SalesDocumentSequence: {from: so_seq, match: normalized, status: approved}
+  LotID: {from: lot_no, match: normalized, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
+  ProductDeliveryQuantity: {from: dlv_qty, match: component, status: approved}
+extension: {}
+excluded:
+- {column: dlv_dt, reason: '실제 납품일 — DeliveryHeader.DeliveryDateTime(요청납품일 RequestedDeliveryDate 아님: 결정론 오매칭 차단)'}
+- {column: cust_cd, reason: ProductRelease 명세에서 판정}
+- {column: rtn_yn, reason: ProductRelease 명세에서 판정}

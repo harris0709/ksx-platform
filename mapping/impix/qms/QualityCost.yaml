@@ -1,0 +1,20 @@
+# QualityCost ← qms.qm_qcost (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: QualityCost
+layer: ext
+structure: '1:1'
+source: {system: QMS, table: qms.qm_qcost}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: const(P2)}
+identity:
+- QualityCostID
+attributes: {}
+extension:
+  QualityCostID: {from: 'cost_ym,cost_cls,cost_itm', match: derived, transform: 'concat(cost_ym,''_'',cost_cls,''_'',code(cost_itm))', status: approved}
+  CostPeriodStartDate: {from: cost_ym, match: manual, transform: ym_first(cost_ym), status: approved}
+  CostPeriodEndDate: {from: cost_ym, match: manual, transform: ym_last(cost_ym), status: approved}
+  QualityCostClass: {from: cost_cls, match: component, code: COST_CLS -> QualityCostClass, status: approved}
+  QualityCostItem: {from: cost_itm, match: component, code: COST_ITM -> QualityCostItem, status: approved}
+  QualityCostAmount: {from: amount, match: manual, status: approved}
+  CurrencyCode: {match: const, transform: const(KRW), status: approved}
+  SourceDocumentReference: {from: ref_no, match: manual, status: approved}
+excluded: []

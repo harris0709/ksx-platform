@@ -1,0 +1,20 @@
+# InventoryCount ← erp.tb_mm_cnt (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: InventoryCount
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_mm_cnt}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, wh_cd)'}
+identity:
+- InventoryCountDocumentNumber
+- WarehouseID
+- ItemID
+attributes:
+  InventoryCountDocumentNumber: {from: cnt_no, match: component, status: approved}
+  WarehouseID: {from: wh_cd, match: normalized, status: approved}
+  InventoryQuantity: {from: book_qty, match: manual, note: 장부 수량, status: approved}
+  InventoryCountDateTime: {from: cnt_dt, match: component, transform: to_date8(cnt_dt), status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
+  InventoryCountQuantity: {from: cnt_qty, match: component, status: approved}
+extension: {}
+excluded: []

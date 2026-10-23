@@ -1,0 +1,32 @@
+# Lot ← mes.tb_lot (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: Lot
+layer: core
+structure: '1:1'
+source: {system: MES, table: mes.tb_lot}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, fac_id)'}
+identity:
+- LotID
+attributes:
+  LotID: {from: lot_no, match: normalized, status: approved}
+  LotType: {from: lot_tp, match: normalized, code: LOT_TP -> LotType, status: approved}
+  LotState: {from: lot_stat, match: normalized, code: LOT_STAT -> LotState, status: approved}
+  ProductionOrderID: {from: mo_no, match: normalized, status: approved}
+  ProductionOrderSequence: {from: mo_seq, match: normalized, status: approved}
+  ProducedQuantity: {from: cur_qty, match: manual, note: 현재 양품 잔량, status: approved}
+  CurrentOperationID: {from: cur_proc_cd, match: normalized, status: approved}
+  LotPriority: {from: prior_no, match: manual, status: approved}
+  CreatorID: {from: crt_user, match: normalized, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
+  LotCreatedQuantity: {from: lot_qty, match: component, status: approved}
+  DefectQuantity: {from: ng_qty, match: normalized, status: approved}
+  NextOperationID: {from: next_proc_cd, match: normalized, status: approved}
+  HoldIndicator: {from: hold_flag, match: normalized, transform: yn(hold_flag), status: approved}
+  HotIndicator: {from: hot_flag, match: normalized, transform: yn(hot_flag), status: approved}
+  ReworkCount: {from: rework_cnt, match: normalized, status: approved}
+  ScheduledDueDate: {from: due_dt, match: component, transform: to_date8(due_dt), status: approved}
+  CreationDateTime: {from: crt_dtm, match: normalized, transform: to_ts(crt_dtm), status: approved}
+  ModificationDateTime: {from: upd_dtm, match: normalized, transform: to_ts(upd_dtm), status: approved}
+extension:
+  LotOriginType: {match: const, transform: const(PRODUCTION), status: approved}
+excluded: []

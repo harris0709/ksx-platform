@@ -1,0 +1,25 @@
+# Equipment ← mes.tm_eqp (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: Equipment
+layer: core
+structure: '1:1'
+source: {system: MES, table: mes.tm_eqp}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, fac_id)'}
+identity:
+- EquipmentID
+attributes:
+  EquipmentType: {from: eqp_kind, match: normalized, code: EQP_KIND -> EquipmentType, status: approved}
+  EquipmentLargeClass: {from: eqp_grp, match: normalized, code: EQP_GRP -> EquipmentLargeClass, status: approved}
+  Manufacturer: {from: maker, match: manual, status: approved}
+  ModelNumber: {from: model_no, match: normalized, status: approved}
+  SerialNumber: {from: serial_no, match: normalized, status: approved}
+  AcquisitionDate: {from: install_dt, match: manual, transform: to_date8(install_dt), note: 설치일을 취득일로, status: approved}
+  DAQDevice: {from: plc_ip, match: manual, note: 수집 PLC 주소, status: approved}
+  PersonInChargeID: {from: mgr_emp_no, match: manual, status: approved}
+  EquipmentID: {from: eqp_id, match: normalized, status: approved}
+  EquipmentName: {from: eqp_nm, match: normalized, status: approved}
+  OperationID: {from: proc_cd, match: normalized, status: approved}
+  UseIndicator: {from: use_flag, match: normalized, transform: yn(use_flag), status: approved}
+extension: {}
+excluded:
+- {column: line_id, reason: '설비→라인 배치 — 표준 설비에 라인 속성 없음, 공정·라인 관계로 도출(S4 관계 후보)'}

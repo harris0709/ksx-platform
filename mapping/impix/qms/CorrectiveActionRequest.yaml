@@ -1,0 +1,24 @@
+# CorrectiveActionRequest ← qms.qm_vend_ncr (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: CorrectiveActionRequest
+layer: core
+structure: '1:1'
+source: {system: QMS, table: qms.qm_vend_ncr}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: const(P2)}
+identity:
+- CorrectiveActionRequestID
+attributes:
+  CorrectiveActionRequestID: {from: ncr_no, match: normalized, status: approved}
+  VendorID: {from: vend_cd, match: normalized, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
+extension:
+  DetectionLocationType: {from: found_at, match: manual, code: FOUND_AT -> DetectionLocationType, status: approved}
+  InspectionResultID: {from: iqc_no, match: manual, status: approved}
+  OccurrenceDate: {from: occur_dt, match: component, transform: to_date8(occur_dt), status: approved}
+  DefectTypeCode: {from: defect_cd, match: manual, code: 'IQC_DEFECT:TYPE -> DefectTypeCode', status: approved}
+  DefectTypeDetailCode: {from: defect_cd, match: manual, code: IQC_DEFECT -> DefectTypeDetailCode, status: approved}
+  CorrectiveActionDueDate: {from: car_due_dt, match: normalized, transform: to_date8(car_due_dt), status: approved}
+  DefectQuantity: {from: ng_qty, match: normalized, status: approved}
+excluded: []
+unresolved:
+- {column: car_cls_dt, candidates: [CorrectiveActionDueDate, CorrectiveActionRequestID, CreationDateTime]}

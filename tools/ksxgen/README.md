@@ -5,6 +5,10 @@
 ```bash
 PYTHONPATH=tools/ksxgen python -m ksxgen build --std standards --out ontologies [--config ksxgen.yaml]
 PYTHONPATH=tools/ksxgen python -m ksxgen check --std standards --out ontologies
+# 기업 확장(Extension)
+PYTHONPATH=tools/ksxgen python -m ksxgen ext-template --out extensions/{기업}/확장정의서.xlsx
+PYTHONPATH=tools/ksxgen python -m ksxgen ext-sync extensions/{기업}/확장정의서.xlsx --std standards
+PYTHONPATH=tools/ksxgen python -m ksxgen build --std standards --ext extensions/{기업} --out ontologies
 ```
 
 | 생성물 | 내용 |
@@ -24,7 +28,28 @@ PYTHONPATH=tools/ksxgen python -m ksxgen check --std standards --out ontologies
 - 컬럼 → 데이터 속성(lowerCamel, 명사 간 공유, domain 미선언). enum → `skos:Concept`을 가리키는 객체 관계
 - 물리 FK → `ksx:ref{속성명−ID}` 객체 관계(range = 부모 클래스, 역관계 자동). 논리 관계(사본·다형·표준 외)는 관계로 만들지 않고 `ksx:copyOf` 주석·리포트로 남김
 
+## 기업 확장(`--ext`)
+
+`extensions/{기업}/확장정의서.xlsx`(표준 테이블 정의서와 같은 양식)와 `ext.yaml`(네임스페이스)을 읽습니다. Core 생성물은 바꾸지 않습니다.
+
+| 생성물 | 내용 |
+|---|---|
+| tbox/{기업}_ext.ttl | 확장 명사 클래스(ksx:Noun 하위), 신규 속성(기업 접두), `owl:imports` Core |
+| shapes/{기업}_ext_shapes.ttl | 확장 명사 셰이프 + 확장 속성 셰이프(대상 Core 클래스) |
+| mappings/{기업}_ext.obda | Ontop 매핑(확장 속성은 Core 명사와 같은 IRI) |
+| ddl/ext_{기업}.sql | ext 스키마 DDL(Core UK 참조 FK) |
+| vocab/{기업}_codelist.ttl | 확장 코드(SKOS, 표준 그룹 하위 확장은 skos:broader) |
+| report/{기업}_ext.md | 속성 대응(표준 재사용·신규)과 검사 결과 |
+
+- 표준 속성과 같은 영문명·같은 타입은 `ksx:` 공유 속성을 재사용하고, 새 이름만 기업 네임스페이스에 만듭니다.
+- 다음 경우 빌드를 멈춥니다.
+  - Core 테이블명·코드 그룹명 재사용
+  - 표준 속성 이름에 다른 타입
+  - 확장 속성이 이미 대상 Core 명사에 있음
+  - 고정형 표준 그룹에 코드 추가
+  - 없는 FK·코드 그룹 참조
+
 ## 남은 과제
 
-- Extension 입력(`--ext extensions/{ent}`)과 금지 규칙 검사
+- 하위 클래스·현장 용어 별칭·사내 제약(확장 유형 추가)
 - RML(물질화)·속성 그래프 스키마·도구 스키마 생성

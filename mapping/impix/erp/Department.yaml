@@ -1,0 +1,16 @@
+# Department ← erp.tb_cm_dept (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: Department
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_cm_dept, filter: use_yn = 'Y'}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, plant_cd)'}
+identity:
+- DepartmentID
+attributes:
+  DepartmentID: {from: dept_cd, match: normalized, status: approved}
+  DepartmentName: {from: dept_nm, match: normalized, status: approved}
+  ParentDepartmentID: {from: upper_dept_cd, match: normalized, status: approved}
+extension: {}
+excluded:
+- {column: use_yn, reason: 표준 부서에 사용여부 없음 — 전 건 Y(적재 필터)}

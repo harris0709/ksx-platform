@@ -1,0 +1,23 @@
+# TraceParameter ← mes.tb_param_val (이력→이벤트) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: TraceParameter
+layer: core
+structure: 이력→이벤트
+source: {system: MES, table: mes.tb_param_val}
+join:
+- {table: mes.tm_eqp, as: e, 'on': eqp_id = e.eqp_id}
+- {table: mes.tm_param, as: p, 'on': param_id = p.param_id}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, e.fac_id)'}
+identity:
+- TraceParameterID
+attributes:
+  TraceParameterID: {from: 'param_id,coll_dtm', match: derived, transform: 'concat(param_id,''_'',to_char(coll_dtm,''YYYYMMDDHH24MISS''))', status: approved}
+  EquipmentID: {from: eqp_id, match: normalized, status: approved}
+  ParameterID: {from: param_id, match: normalized, status: approved}
+  EventDateTime: {from: coll_dtm, match: manual, transform: to_ts(coll_dtm), status: approved}
+  ParameterValue: {from: val, match: manual, status: approved}
+  ParameterUOMCode: {from: p.unit, match: manual, uom: p.unit, status: approved}
+  ValidationResultCode: {from: 'val,p.lsl,p.usl', match: derived, transform: 'case(val > p.usl, OVER_USL, val < p.lsl, UNDER_LSL, NORMAL)', status: approved}
+extension:
+  LotID: {from: lot_no, match: normalized, status: approved}
+excluded: []

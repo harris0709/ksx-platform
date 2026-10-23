@@ -1,0 +1,97 @@
+[PrefixDeclaration]
+ksx:	https://ontology.impix.co.kr/ksx9101/1.0/
+impix:	https://ontology.impix.co.kr/ext/impix/1.0/
+d:	https://data.impix.co.kr/
+xsd:	http://www.w3.org/2001/XMLSchema#
+skos:	http://www.w3.org/2004/02/skos/core#
+
+[MappingDeclaration] @collection [[
+mappingId	IMPIX_StandardCost
+target		d:{enterpriseid}/StandardCost/{standardcostid} a impix:StandardCost ; ksx:enterpriseID {enterpriseid} ; ksx:siteID {siteid} ; ksx:plantID {plantid} ; ksx:creatorID {creatorid} ; ksx:creationDateTime {creationdatetime}^^xsd:dateTime ; ksx:modifierID {modifierid} ; ksx:modificationDateTime {modificationdatetime}^^xsd:dateTime ; ksx:note {note} ; impix:standardCostID {standardcostid} ; ksx:itemID {itemid} ; ksx:operationID {operationid} ; impix:costPeriodStartDate {costperiodstartdate}^^xsd:date ; impix:costPeriodEndDate {costperiodenddate}^^xsd:date ; impix:standardCostAmount {standardcostamount}^^xsd:decimal ; impix:materialCostAmount {materialcostamount}^^xsd:decimal ; impix:laborCostAmount {laborcostamount}^^xsd:decimal ; impix:overheadCostAmount {overheadcostamount}^^xsd:decimal ; ksx:currencyCode d:codelist/CurrencyCode/{currencycode} ; ksx:itemUOMCode d:uom/{itemuomcode} ; ksx:refEnterprise d:{enterpriseid}/Enterprise/{enterpriseid} ; ksx:refSite d:{enterpriseid}/Site/{siteid} ; ksx:refPlant d:{enterpriseid}/Plant/{plantid} ; ksx:refCreator d:{enterpriseid}/Personnel/{creatorid} ; ksx:refModifier d:{enterpriseid}/Personnel/{modifierid} ; ksx:refItem d:{enterpriseid}/ItemMaster/{itemid} ; ksx:refOperation d:{enterpriseid}/Operation/{operationid} .
+source		SELECT "EnterpriseID" AS enterpriseid, "SiteID" AS siteid, "PlantID" AS plantid, "CreatorID" AS creatorid, "CreationDateTime" AS creationdatetime, "ModifierID" AS modifierid, "ModificationDateTime" AS modificationdatetime, "Note" AS note, "StandardCostID" AS standardcostid, "ItemID" AS itemid, "OperationID" AS operationid, "CostPeriodStartDate" AS costperiodstartdate, "CostPeriodEndDate" AS costperiodenddate, "StandardCostAmount" AS standardcostamount, "MaterialCostAmount" AS materialcostamount, "LaborCostAmount" AS laborcostamount, "OverheadCostAmount" AS overheadcostamount, "CurrencyCode" AS currencycode, "ItemUOMCode" AS itemuomcode FROM ext."StandardCost"
+
+mappingId	IMPIX_CustomerComplaint
+target		d:{enterpriseid}/CustomerComplaint/{customercomplaintid} a impix:CustomerComplaint ; ksx:enterpriseID {enterpriseid} ; ksx:siteID {siteid} ; ksx:plantID {plantid} ; ksx:creatorID {creatorid} ; ksx:creationDateTime {creationdatetime}^^xsd:dateTime ; ksx:modifierID {modifierid} ; ksx:modificationDateTime {modificationdatetime}^^xsd:dateTime ; ksx:note {note} ; impix:customerComplaintID {customercomplaintid} ; ksx:customerID {customerid} ; ksx:itemID {itemid} ; ksx:lotID {lotid} ; impix:customerComplaintType d:codelist/CustomerComplaintType/{customercomplainttype} ; impix:occurrenceDate {occurrencedate}^^xsd:date ; impix:complaintReceiptDate {complaintreceiptdate}^^xsd:date ; ksx:defectTypeCode d:codelist/DefectTypeCode/{defecttypecode} ; ksx:defectTypeDetailCode d:codelist/DefectTypeDetailCode/{defecttypedetailcode} ; impix:complaintQuantity {complaintquantity}^^xsd:decimal ; ksx:itemUOMCode d:uom/{itemuomcode} ; impix:responseDueDate {responseduedate}^^xsd:date ; impix:responseDate {responsedate}^^xsd:date ; impix:closeDate {closedate}^^xsd:date ; impix:customerComplaintStatusCode d:codelist/CustomerComplaintStatusCode/{customercomplaintstatuscode} ; impix:complaintAmount {complaintamount}^^xsd:decimal ; ksx:currencyCode d:codelist/CurrencyCode/{currencycode} ; impix:causeOperationID {causeoperationid} ; impix:complaintDescription {complaintdescription} ; ksx:refEnterprise d:{enterpriseid}/Enterprise/{enterpriseid} ; ksx:refSite d:{enterpriseid}/Site/{siteid} ; ksx:refPlant d:{enterpriseid}/Plant/{plantid} ; ksx:refCreator d:{enterpriseid}/Personnel/{creatorid} ; ksx:refModifier d:{enterpriseid}/Personnel/{modifierid} ; ksx:refCustomer d:{enterpriseid}/CustomerPartyMaster/{customerid} ; ksx:refItem d:{enterpriseid}/ItemMaster/{itemid} ; ksx:refLot d:{enterpriseid}/Lot/{lotid} ; impix:refCauseOperation d:{enterpriseid}/Operation/{causeoperationid} .
+source		SELECT "EnterpriseID" AS enterpriseid, "SiteID" AS siteid, "PlantID" AS plantid, "CreatorID" AS creatorid, "CreationDateTime" AS creationdatetime, "ModifierID" AS modifierid, "ModificationDateTime" AS modificationdatetime, "Note" AS note, "CustomerComplaintID" AS customercomplaintid, "CustomerID" AS customerid, "ItemID" AS itemid, "LotID" AS lotid, "CustomerComplaintType" AS customercomplainttype, "OccurrenceDate" AS occurrencedate, "ComplaintReceiptDate" AS complaintreceiptdate, "DefectTypeCode" AS defecttypecode, "DefectTypeDetailCode" AS defecttypedetailcode, "ComplaintQuantity" AS complaintquantity, "ItemUOMCode" AS itemuomcode, "ResponseDueDate" AS responseduedate, "ResponseDate" AS responsedate, "CloseDate" AS closedate, "CustomerComplaintStatusCode" AS customercomplaintstatuscode, "ComplaintAmount" AS complaintamount, "CurrencyCode" AS currencycode, "CauseOperationID" AS causeoperationid, "ComplaintDescription" AS complaintdescription FROM ext."CustomerComplaint"
+
+mappingId	IMPIX_QualityCost
+target		d:{enterpriseid}/QualityCost/{qualitycostid} a impix:QualityCost ; ksx:enterpriseID {enterpriseid} ; ksx:siteID {siteid} ; ksx:plantID {plantid} ; ksx:creatorID {creatorid} ; ksx:creationDateTime {creationdatetime}^^xsd:dateTime ; ksx:modifierID {modifierid} ; ksx:modificationDateTime {modificationdatetime}^^xsd:dateTime ; ksx:note {note} ; impix:qualityCostID {qualitycostid} ; impix:costPeriodStartDate {costperiodstartdate}^^xsd:date ; impix:costPeriodEndDate {costperiodenddate}^^xsd:date ; impix:qualityCostClass d:codelist/QualityCostClass/{qualitycostclass} ; impix:qualityCostItem d:codelist/QualityCostItem/{qualitycostitem} ; impix:qualityCostAmount {qualitycostamount}^^xsd:decimal ; ksx:currencyCode d:codelist/CurrencyCode/{currencycode} ; impix:sourceDocumentReference {sourcedocumentreference} ; ksx:refEnterprise d:{enterpriseid}/Enterprise/{enterpriseid} ; ksx:refSite d:{enterpriseid}/Site/{siteid} ; ksx:refPlant d:{enterpriseid}/Plant/{plantid} ; ksx:refCreator d:{enterpriseid}/Personnel/{creatorid} ; ksx:refModifier d:{enterpriseid}/Personnel/{modifierid} .
+source		SELECT "EnterpriseID" AS enterpriseid, "SiteID" AS siteid, "PlantID" AS plantid, "CreatorID" AS creatorid, "CreationDateTime" AS creationdatetime, "ModifierID" AS modifierid, "ModificationDateTime" AS modificationdatetime, "Note" AS note, "QualityCostID" AS qualitycostid, "CostPeriodStartDate" AS costperiodstartdate, "CostPeriodEndDate" AS costperiodenddate, "QualityCostClass" AS qualitycostclass, "QualityCostItem" AS qualitycostitem, "QualityCostAmount" AS qualitycostamount, "CurrencyCode" AS currencycode, "SourceDocumentReference" AS sourcedocumentreference FROM ext."QualityCost"
+
+mappingId	IMPIX_InventorySnapshot
+target		d:{enterpriseid}/InventorySnapshot/{inventorysnapshotdate}_{warehouseid}_{itemid} a impix:InventorySnapshot ; ksx:enterpriseID {enterpriseid} ; ksx:siteID {siteid} ; ksx:plantID {plantid} ; ksx:creatorID {creatorid} ; ksx:creationDateTime {creationdatetime}^^xsd:dateTime ; ksx:modifierID {modifierid} ; ksx:modificationDateTime {modificationdatetime}^^xsd:dateTime ; ksx:note {note} ; impix:inventorySnapshotDate {inventorysnapshotdate}^^xsd:date ; ksx:warehouseID {warehouseid} ; ksx:itemID {itemid} ; ksx:inventoryQuantity {inventoryquantity}^^xsd:decimal ; ksx:itemUOMCode d:uom/{itemuomcode} ; ksx:refEnterprise d:{enterpriseid}/Enterprise/{enterpriseid} ; ksx:refSite d:{enterpriseid}/Site/{siteid} ; ksx:refPlant d:{enterpriseid}/Plant/{plantid} ; ksx:refCreator d:{enterpriseid}/Personnel/{creatorid} ; ksx:refModifier d:{enterpriseid}/Personnel/{modifierid} ; ksx:refWarehouse d:{enterpriseid}/WarehouseLocation/{warehouseid} ; ksx:refItem d:{enterpriseid}/ItemMaster/{itemid} .
+source		SELECT "EnterpriseID" AS enterpriseid, "SiteID" AS siteid, "PlantID" AS plantid, "CreatorID" AS creatorid, "CreationDateTime" AS creationdatetime, "ModifierID" AS modifierid, "ModificationDateTime" AS modificationdatetime, "Note" AS note, "InventorySnapshotDate" AS inventorysnapshotdate, "WarehouseID" AS warehouseid, "ItemID" AS itemid, "InventoryQuantity" AS inventoryquantity, "ItemUOMCode" AS itemuomcode FROM ext."InventorySnapshot"
+
+mappingId	IMPIX_LotInventory
+target		d:{enterpriseid}/LotInventory/{warehouseid}_{itemid}_{lotid} a impix:LotInventory ; ksx:enterpriseID {enterpriseid} ; ksx:siteID {siteid} ; ksx:plantID {plantid} ; ksx:creatorID {creatorid} ; ksx:creationDateTime {creationdatetime}^^xsd:dateTime ; ksx:modifierID {modifierid} ; ksx:modificationDateTime {modificationdatetime}^^xsd:dateTime ; ksx:note {note} ; ksx:warehouseID {warehouseid} ; ksx:itemID {itemid} ; ksx:lotID {lotid} ; ksx:goodsReceiptDate {goodsreceiptdate}^^xsd:date ; ksx:inventoryQuantity {inventoryquantity}^^xsd:decimal ; ksx:itemUOMCode d:uom/{itemuomcode} ; ksx:refEnterprise d:{enterpriseid}/Enterprise/{enterpriseid} ; ksx:refSite d:{enterpriseid}/Site/{siteid} ; ksx:refPlant d:{enterpriseid}/Plant/{plantid} ; ksx:refCreator d:{enterpriseid}/Personnel/{creatorid} ; ksx:refModifier d:{enterpriseid}/Personnel/{modifierid} ; ksx:refWarehouse d:{enterpriseid}/WarehouseLocation/{warehouseid} ; ksx:refItem d:{enterpriseid}/ItemMaster/{itemid} ; ksx:refLot d:{enterpriseid}/Lot/{lotid} .
+source		SELECT "EnterpriseID" AS enterpriseid, "SiteID" AS siteid, "PlantID" AS plantid, "CreatorID" AS creatorid, "CreationDateTime" AS creationdatetime, "ModifierID" AS modifierid, "ModificationDateTime" AS modificationdatetime, "Note" AS note, "WarehouseID" AS warehouseid, "ItemID" AS itemid, "LotID" AS lotid, "GoodsReceiptDate" AS goodsreceiptdate, "InventoryQuantity" AS inventoryquantity, "ItemUOMCode" AS itemuomcode FROM ext."LotInventory"
+
+mappingId	IMPIX_SalesPlanExt
+target		d:{enterpriseid}/SalesPlan/{salesplanid} impix:salesPlanType d:codelist/SalesPlanType/{salesplantype} ; ksx:customerID {customerid} ; impix:salesPlanVersion {salesplanversion}^^xsd:integer ; ksx:refCustomer d:{enterpriseid}/CustomerPartyMaster/{customerid} .
+source		SELECT "EnterpriseID" AS enterpriseid, "SalesPlanID" AS salesplanid, "SalesPlanType" AS salesplantype, "CustomerID" AS customerid, "SalesPlanVersion" AS salesplanversion FROM ext."SalesPlanExt"
+
+mappingId	IMPIX_SalesOrderLineExt
+target		d:{enterpriseid}/SalesOrder/{salesdocumentnumber}/line/{salesdocumentsequence} ksx:unitPrice {unitprice}^^xsd:decimal ; ksx:currencyCode d:codelist/CurrencyCode/{currencycode} ; impix:salesAmount {salesamount}^^xsd:decimal .
+source		SELECT "EnterpriseID" AS enterpriseid, "SalesDocumentNumber" AS salesdocumentnumber, "SalesDocumentSequence" AS salesdocumentsequence, "UnitPrice" AS unitprice, "CurrencyCode" AS currencycode, "SalesAmount" AS salesamount FROM ext."SalesOrderLineExt"
+
+mappingId	IMPIX_AvailableInventoryExt
+target		d:{enterpriseid}/AvailableInventory/{availableinventoryid} ksx:productionOrderID {productionorderid} ; ksx:productionOrderSequence {productionordersequence}^^xsd:integer ; impix:availabilityCheckDateTime {availabilitycheckdatetime}^^xsd:dateTime ; impix:shortageQuantity {shortagequantity}^^xsd:decimal ; impix:materialRequirementQuantity {materialrequirementquantity}^^xsd:decimal ; ksx:refProductionOrder d:{enterpriseid}/ProductionOrder/{productionorderid}_{productionordersequence} .
+source		SELECT "EnterpriseID" AS enterpriseid, "AvailableInventoryID" AS availableinventoryid, "ProductionOrderID" AS productionorderid, "ProductionOrderSequence" AS productionordersequence, "AvailabilityCheckDateTime" AS availabilitycheckdatetime, "ShortageQuantity" AS shortagequantity, "MaterialRequirementQuantity" AS materialrequirementquantity FROM ext."AvailableInventoryExt"
+
+mappingId	IMPIX_ProductionPerformanceExt
+target		d:{enterpriseid}/ProductionPerformance/{productionperformanceid}_{productionperformancesequence} ksx:inspectionResult d:codelist/InspectionResult/{inspectionresult} ; ksx:inspectionQuantity {inspectionquantity}^^xsd:decimal .
+source		SELECT "EnterpriseID" AS enterpriseid, "ProductionPerformanceID" AS productionperformanceid, "ProductionPerformanceSequence" AS productionperformancesequence, "InspectionResult" AS inspectionresult, "InspectionQuantity" AS inspectionquantity FROM ext."ProductionPerformanceExt"
+
+mappingId	IMPIX_SupplierInspectionResultExt
+target		d:{enterpriseid}/SupplierInspectionResult/{inspectionresultid} ksx:goodsReceiptID {goodsreceiptid} ; ksx:goodsReceiptSequence {goodsreceiptsequence}^^xsd:integer ; ksx:defectQuantity {defectquantity}^^xsd:decimal ; ksx:defectTypeCode d:codelist/DefectTypeCode/{defecttypecode} ; ksx:defectTypeDetailCode d:codelist/DefectTypeDetailCode/{defecttypedetailcode} ; impix:refGoodsReceipt d:{enterpriseid}/GoodsReceipt/{goodsreceiptid}_{goodsreceiptsequence} .
+source		SELECT "EnterpriseID" AS enterpriseid, "InspectionResultID" AS inspectionresultid, "GoodsReceiptID" AS goodsreceiptid, "GoodsReceiptSequence" AS goodsreceiptsequence, "DefectQuantity" AS defectquantity, "DefectTypeCode" AS defecttypecode, "DefectTypeDetailCode" AS defecttypedetailcode FROM ext."SupplierInspectionResultExt"
+
+mappingId	IMPIX_CorrectiveActionRequestExt
+target		d:{enterpriseid}/CorrectiveActionRequest/{correctiveactionrequestid} impix:detectionLocationType d:codelist/DetectionLocationType/{detectionlocationtype} ; ksx:defectQuantity {defectquantity}^^xsd:decimal ; ksx:defectTypeCode d:codelist/DefectTypeCode/{defecttypecode} ; ksx:defectTypeDetailCode d:codelist/DefectTypeDetailCode/{defecttypedetailcode} ; impix:correctiveActionDueDate {correctiveactionduedate}^^xsd:date ; impix:occurrenceDate {occurrencedate}^^xsd:date ; ksx:inspectionResultID {inspectionresultid} ; impix:refInspectionResult d:{enterpriseid}/SupplierInspectionResult/{inspectionresultid} .
+source		SELECT "EnterpriseID" AS enterpriseid, "CorrectiveActionRequestID" AS correctiveactionrequestid, "DetectionLocationType" AS detectionlocationtype, "DefectQuantity" AS defectquantity, "DefectTypeCode" AS defecttypecode, "DefectTypeDetailCode" AS defecttypedetailcode, "CorrectiveActionDueDate" AS correctiveactionduedate, "OccurrenceDate" AS occurrencedate, "InspectionResultID" AS inspectionresultid FROM ext."CorrectiveActionRequestExt"
+
+mappingId	IMPIX_EquipmentExt
+target		d:{enterpriseid}/Equipment/{equipmentid} impix:standardUnitsPerMinute {standardunitsperminute}^^xsd:decimal .
+source		SELECT "EnterpriseID" AS enterpriseid, "EquipmentID" AS equipmentid, "StandardUnitsPerMinute" AS standardunitsperminute FROM ext."EquipmentExt"
+
+mappingId	IMPIX_EquipmentStateExt
+target		d:{enterpriseid}/EquipmentState/{equipmentstateid} impix:stateStartDateTime {statestartdatetime}^^xsd:dateTime ; impix:stateEndDateTime {stateenddatetime}^^xsd:dateTime ; impix:equipmentIdleReasonCode d:codelist/EquipmentIdleReasonCode/{equipmentidlereasoncode} .
+source		SELECT "EnterpriseID" AS enterpriseid, "EquipmentStateID" AS equipmentstateid, "StateStartDateTime" AS statestartdatetime, "StateEndDateTime" AS stateenddatetime, "EquipmentIdleReasonCode" AS equipmentidlereasoncode FROM ext."EquipmentStateExt"
+
+mappingId	IMPIX_ProductionOrderExt
+target		d:{enterpriseid}/ProductionOrder/{productionorderid}_{productionordersequence} impix:productionOrderStatusCode d:codelist/ProductionOrderStatusCode/{productionorderstatuscode} .
+source		SELECT "EnterpriseID" AS enterpriseid, "ProductionOrderID" AS productionorderid, "ProductionOrderSequence" AS productionordersequence, "ProductionOrderStatusCode" AS productionorderstatuscode FROM ext."ProductionOrderExt"
+
+mappingId	IMPIX_AlarmExt
+target		d:{enterpriseid}/Alarm/{alarmid} impix:alarmSeverityCode d:codelist/AlarmSeverityCode/{alarmseveritycode} .
+source		SELECT "EnterpriseID" AS enterpriseid, "AlarmID" AS alarmid, "AlarmSeverityCode" AS alarmseveritycode FROM ext."AlarmExt"
+
+mappingId	IMPIX_CustomerPartyMasterExt
+target		d:{enterpriseid}/CustomerPartyMaster/{customerid} impix:customerGroupCode d:codelist/CustomerGroupCode/{customergroupcode} .
+source		SELECT "EnterpriseID" AS enterpriseid, "CustomerID" AS customerid, "CustomerGroupCode" AS customergroupcode FROM ext."CustomerPartyMasterExt"
+
+mappingId	IMPIX_GoodsReceiptExt
+target		d:{enterpriseid}/GoodsReceipt/{goodsreceiptid}_{goodsreceiptsequence} ksx:purchaseDocumentNumber {purchasedocumentnumber} ; ksx:purchaseDocumentSequence {purchasedocumentsequence}^^xsd:integer ; ksx:lotID {lotid} ; ksx:refPurchaseOrderLine d:{enterpriseid}/PurchaseOrder/{purchasedocumentnumber}/line/{purchasedocumentsequence} ; ksx:refLot d:{enterpriseid}/Lot/{lotid} .
+source		SELECT "EnterpriseID" AS enterpriseid, "GoodsReceiptID" AS goodsreceiptid, "GoodsReceiptSequence" AS goodsreceiptsequence, "PurchaseDocumentNumber" AS purchasedocumentnumber, "PurchaseDocumentSequence" AS purchasedocumentsequence, "LotID" AS lotid FROM ext."GoodsReceiptExt"
+
+mappingId	IMPIX_GoodsIssueExt
+target		d:{enterpriseid}/GoodsIssue/{goodsissueid} ksx:inventoryTransactionDate {inventorytransactiondate}^^xsd:date ; ksx:productionOrderID {productionorderid} ; ksx:productionOrderSequence {productionordersequence}^^xsd:integer ; ksx:refProductionOrder d:{enterpriseid}/ProductionOrder/{productionorderid}_{productionordersequence} .
+source		SELECT "EnterpriseID" AS enterpriseid, "GoodsIssueID" AS goodsissueid, "InventoryTransactionDate" AS inventorytransactiondate, "ProductionOrderID" AS productionorderid, "ProductionOrderSequence" AS productionordersequence FROM ext."GoodsIssueExt"
+
+mappingId	IMPIX_ProductIncomingExt
+target		d:{enterpriseid}/ProductIncoming/{productincomingid}_{productincomingsequence} ksx:productionOrderID {productionorderid} ; ksx:productionOrderSequence {productionordersequence}^^xsd:integer ; ksx:refProductionOrder d:{enterpriseid}/ProductionOrder/{productionorderid}_{productionordersequence} .
+source		SELECT "EnterpriseID" AS enterpriseid, "ProductIncomingID" AS productincomingid, "ProductIncomingSequence" AS productincomingsequence, "ProductionOrderID" AS productionorderid, "ProductionOrderSequence" AS productionordersequence FROM ext."ProductIncomingExt"
+
+mappingId	IMPIX_TraceParameterExt
+target		d:{enterpriseid}/TraceParameter/{traceparameterid} ksx:lotID {lotid} ; ksx:refLot d:{enterpriseid}/Lot/{lotid} .
+source		SELECT "EnterpriseID" AS enterpriseid, "TraceParameterID" AS traceparameterid, "LotID" AS lotid FROM ext."TraceParameterExt"
+
+mappingId	IMPIX_EquipmentParameterExt
+target		d:{enterpriseid}/EquipmentParameter/{parameterid} impix:lcl {lcl}^^xsd:decimal ; impix:ucl {ucl}^^xsd:decimal .
+source		SELECT "EnterpriseID" AS enterpriseid, "ParameterID" AS parameterid, "LCL" AS lcl, "UCL" AS ucl FROM ext."EquipmentParameterExt"
+
+mappingId	IMPIX_LotExt
+target		d:{enterpriseid}/Lot/{lotid} impix:lotOriginType d:codelist/LotOriginType/{lotorigintype} ; ksx:vendorID {vendorid} ; impix:vendorLotNumber {vendorlotnumber} ; ksx:refVendor d:{enterpriseid}/VendorPartyMaster/{vendorid} .
+source		SELECT "EnterpriseID" AS enterpriseid, "LotID" AS lotid, "LotOriginType" AS lotorigintype, "VendorID" AS vendorid, "VendorLotNumber" AS vendorlotnumber FROM ext."LotExt"
+
+]]

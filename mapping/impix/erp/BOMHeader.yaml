@@ -1,0 +1,20 @@
+# BOMHeader ← erp.tb_pp_bom_h (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: BOMHeader
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_pp_bom_h}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, plant_cd)'}
+identity:
+- BOMID
+- BOMRevisionNumber
+attributes:
+  BOMID: {from: prnt_item_cd, match: manual, transform: upper_trim(prnt_item_cd), note: BOM 식별 = 모품목(개정은 BOMRevisionNumber), status: approved}
+  ItemID: {from: prnt_item_cd, match: component, transform: upper_trim(prnt_item_cd), status: approved}
+  BOMType: {from: bom_tp, match: normalized, code: BOM_TP -> BOMType, status: approved}
+  BOMQuantity: {from: base_qty, match: manual, status: approved}
+  ItemUOMCode: {from: unit, match: manual, uom: unit, status: approved}
+  BOMRevisionNumber: {from: bom_rev, match: normalized, status: approved}
+  RoutingID: {from: rout_cd, match: normalized, status: approved}
+extension: {}
+excluded: []

@@ -1,0 +1,23 @@
+# RoutingLine ← erp.tb_pp_rout_d (1:1(헤더 참조)) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: RoutingLine
+layer: core
+structure: 1:1(헤더 참조)
+source: {system: ERP, table: erp.tb_pp_rout_d}
+join:
+- {table: erp.tb_pp_rout_h, as: h, 'on': rout_cd = h.rout_cd}
+- {table: mes.tm_proc, as: p, 'on': wc_cd = p.erp_wc_cd}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, h.plant_cd)'}
+identity:
+- RoutingID
+- OperationSequence
+attributes:
+  RoutingID: {from: rout_cd, match: normalized, status: approved}
+  OperationID: {from: p.proc_cd, match: normalized, note: ERP 작업장 → MES 공정(tm_proc.erp_wc_cd), status: approved}
+  SetupTime: {from: setup_min, match: normalized, transform: minutes(setup_min), status: approved}
+  RunTime: {from: run_sec, match: normalized, transform: seconds(run_sec), note: 개당 작업시간, status: approved}
+  MoveTime: {from: move_min, match: normalized, transform: minutes(move_min), status: approved}
+  OperationSequence: {from: oper_seq, match: component, status: approved}
+  LastOperationIndicator: {from: last_yn, match: component, transform: yn(last_yn), status: approved}
+extension: {}
+excluded: []

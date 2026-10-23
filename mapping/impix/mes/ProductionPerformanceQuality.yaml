@@ -1,0 +1,28 @@
+# ProductionPerformanceQuality ← mes.tb_qc_defect (N→1(검사+불량)) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: ProductionPerformanceQuality
+layer: core
+structure: N→1(검사+불량)
+source: {system: MES, table: mes.tb_qc_defect}
+join:
+- {table: mes.tb_qc_insp, as: q, 'on': insp_no = q.insp_no}
+- {table: mes.tb_lot, as: l, 'on': q.lot_no = l.lot_no}
+- {table: mes.tb_trk_out, as: o, 'on': q.lot_no = o.lot_no AND q.proc_cd = o.proc_cd}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, l.fac_id)'}
+identity:
+- ProductionPerformanceID
+- ProductionPerformanceSequence
+- DefectTypeCode
+- DefectTypeDetailCode
+attributes:
+  ProductionPerformanceID: {from: o.trk_out_id, match: manual, transform: 'concat(''PP-'',o.trk_out_id)', status: approved}
+  ProductionPerformanceSequence: {match: const, transform: const(1), status: approved}
+  DefectTypeCode: {from: defect_cd, match: manual, code: 'DEFECT_CD:TYPE -> DefectTypeCode', status: approved}
+  DefectTypeDetailCode: {from: defect_cd, match: manual, code: DEFECT_CD -> DefectTypeDetailCode, status: approved}
+  OperationID: {from: q.proc_cd, match: normalized, status: approved}
+  LotID: {from: q.lot_no, match: normalized, status: approved}
+  ItemID: {from: l.item_cd, match: normalized, transform: upper_trim(l.item_cd), status: approved}
+  ProductionOrderID: {from: l.mo_no, match: normalized, status: approved}
+  DefectTypeQuantity: {from: defect_qty, match: component, transform: int(defect_qty), status: approved}
+extension: {}
+excluded: []

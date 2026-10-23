@@ -1,0 +1,24 @@
+# Lot ← erp.tb_mm_gr (1:1(입고 → 구매 자재 LOT)) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: Lot
+layer: core
+structure: 1:1(입고 → 구매 자재 LOT)
+source: {system: ERP, table: erp.tb_mm_gr, filter: vend_lot IS NOT NULL}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, wh_cd)'}
+identity:
+- LotID
+attributes:
+  LotID: {from: 'vend_lot,item_cd', match: derived, transform: 'mat_lot(vend_lot,item_cd)', status: approved}
+  LotCreatedQuantity: {from: gr_qty, match: manual, status: approved}
+  CreationDateTime: {from: gr_dt, match: manual, transform: to_date8(gr_dt), status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
+extension:
+  LotOriginType: {match: const, transform: const(PURCHASE), status: approved}
+  VendorLotNumber: {from: vend_lot, match: manual, status: approved}
+  VendorID: {from: vend_cd, match: normalized, status: approved}
+excluded:
+- {column: gr_no, reason: GoodsReceipt 명세에서 판정}
+- {column: po_no, reason: GoodsReceipt 명세에서 판정}
+- {column: po_seq, reason: GoodsReceipt 명세에서 판정}
+- {column: iqc_yn, reason: GoodsReceipt 명세에서 판정}
+- {column: iqc_stat, reason: GoodsReceipt 명세에서 판정}

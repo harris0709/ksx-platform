@@ -1,0 +1,6 @@
+# IMPIX 기업 확장 설정 (ksxgen --ext extensions/impix)
+ent: IMPIX
+prefix: impix
+ns: https://ontology.impix.co.kr/ext/impix/1.0/
+schema: ext
+file: 확장정의서.xlsx

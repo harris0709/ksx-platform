@@ -1,0 +1,31 @@
+# Return ← qms.qm_claim (1:1(필드 반송분)) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: Return
+layer: core
+structure: 1:1(필드 반송분)
+source: {system: QMS, table: qms.qm_claim, filter: claim_tp = 'FR'}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: const(P2)}
+identity:
+- ReturnID
+- ReturnSequence
+attributes:
+  ReturnID: {from: claim_no, match: manual, status: approved}
+  ReturnSequence: {match: const, transform: const(1), status: approved}
+  ReturnDateTime: {from: rcv_dt, match: manual, transform: to_date8(rcv_dt), status: approved}
+  ReturnQuantity: {from: claim_qty, match: manual, status: approved}
+  LotID: {from: lot_no, match: normalized, status: approved}
+  ReturnType: {match: const, transform: const(SAL-DEF), note: 필드 반송 = 판매 불량 반품, status: approved}
+  CustomerID: {from: cust_cd, match: normalized, status: approved}
+  ItemID: {from: item_cd, match: normalized, transform: upper_trim(item_cd), status: approved}
+extension: {}
+excluded:
+- {column: claim_tp, reason: CustomerComplaint 명세에서 판정}
+- {column: occur_dt, reason: CustomerComplaint 명세에서 판정}
+- {column: defect_cd, reason: CustomerComplaint 명세에서 판정}
+- {column: resp_due_dt, reason: CustomerComplaint 명세에서 판정}
+- {column: resp_dt, reason: CustomerComplaint 명세에서 판정}
+- {column: close_dt, reason: CustomerComplaint 명세에서 판정}
+- {column: status, reason: CustomerComplaint 명세에서 판정}
+- {column: claim_amt, reason: CustomerComplaint 명세에서 판정}
+- {column: cause_proc, reason: CustomerComplaint 명세에서 판정}
+- {column: descr, reason: CustomerComplaint 명세에서 판정}

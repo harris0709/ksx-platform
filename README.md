@@ -10,7 +10,7 @@ KS X 9101 기반 제조 온톨로지 End-to-End 구현 저장소입니다. 구�
 | `extensions/{ent}/` | 기업 확장 정의서(테이블 정의서와 같은 양식) | 온톨로지 엔지니어 | S2, S4 |
 | `mapping/{ent}/{src}/` | 원천→표준 매핑 명세(*.yaml), 코드·단위 대응표(*.csv) | 데이터 엔지니어 + 현업 승인 | S2 |
 | `tools/ksxgen/` | 생성기 (표준·확장 정의서 → 생성물 12종) | 온톨로지 엔지니어 | S4 |
-| `tools/automap/` | 매핑 추천기 (결정론 매처 + 임베딩·LLM 후보) | 데이터 엔지니어 | S2 |
+| `tools/automap/` | 매핑 추천기·명세 생성기 (결정론 매처 + 유사도 후보 + 검토자 계획) | 데이터 엔지니어 | S2 |
 | `etl/dbt/` | stg → ksx/ext 변환 모델·테스트·매크로 | 데이터 엔지니어 | S3 |
 | `ontologies/` | **생성물** (tbox, shapes, rules, mappings, vocab, catalog, ddl, graph, report) | 생성기만 수정 | S4~S9 |
 | `services/` | MCP 도구 서버, rule-runner, pg-sync, decision-engine, bod-gateway | AI·백엔드 | S7~S10 |
@@ -32,13 +32,14 @@ KS X 9101 기반 제조 온톨로지 End-to-End 구현 저장소입니다. 구�
 | 단계 | 구현 | 위치 |
 |---|---|---|
 | S0 환경 | 개발 스택(PostgreSQL 16.4, Fuseki 5.2.0, Ontop 5.1.2, Qdrant, Keycloak, OPA) | `infra/docker/` |
-| S4 T-Box 생성 | **ksxgen 0.1** — 테이블 정의서·공통코드 → T-Box·SHACL·OBDA·DDL·SKOS·카탈로그·적재 순서·커버리지 | `tools/ksxgen/` → `ontologies/` |
+| S4 T-Box 생성 | **ksxgen 0.2** — 테이블 정의서·공통코드 → T-Box·SHACL·OBDA·DDL·SKOS·카탈로그·적재 순서·커버리지. **기업 확장(`--ext`)**: 확장 정의서 → Extension T-Box·SHACL·OBDA·DDL·코드, 금지 규칙 검사 | `tools/ksxgen/` → `ontologies/` |
 | S5 A-Box | Ontop 가상화 매핑(테이블 76개) 생성, 시험용 OBDA 실행기 | `ontologies/mappings/`, `tests/e2e/obda_exec.py` |
 | S6 검증 | 표준 적합성 SHACL(76개 셰이프) | `ontologies/shapes/` |
 | S7 추론 | 규칙 5종(계보·BOM 전개·영향 수주·납기 리스크) + rule-runner | `ontologies/rules/`, `services/rule-runner/` |
 | 시험 | 생성기 회귀, E2E 최소 시험(DDL → 시드 → OBDA → SHACL → 규칙), GitHub Actions CI | `tests/`, `.github/workflows/` |
 | S1 원천 분석 | **s1profiler 0.2** — 스키마·프로파일·코드·암묵 관계·품질 → 인벤토리, 시나리오 7종·업무 질의 155건, **전사 KPI 34종 정의·산출(Excel)**. IMPIX 가상 원천(ERP·MES·QMS) | `tools/s1profiler/`, `tools/sim/`, `mapping/impix/s1/`, `infra/docker-compose/impix-src/` |
-| S2~S3, S8~S11 | 양식·설정 예시만 있음(다음 구현 대상) | `mapping/`, `etl/dbt/`, `services/` |
+| S2 표준 매핑 | **기업 확장 정의서 양식** + IMPIX 확장(확장 명사 5·확장 속성 테이블 17·확장 코드 52·판정 46), **automap 0.1** — 결정론 매칭(①~④)·검토자 판단 계획 → 매핑 명세 58건·코드 대응 165·단위·식별 대응·검토본(Excel). 필수 속성 100%·컬럼 판정 100%·결정론 71.9%. **2026-10-23 승인** | `extensions/`, `tools/automap/`, `mapping/impix/` |
+| S3, S8~S11 | 양식·설정 예시만 있음(다음 구현 대상) | `mapping/`, `etl/dbt/`, `services/` |
 
 ## 시작하기
 

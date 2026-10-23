@@ -1,0 +1,20 @@
+# CustomerPartyMaster ← erp.tb_sd_cust (1:1) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: CustomerPartyMaster
+layer: core
+structure: '1:1'
+source: {system: ERP, table: erp.tb_sd_cust}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: const(P2)}
+identity:
+- CustomerID
+attributes:
+  BusinessRegistrationNumber: {from: biz_reg_no, match: normalized, status: approved}
+  CountryID: {from: nation_cd, match: normalized, code: NATION -> CountryID, status: approved}
+  CustomerID: {from: cust_cd, match: normalized, status: approved}
+  CustomerName: {from: cust_nm, match: normalized, status: approved}
+  PersonInChargeName: {from: chrg_nm, match: normalized, status: approved}
+  PersonInChargeEmail: {from: chrg_email, match: normalized, status: approved}
+  UseIndicator: {from: use_yn, match: normalized, transform: yn(use_yn), status: approved}
+extension:
+  CustomerGroupCode: {from: cust_grp, match: manual, code: CUST_GRP -> CustomerGroupCode, status: approved}
+excluded: []
