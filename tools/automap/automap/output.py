@@ -83,17 +83,17 @@ def write_all(eng, out: str) -> list[str]:
     # 대응표 CSV
     rows = eng.code_rows()
     with open(os.path.join(out, "codes.csv"), "w", encoding="utf-8", newline="") as f:
-        w = csv.writer(f)
+        w = csv.writer(f, lineterminator="\n")
         w.writerow(["src_system", "src_group", "src_code", "ksx_group", "ksx_code", "rule", "note"])
         for x in rows:
             w.writerow([x["src_system"], x["src_group"], x["src_code"], x["ksx_group"], x["ksx_code"], x["rule"], x["note"]])
     with open(os.path.join(out, "units.csv"), "w", encoding="utf-8", newline="") as f:
-        w = csv.writer(f)
+        w = csv.writer(f, lineterminator="\n")
         w.writerow(["src_unit", "ksx_uom", "factor", "note"])
         for u in eng.plan.get("units", []):
             w.writerow([u["src_unit"], u["ksx_uom"], u.get("factor", 1), u.get("note", "")])
     with open(os.path.join(out, "xref.csv"), "w", encoding="utf-8", newline="") as f:
-        w = csv.writer(f)
+        w = csv.writer(f, lineterminator="\n")
         w.writerow(["xref", "src_system", "src", "ksx", "note"])
         for name, items in eng.plan.get("xref", {}).items():
             for x in items:
