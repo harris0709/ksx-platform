@@ -132,6 +132,7 @@ class Engine:
                     r.touch(q, "조인 키", f"{sp['noun']} 조인")
                 for c, why in (j.get("exclude") or {}).items():
                     r.excluded[f"{a}.{c}"] = why
+            self._check_filter(sp, r)
             attrs = [a for a in noun.attrs.values()]
             # 1) 계획의 덮어쓰기·상수·파생
             base = dict(defaults.get("base", {}))
@@ -211,6 +212,31 @@ class Engine:
             self.results.append(r)
         self._check_codes_units_xref()
         return self
+
+    # ------------------------------------------------------------------ 필터 점검
+    _SQL_WORDS = {"and", "or", "not", "in", "is", "null", "like", "between", "select", "from", "where", "true", "false",
+                  "current_date", "current_timestamp", "case", "when", "then", "else", "end", "as", "distinct"}
+
+    def _check_filter(self, sp, r):
+        """filter의 컬럼이 원천(주 테이블·조인 별칭)에 있는지 본다 — 함수·SQL 예약어·따옴표 문자열·스키마 이름은 건너뛴다."""
+        f = sp.get("filter")
+        if not f:
+            return
+        txt = re.sub(r"'[^']*'", "''", f)
+        schemas = {t.split(".")[0] for t in self.src}
+        names = {c["name"] for c in self.cols(r.table)}
+        for m in re.finditer(r"\b(?:(\w+)\.)?([A-Za-z_][A-Za-z0-9_]*)\b(\s*\()?", txt):
+            q, c, fn = m.group(1), m.group(2), m.group(3)
+            if fn or c.lower() in self._SQL_WORDS or c in schemas or q in schemas or c.isdigit():
+                continue
+            if q:
+                tb = r.aliases.get(q)
+                ok = tb is not None and c in {x["name"] for x in self.cols(tb)}
+            else:
+                ok = c in names
+            if not ok:
+                self.issues.append(("오류", f"{sp['noun']} ← {r.table}",
+                                    f"filter의 컬럼 '{(q + '.') if q else ''}{c}'이(가) 원천에 없음: {f}"))
 
     # ------------------------------------------------------------------ 변환 추론
     def _src_col(self, r, q):

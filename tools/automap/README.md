@@ -22,8 +22,12 @@ python tests/coverage/test_automap.py                                           
 
 - 필수 속성(UK·NOT NULL·기본 속성 EnterpriseID/SiteID/PlantID) 매핑 100%
 - 대상 테이블(`scope_tables: all` = S1 원천 전체) 컬럼 판정 100%(매핑·확장·제외·조인 키·코드 원천·식별 대응 등)
-- 검사 오류 0: 없는 표준 속성, 없는 코드 그룹·코드, 원천 값의 코드 대응 누락, 단위 대응 누락, 식별 대응 누락
+- 검사 오류 0: 없는 표준 속성, 없는 코드 그룹·코드, 원천 값의 코드 대응 누락, 단위 대응 누락, 식별 대응 누락,
+  `filter`에 쓴 컬럼이 원천(주 테이블·조인 별칭)에 없음
 - 저장소의 명세·대응표·요약이 계획으로 다시 만든 결과와 같음
+
+Windows 참고: 실행 전 검토본 Excel(`S2_매핑정의서_*.xlsx`)을 닫는다(열려 있으면 PermissionError). 한글 출력은 `export PYTHONUTF8=1`.
+Python 3.15처럼 PyYAML 휠이 없는 버전은 `PYYAML_FORCE_LIBYAML=0 python -m pip install pyyaml`(순수 Python 설치).
 
 ## 매칭 단계(구현안내서 5.2 표 11)
 

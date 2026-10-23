@@ -61,6 +61,23 @@ def test_extension_attrs_are_mapped():
         assert k in by and by[k].layer == "ext", k
 
 
+def test_filter_columns_checked():
+    """filter에 원천에 없는 컬럼을 쓰면 오류(예: mes.tm_param은 use_yn이 아니라 use_flag)."""
+    import tempfile
+    import yaml
+    plan = yaml.safe_load(open(PLAN, encoding="utf-8"))
+    sp = next(s for s in plan["specs"] if s["noun"] == "EquipmentParameter")
+    sp["filter"] = "use_yn = 'Y' AND e.no_such_col IS NULL"
+    with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False, encoding="utf-8") as f:
+        yaml.safe_dump(plan, f, allow_unicode=True)
+    try:
+        msgs = [m for lv, w, m in Engine(f.name, ROOT).run().issues if lv == "오류"]
+    finally:
+        os.unlink(f.name)
+    assert any("'use_yn'" in m for m in msgs) and any("'e.no_such_col'" in m for m in msgs), msgs
+    assert len(msgs) == 2, msgs                      # 다른 명세의 필터(서브쿼리·함수 포함)는 오류 없음
+
+
 def test_matcher_stages():
     attrs = [Attr(en, ko, "string", "", False, False, None, None, "", "core", None, None)
              for en, ko in [("ItemID", "품목식별자"), ("DialNumber", "전화번호"), ("PersonnelID", "사원식별자"),
