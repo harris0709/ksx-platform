@@ -1,0 +1,189 @@
+@prefix ksx:  <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix impix: <https://ontology.impix.co.kr/ext/impix/1.0/> .
+
+@prefix impixs: <https://ontology.impix.co.kr/ext/impix/1.0/shapes/> .
+
+impixs:StandardCostShape a sh:NodeShape ; sh:targetClass impix:StandardCost ;
+    sh:property [ sh:path ksx:enterpriseID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:siteID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:plantID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:creatorID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:creationDateTime ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path ksx:modifierID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:modificationDateTime ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path ksx:note ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path impix:standardCostID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:itemID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:operationID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path impix:costPeriodStartDate ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path impix:costPeriodEndDate ; sh:maxCount 1 ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path impix:standardCostAmount ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path impix:materialCostAmount ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path impix:laborCostAmount ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path impix:overheadCostAmount ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path ksx:currencyCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path ksx:itemUOMCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path ksx:refEnterprise ; sh:class ksx:Enterprise ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refSite ; sh:class ksx:Site ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refPlant ; sh:class ksx:Plant ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refCreator ; sh:class ksx:Personnel ] ;
+    sh:property [ sh:path ksx:refModifier ; sh:class ksx:Personnel ] ;
+    sh:property [ sh:path ksx:refItem ; sh:class ksx:ItemMaster ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refOperation ; sh:class ksx:Operation ] .
+
+impixs:CustomerComplaintShape a sh:NodeShape ; sh:targetClass impix:CustomerComplaint ;
+    sh:property [ sh:path ksx:enterpriseID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:siteID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:plantID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:creatorID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:creationDateTime ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path ksx:modifierID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:modificationDateTime ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path ksx:note ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path impix:customerComplaintID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:customerID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:itemID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:lotID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path impix:customerComplaintType ; sh:maxCount 1 ; sh:minCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path impix:occurrenceDate ; sh:maxCount 1 ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path impix:complaintReceiptDate ; sh:maxCount 1 ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path ksx:defectTypeCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path ksx:defectTypeDetailCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path impix:complaintQuantity ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path ksx:itemUOMCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path impix:responseDueDate ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path impix:responseDate ; sh:maxCount 1 ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path impix:closeDate ; sh:maxCount 1 ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path impix:customerComplaintStatusCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path impix:complaintAmount ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path ksx:currencyCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path impix:causeOperationID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path impix:complaintDescription ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:refEnterprise ; sh:class ksx:Enterprise ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refSite ; sh:class ksx:Site ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refPlant ; sh:class ksx:Plant ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refCreator ; sh:class ksx:Personnel ] ;
+    sh:property [ sh:path ksx:refModifier ; sh:class ksx:Personnel ] ;
+    sh:property [ sh:path ksx:refCustomer ; sh:class ksx:CustomerPartyMaster ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refItem ; sh:class ksx:ItemMaster ] ;
+    sh:property [ sh:path ksx:refLot ; sh:class ksx:Lot ] ;
+    sh:property [ sh:path impix:refCauseOperation ; sh:class ksx:Operation ] .
+
+impixs:QualityCostShape a sh:NodeShape ; sh:targetClass impix:QualityCost ;
+    sh:property [ sh:path ksx:enterpriseID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:siteID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:plantID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:creatorID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:creationDateTime ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path ksx:modifierID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:modificationDateTime ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path ksx:note ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path impix:qualityCostID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path impix:costPeriodStartDate ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path impix:costPeriodEndDate ; sh:maxCount 1 ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path impix:qualityCostClass ; sh:maxCount 1 ; sh:minCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path impix:qualityCostItem ; sh:maxCount 1 ; sh:minCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path impix:qualityCostAmount ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path ksx:currencyCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path impix:sourceDocumentReference ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:refEnterprise ; sh:class ksx:Enterprise ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refSite ; sh:class ksx:Site ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refPlant ; sh:class ksx:Plant ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refCreator ; sh:class ksx:Personnel ] ;
+    sh:property [ sh:path ksx:refModifier ; sh:class ksx:Personnel ] .
+
+impixs:InventorySnapshotShape a sh:NodeShape ; sh:targetClass impix:InventorySnapshot ;
+    sh:property [ sh:path ksx:enterpriseID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:siteID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:plantID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:creatorID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:creationDateTime ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path ksx:modifierID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:modificationDateTime ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path ksx:note ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path impix:inventorySnapshotDate ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path ksx:warehouseID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:itemID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:inventoryQuantity ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path ksx:itemUOMCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path ksx:refEnterprise ; sh:class ksx:Enterprise ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refSite ; sh:class ksx:Site ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refPlant ; sh:class ksx:Plant ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refCreator ; sh:class ksx:Personnel ] ;
+    sh:property [ sh:path ksx:refModifier ; sh:class ksx:Personnel ] ;
+    sh:property [ sh:path ksx:refWarehouse ; sh:class ksx:WarehouseLocation ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refItem ; sh:class ksx:ItemMaster ; sh:minCount 1 ] .
+
+impixs:LotInventoryShape a sh:NodeShape ; sh:targetClass impix:LotInventory ;
+    sh:property [ sh:path ksx:enterpriseID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:siteID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:plantID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:creatorID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:creationDateTime ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path ksx:modifierID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:modificationDateTime ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path ksx:note ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:warehouseID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:itemID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:lotID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:goodsReceiptDate ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:date ] ;
+    sh:property [ sh:path ksx:inventoryQuantity ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path ksx:itemUOMCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path ksx:refEnterprise ; sh:class ksx:Enterprise ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refSite ; sh:class ksx:Site ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refPlant ; sh:class ksx:Plant ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refCreator ; sh:class ksx:Personnel ] ;
+    sh:property [ sh:path ksx:refModifier ; sh:class ksx:Personnel ] ;
+    sh:property [ sh:path ksx:refWarehouse ; sh:class ksx:WarehouseLocation ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refItem ; sh:class ksx:ItemMaster ; sh:minCount 1 ] ;
+    sh:property [ sh:path ksx:refLot ; sh:class ksx:Lot ; sh:minCount 1 ] .
+
+impixs:SalesPlanExtShape a sh:NodeShape ; sh:targetClass ksx:SalesPlan ;
+    sh:property [ sh:path impix:salesPlanType ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path ksx:customerID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path impix:salesPlanVersion ; sh:maxCount 1 ; sh:datatype xsd:integer ] ;
+    sh:property [ sh:path ksx:refCustomer ; sh:class ksx:CustomerPartyMaster ] .
+
+impixs:SalesOrderLineExtShape a sh:NodeShape ; sh:targetClass ksx:SalesOrderLine ;
+    sh:property [ sh:path ksx:unitPrice ; sh:maxCount 1 ; sh:datatype xsd:decimal ] ;
+    sh:property [ sh:path ksx:currencyCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path impix:salesAmount ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] .
+
+impixs:AvailableInventoryExtShape a sh:NodeShape ; sh:targetClass ksx:AvailableInventory ;
+    sh:property [ sh:path ksx:productionOrderID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:productionOrderSequence ; sh:maxCount 1 ; sh:datatype xsd:integer ] ;
+    sh:property [ sh:path impix:availabilityCheckDateTime ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path impix:shortageQuantity ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path ksx:refProductionOrder ; sh:class ksx:ProductionOrder ] .
+
+impixs:ProductionPerformanceExtShape a sh:NodeShape ; sh:targetClass ksx:ProductionPerformance ;
+    sh:property [ sh:path ksx:inspectionResult ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path ksx:inspectionQuantity ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] .
+
+impixs:SupplierInspectionResultExtShape a sh:NodeShape ; sh:targetClass ksx:SupplierInspectionResult ;
+    sh:property [ sh:path ksx:goodsReceiptID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path ksx:goodsReceiptSequence ; sh:maxCount 1 ; sh:datatype xsd:integer ] ;
+    sh:property [ sh:path ksx:defectQuantity ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path ksx:defectTypeCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path ksx:defectTypeDetailCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path impix:refGoodsReceipt ; sh:class ksx:GoodsReceipt ] .
+
+impixs:CorrectiveActionRequestExtShape a sh:NodeShape ; sh:targetClass ksx:CorrectiveActionRequest ;
+    sh:property [ sh:path impix:detectionLocationType ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path ksx:defectQuantity ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path ksx:defectTypeCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path ksx:defectTypeDetailCode ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path impix:correctiveActionDueDate ; sh:maxCount 1 ; sh:datatype xsd:date ] .
+
+impixs:EquipmentExtShape a sh:NodeShape ; sh:targetClass ksx:Equipment ;
+    sh:property [ sh:path impix:standardUnitsPerMinute ; sh:maxCount 1 ; sh:datatype xsd:decimal ] .
+
+impixs:EquipmentStateExtShape a sh:NodeShape ; sh:targetClass ksx:EquipmentState ;
+    sh:property [ sh:path impix:equipmentIdleReasonCode ; sh:maxCount 1 ; sh:class skos:Concept ] .

@@ -3,6 +3,6 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export PYTHONPATH=tools/ksxgen${PYTHONPATH:+:$PYTHONPATH}
-python -m ksxgen check --std standards --out ontologies
+python -m ksxgen check --std standards --ext extensions/impix --out ontologies
 python tests/coverage/test_ksxgen.py
 python tests/regression/test_e2e_minimal.py

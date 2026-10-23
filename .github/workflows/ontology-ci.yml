@@ -19,7 +19,7 @@ jobs:
       - name: 의존성
         run: pip install openpyxl pyyaml rdflib pyshacl
       - name: 생성물 최신 여부·커버리지 (ksxgen check)
-        run: PYTHONPATH=tools/ksxgen python -m ksxgen check --std standards --out ontologies
+        run: PYTHONPATH=tools/ksxgen python -m ksxgen check --std standards --ext extensions/impix --out ontologies
       - name: 웹 콘솔 데이터 최신 여부
         run: python tools/build_web.py && git diff --exit-code web/
       - name: 생성기 회귀 시험
