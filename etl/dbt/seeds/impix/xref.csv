@@ -1,0 +1,11 @@
+xref,src_system,src,ksx,note
+enterprise,ERP,IMPIX,IMPIX,
+site,ERP,1000,HQ,본사 사업장
+plant,ERP,1100,P1,제1공장(주조·가공)
+plant,ERP,1200,P2,제2공장(조립·검사)
+plant,MES,IMP1,P1,
+plant,MES,IMP2,P2,
+wh_plant,ERP,W100,P1,1공장 자재·반제품창고
+wh_plant,ERP,W200,P2,
+wh_plant,ERP,W300,P2,
+wh_plant,ERP,W900,P2,

@@ -1,0 +1,14 @@
+# dbt 접속 — 비밀번호·주소는 환경변수(.env → compose)로만 받는다
+#   KSX_DB_HOST(기본 localhost) · KSX_DB_PORT(5432) · KSX_DB_NAME(ksx) · KSX_OWNER_PASSWORD
+ksx:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('KSX_DB_HOST', 'localhost') }}"
+      port: "{{ env_var('KSX_DB_PORT', '5432') | as_number }}"
+      dbname: "{{ env_var('KSX_DB_NAME', 'ksx') }}"
+      user: ksx_owner
+      password: "{{ env_var('KSX_OWNER_PASSWORD') }}"
+      schema: xfm
+      threads: 4

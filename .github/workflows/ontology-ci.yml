@@ -28,8 +28,70 @@ jobs:
         run: PYTHONPATH=tools/automap python -m automap check --plan mapping/impix/s2_plan.yaml
       - name: automap 회귀 시험
         run: python tests/coverage/test_automap.py
+      - name: S3 생성물 최신 여부 (ksxload check)
+        run: PYTHONPATH=tools/ksxload python -m ksxload check --plan mapping/impix/s3_plan.yaml
+      - name: ksxload 회귀 시험
+        run: python tests/coverage/test_ksxload.py
       - name: E2E 최소 시험 (DDL → 시드 → OBDA → SHACL → 규칙)
         env:
           PGPASSWORD: ci
           KSX_TEST_PSQL: "-h localhost -p 5432 -U ksx_admin -d ksx_test"
         run: python tests/regression/test_e2e_minimal.py
+
+  # S3 적재 E2E: IMPIX 원천 → stg → dbt(xfm) → 표준 원장 + 대사 — 실제 dbt로 실행
+  s3-load:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16.4
+        env: { POSTGRES_USER: postgres, POSTGRES_PASSWORD: ci, POSTGRES_DB: ksx }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U postgres" --health-interval 5s --health-retries 20
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGPASSWORD: ci
+      POSTGRES_USER: postgres
+      POSTGRES_SUPERUSER_PASSWORD: ci
+      IMPIX_SRC_HOST: localhost
+      IMPIX_SRC_PORT: "5432"
+      IMPIX_SRC_READER_PASSWORD: ci-reader
+      KSX_DB_HOST: localhost
+      KSX_DB_PORT: "5432"
+      KSX_OWNER_PASSWORD: ci-owner
+      KSX_LOADER_PASSWORD: ci-loader
+      KSX_READER_PASSWORD: ci-reader2
+      KSX_BOD_PASSWORD: ci-bod
+      KSX_AUDIT_PASSWORD: ci-audit
+      PYTHONPATH: tools/ksxload
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: 의존성(dbt-postgres)
+        run: pip install "dbt-postgres==1.8.2" "PyYAML==6.0.2"
+      - name: IMPIX 원천 초기화(impix-src init 스크립트)
+        run: |
+          I=infra/docker-compose/impix-src/init
+          bash $I/00-databases.sh
+          for f in 10-erp-schema.sql 15-erp-scm-schema.sql 20-erp-seed.sql 30-mes-schema.sql 40-mes-seed.sql \
+                   45-erp-scm-seed.sql 60-qms-schema.sql 70-qms-seed.sql 90-grants.sql; do
+            psql -q -v ON_ERROR_STOP=1 -d postgres -f $I/$f
+          done
+      - name: 원장 DB 초기화(S0 postgres init 10·20)
+        run: |
+          bash infra/docker-compose/postgres/init/10-ksx-roles-schemas.sh
+          psql -q -v ON_ERROR_STOP=1 -d ksx -f infra/docker-compose/postgres/init/20-ksx-audit-rls.sql
+      - name: ksxload ddl
+        run: python -m ksxload ddl
+      - name: ksxload stage
+        run: python -m ksxload stage
+      - name: dbt build (seed → run → test)
+        run: python -m ksxload dbt build
+      - name: ksxload publish
+        run: python -m ksxload publish
+      - name: SC06-03 LOT 추적(표준 원장)
+        run: |
+          psql -d ksx -U ksx_loader -f etl/checks/impix/sc06_03_claim_lot_trace.sql | tee trace.txt
+          grep -q "DCM-02" trace.txt && grep -q "FUNC-LEK 13" trace.txt
+        env: { PGPASSWORD: ci-loader }

@@ -39,7 +39,8 @@ KS X 9101 기반 제조 온톨로지 End-to-End 구현 저장소입니다. 구�
 | 시험 | 생성기 회귀, E2E 최소 시험(DDL → 시드 → OBDA → SHACL → 규칙), GitHub Actions CI | `tests/`, `.github/workflows/` |
 | S1 원천 분석 | **s1profiler 0.2** — 스키마·프로파일·코드·암묵 관계·품질 → 인벤토리, 시나리오 7종·업무 질의 155건, **전사 KPI 34종 정의·산출(Excel)**. IMPIX 가상 원천(ERP·MES·QMS) | `tools/s1profiler/`, `tools/sim/`, `mapping/impix/s1/`, `infra/docker-compose/impix-src/` |
 | S2 표준 매핑 | **기업 확장 정의서 양식** + IMPIX 확장(확장 명사 5·확장 속성 테이블 17·확장 코드 52·판정 46), **automap 0.1** — 결정론 매칭(①~④)·검토자 판단 계획 → 매핑 명세 58건·코드 대응 165·단위·식별 대응·검토본(Excel). 필수 속성 100%·컬럼 판정 100%·결정론 71.9%. **2026-10-23 승인** | `extensions/`, `tools/automap/`, `mapping/impix/` |
-| S3, S8~S11 | 양식·설정 예시만 있음(다음 구현 대상) | `mapping/`, `etl/dbt/`, `services/` |
+| S3 데이터 전환·적재 | **ksxload 0.1** — 원천 → stg(56 테이블) → dbt 변환(xfm 뷰 74, 테스트 378) → 표준 원장(70 테이블, 28만 행) + 대사(행 수·합계·UK·필수 값·FK 고아·코드)·정제 규칙(S1 품질 이슈)·감사 기록. 초기 적재(증분 CDC는 다음) | `tools/ksxload/`, `etl/dbt/`, `mapping/impix/s3_plan.yaml` |
+| S8~S11 | 양식·설정 예시만 있음(다음 구현 대상) | `services/` |
 
 ## 시작하기
 

@@ -62,12 +62,14 @@ specs:
     exclude: { use_yn: "표준 공장에 사용여부 없음 — 전 건 Y(적재 필터)" }
   - noun: Department
     source: erp.tb_cm_dept
-    base: { PlantID: "xref(plant, plant_cd)" }
+    # S3 테스트에서 발견: 본사 조직(공장 미지정)은 plant_cd가 비어 있음 → 제2공장(P2)에 귀속(승인 확인 사항)
+    base: { PlantID: "coalesce(xref(plant, plant_cd), const(P2))" }
     filter: "use_yn = 'Y'"
     exclude: { use_yn: "표준 부서에 사용여부 없음 — 전 건 Y(적재 필터)" }
   - noun: Personnel
     source: erp.tb_hr_emp
-    base: { PlantID: "xref(plant, plant_cd)" }
+    # S3 테스트에서 발견: 본사 조직(공장 미지정)은 plant_cd가 비어 있음 → 제2공장(P2)에 귀속(승인 확인 사항)
+    base: { PlantID: "coalesce(xref(plant, plant_cd), const(P2))" }
     map:
       PersonnelID: emp_no
       PersonInChargeEmail: email
@@ -331,7 +333,7 @@ specs:
   - noun: ProductionPlanning
     source: erp.tb_pp_plan
     join: [ { table: erp.tb_pp_line, as: l, on: "line_cd = l.line_cd" } ]
-    filter: "plan_ver = (SELECT max(plan_ver) FROM erp.tb_pp_plan)"
+    filter: "plan_ver = (SELECT max(v.plan_ver) FROM erp.tb_pp_plan v)"
     base: { PlantID: "xref(plant, l.plant_cd)" }
     map:
       ProductionPlanID: { from: "plan_dt,line_cd,item_cd", transform: "concat(plan_dt,'_',line_cd,'_',upper_trim(item_cd))" }
@@ -373,12 +375,12 @@ specs:
       ItemID: { from: comp_cd, transform: upper_trim(comp_cd), note: "comp_cd = 구성 자재(회사코드 아님)" }
       ProductionOrderID: mo_no
       ProductionOrderSequence: { transform: const(1) }
-      AvailabilityCheckDateTime: { from: chk_dt, transform: "to_ts(to_date8(chk_dt) + '06:00')", note: "점검 배치 06:00" }
+      AvailabilityCheckDateTime: { from: chk_dt, transform: "to_ts(to_date8(chk_dt) + time '06:00')", note: "점검 배치 06:00" }
       MaterialRequirementQuantity: req_qty
   - noun: Inventory
     source: erp.tb_mm_stock_day
     structure: "이력→현재(마지막 기준일)"
-    filter: "stk_dt = (SELECT max(stk_dt) FROM erp.tb_mm_stock_day)"
+    filter: "stk_dt = (SELECT max(d.stk_dt) FROM erp.tb_mm_stock_day d)"
     base: { PlantID: "xref(wh_plant, wh_cd)" }
     map: { WarehouseID: wh_cd, InventoryQuantity: stk_qty }
     exclude: { stk_dt: "기준일 — 필터(마지막 기준일)에 사용, 이력은 InventorySnapshot" }
@@ -439,6 +441,7 @@ specs:
     file: Lot_shipped
     structure: "N→1(MES 도입 전 출하 LOT — LOT별 1행)"
     filter: "lot_no < 'E260921'"
+    distinct: true                         # 출하 여러 행 → LOT별 1행
     base: { PlantID: "xref(wh_plant, wh_cd)" }
     map:
       LotID: { from: lot_no, note: "MES 도입(2026-09-21) 전 생산 LOT — 생산 이력 없이 LOT만 등록(S1 품질 이슈)" }

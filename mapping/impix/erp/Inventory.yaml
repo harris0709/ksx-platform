@@ -3,7 +3,7 @@
 noun: Inventory
 layer: core
 structure: 이력→현재(마지막 기준일)
-source: {system: ERP, table: erp.tb_mm_stock_day, filter: stk_dt = (SELECT max(stk_dt) FROM erp.tb_mm_stock_day)}
+source: {system: ERP, table: erp.tb_mm_stock_day, filter: stk_dt = (SELECT max(d.stk_dt) FROM erp.tb_mm_stock_day d)}
 base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, wh_cd)'}
 identity:
 - WarehouseID

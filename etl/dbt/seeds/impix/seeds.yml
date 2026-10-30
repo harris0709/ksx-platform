@@ -1,0 +1,28 @@
+# ksxload gen 생성물 — 대응표 seed(모두 text)
+version: 2
+seeds:
+- name: codes
+  config:
+    column_types:
+      src_system: text
+      src_group: text
+      src_code: text
+      ksx_group: text
+      ksx_code: text
+      rule: text
+      note: text
+- name: units
+  config:
+    column_types:
+      src_unit: text
+      ksx_uom: text
+      factor: text
+      note: text
+- name: xref
+  config:
+    column_types:
+      xref: text
+      src_system: text
+      src: text
+      ksx: text
+      note: text
