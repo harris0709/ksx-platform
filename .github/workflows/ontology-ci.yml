@@ -94,8 +94,7 @@ jobs:
       - name: dbt 오류 요약(실패 시 주석으로)
         if: failure()
         run: |
-          grep -nE "Error|ERROR|error|FAIL|Failure|Compilation|Database Error" dbt.out | head -40 | while IFS= read -r l; do echo "::error::$l"; done
-          grep -A6 -E "Database Error|Compilation Error|Runtime Error" dbt.out | head -60 | while IFS= read -r l; do echo "::error::$l"; done
+          sed 's/\x1b\[[0-9;]*m//g' dbt.out | grep -v "^\s*$" | tail -45 | while IFS= read -r l; do echo "::error::$l"; done
       - name: ksxload publish
         run: python -m ksxload publish
       - name: SC06-03 LOT 추적(표준 원장)
