@@ -317,6 +317,37 @@ services:
       impix-src:
         condition: service_healthy
 
+  # ---------------------------------------------------------------
+  # [S3] 적재 도구(ksxload + dbt) — profile: tools
+  #   docker compose --profile tools run --rm s3-tools ddl      # 표준·확장 테이블
+  #   docker compose --profile tools run --rm s3-tools stage    # 원천 → stg
+  #   docker compose --profile tools run --rm s3-tools dbt build
+  #   docker compose --profile tools run --rm s3-tools publish  # xfm → 표준 원장 + 대사
+  # ---------------------------------------------------------------
+  s3-tools:
+    profiles: ["tools"]
+    build: ../../tools/ksxload
+    image: ksx/s3tools:0.1
+    working_dir: /repo
+    environment:
+      S3_PLAN: mapping/impix/s3_plan.yaml
+      IMPIX_SRC_HOST: impix-src
+      IMPIX_SRC_PORT: "5432"
+      IMPIX_SRC_READER_PASSWORD: ${IMPIX_SRC_READER_PASSWORD}
+      KSX_DB_HOST: postgres
+      KSX_DB_PORT: "5432"
+      KSX_DB_NAME: ksx
+      KSX_OWNER_PASSWORD: ${KSX_OWNER_PASSWORD}
+      KSX_LOADER_PASSWORD: ${KSX_LOADER_PASSWORD}
+      POSTGRES_SUPERUSER_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+    volumes:
+      - ../..:/repo
+    depends_on:
+      postgres:
+        condition: service_healthy
+      impix-src:
+        condition: service_healthy
+
 volumes:
   pg-data:
   kafka-data:

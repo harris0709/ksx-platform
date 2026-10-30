@@ -3,7 +3,7 @@
 noun: ProductionPlanning
 layer: core
 structure: '1:1'
-source: {system: ERP, table: erp.tb_pp_plan, filter: plan_ver = (SELECT max(plan_ver) FROM erp.tb_pp_plan)}
+source: {system: ERP, table: erp.tb_pp_plan, filter: plan_ver = (SELECT max(v.plan_ver) FROM erp.tb_pp_plan v)}
 join:
 - {table: erp.tb_pp_line, as: l, 'on': line_cd = l.line_cd}
 base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(plant, l.plant_cd)'}

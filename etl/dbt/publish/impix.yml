@@ -1,0 +1,1770 @@
+# ksxload gen 생성물 — publish 적재 목록(대상 테이블·컬럼·대사 기준)
+enterprise: IMPIX
+order:
+- ksx.Enterprise
+- ksx.Site
+- ksx.Plant
+- ext.QualityCost
+- ksx.CustomerPartyMaster
+- ksx.Department
+- ksx.Operation
+- ksx.VendorPartyMaster
+- ksx.WarehouseLocationHeader
+- ext.CustomerPartyMasterExt
+- ksx.ItemMaster
+- ksx.Personnel
+- ksx.SalesOrderHeader
+- ext.InventorySnapshot
+- ext.StandardCost
+- ksx.AvailableInventory
+- ksx.BasePrice
+- ksx.DeliveryHeader
+- ksx.Equipment
+- ksx.GoodsReceipt
+- ksx.Inventory
+- ksx.InventoryCount
+- ksx.Line
+- ksx.ProductionPlanning
+- ksx.PurchaseOrderHeader
+- ksx.RoutingHeader
+- ksx.SalesOrderLine
+- ksx.SalesPlan
+- ext.SalesOrderLineExt
+- ext.SalesPlanExt
+- ksx.Alarm
+- ksx.BOMHeader
+- ksx.EquipmentParameter
+- ksx.OperationEquipment
+- ksx.PurchaseOrderLine
+- ksx.RoutingLine
+- ext.AlarmExt
+- ext.EquipmentParameterExt
+- ksx.BOMLine
+- ksx.ProductionOrder
+- ksx.TraceParameter
+- ext.AvailableInventoryExt
+- ext.ProductionOrderExt
+- ksx.Lot
+- ext.CustomerComplaint
+- ext.GoodsReceiptExt
+- ext.LotExt
+- ext.LotInventory
+- ext.TraceParameterExt
+- ksx.CorrectiveActionRequest
+- ksx.EquipmentState
+- ksx.GoodsIssue
+- ksx.OperationEnd
+- ksx.OperationStart
+- ksx.ProductIncoming
+- ksx.ProductRelease
+- ksx.ProductionPerformance
+- ksx.Return
+- ksx.SupplierInspectionResult
+- ext.CorrectiveActionRequestExt
+- ext.EquipmentStateExt
+- ext.GoodsIssueExt
+- ext.ProductIncomingExt
+- ext.ProductionPerformanceExt
+- ext.SupplierInspectionResultExt
+- ksx.CorrectiveActionResult
+- ksx.DeliveryLine
+- ksx.ProductionPerformanceEquipment
+- ksx.ProductionPerformanceItem
+- ksx.ProductionPerformanceQuality
+models:
+- model: AvailableInventory
+  noun: AvailableInventory
+  spec: mapping/impix/erp/AvailableInventory.yaml
+  kind: rows
+  targets:
+  - table: ksx.AvailableInventory
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - AvailableInventoryID
+    - ItemID
+    - AvailableInventoryQuantity
+  - table: ext.AvailableInventoryExt
+    columns:
+    - EnterpriseID
+    - AvailableInventoryID
+    - ProductionOrderID
+    - ProductionOrderSequence
+    - AvailabilityCheckDateTime
+    - MaterialRequirementQuantity
+    - ShortageQuantity
+  uk:
+  - EnterpriseID
+  - AvailableInventoryID
+  expect_sql: select count(*) from stg."erp__tb_pp_mat_chk" s
+  sums:
+  - column: AvailableInventoryQuantity
+    source: select sum(s.avail_qty::numeric) from stg."erp__tb_pp_mat_chk" s
+  - column: MaterialRequirementQuantity
+    source: select sum(s.req_qty::numeric) from stg."erp__tb_pp_mat_chk" s
+  - column: ShortageQuantity
+    source: select sum(s.short_qty::numeric) from stg."erp__tb_pp_mat_chk" s
+  audit: null
+  rules: []
+- model: BOMHeader
+  noun: BOMHeader
+  spec: mapping/impix/erp/BOMHeader.yaml
+  kind: rows
+  targets:
+  - table: ksx.BOMHeader
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - BOMID
+    - ItemID
+    - BOMType
+    - BOMQuantity
+    - ItemUOMCode
+    - BOMRevisionNumber
+    - RoutingID
+  uk:
+  - EnterpriseID
+  - BOMID
+  - BOMRevisionNumber
+  expect_sql: select count(*) from stg."erp__tb_pp_bom_h" s
+  sums:
+  - column: BOMQuantity
+    source: select sum(s.base_qty::numeric) from stg."erp__tb_pp_bom_h" s
+  audit: null
+  rules: []
+- model: BOMLine
+  noun: BOMLine
+  spec: mapping/impix/erp/BOMLine.yaml
+  kind: rows
+  targets:
+  - table: ksx.BOMLine
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - BOMID
+    - BOMRevisionNumber
+    - BOMLineSequence
+    - ActualRequirementQuantity
+    - ChildItemUOMCode
+    - ValidStartDateTime
+    - ValidEndDateTime
+    - ChildItemID
+    - OperationSequence
+    - BackFlushedIndicator
+  uk:
+  - EnterpriseID
+  - BOMID
+  - BOMRevisionNumber
+  - BOMLineSequence
+  expect_sql: select count(*) from stg."erp__tb_pp_bom_d" s
+  sums: []
+  audit: BOMLine__audit
+  rules:
+  - R02
+- model: BasePrice
+  noun: BasePrice
+  spec: mapping/impix/erp/BasePrice.yaml
+  kind: rows
+  targets:
+  - table: ksx.BasePrice
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - CurrencyCode
+    - ItemID
+    - UnitPrice
+  uk:
+  - EnterpriseID
+  - ItemID
+  - CurrencyCode
+  expect_sql: select count(*) from stg."erp__tb_mm_price" s where to_char(current_date, 'YYYYMMDD') BETWEEN s.valid_fr AND s.valid_to
+  sums:
+  - column: UnitPrice
+    source: select sum(s.unit_prc::numeric) from stg."erp__tb_mm_price" s where to_char(current_date, 'YYYYMMDD') BETWEEN s.valid_fr AND s.valid_to
+  audit: null
+  rules: []
+- model: CustomerPartyMaster
+  noun: CustomerPartyMaster
+  spec: mapping/impix/erp/CustomerPartyMaster.yaml
+  kind: rows
+  targets:
+  - table: ksx.CustomerPartyMaster
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - BusinessRegistrationNumber
+    - CountryID
+    - CustomerID
+    - CustomerName
+    - PersonInChargeName
+    - PersonInChargeEmail
+    - UseIndicator
+  - table: ext.CustomerPartyMasterExt
+    columns:
+    - EnterpriseID
+    - CustomerID
+    - CustomerGroupCode
+  uk:
+  - EnterpriseID
+  - CustomerID
+  expect_sql: select count(*) from stg."erp__tb_sd_cust" s
+  sums: []
+  audit: null
+  rules: []
+- model: DeliveryHeader
+  noun: DeliveryHeader
+  spec: mapping/impix/erp/DeliveryHeader.yaml
+  kind: rows
+  targets:
+  - table: ksx.DeliveryHeader
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - DeliveryID
+    - CustomerID
+    - DeliveryDateTime
+  uk:
+  - EnterpriseID
+  - DeliveryID
+  expect_sql: select count(*) from stg."erp__tb_sd_dlv" s
+  sums: []
+  audit: null
+  rules: []
+- model: DeliveryLine
+  noun: DeliveryLine
+  spec: mapping/impix/erp/DeliveryLine.yaml
+  kind: rows
+  targets:
+  - table: ksx.DeliveryLine
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - DeliveryID
+    - DeliveryLineSequence
+    - ProductReleaseID
+    - ProductReleaseSequence
+    - SalesDocumentNumber
+    - SalesDocumentSequence
+    - LotID
+    - ItemID
+    - ProductDeliveryQuantity
+  uk:
+  - EnterpriseID
+  - DeliveryID
+  - DeliveryLineSequence
+  expect_sql: select count(*) from stg."erp__tb_sd_dlv" s
+  sums:
+  - column: ProductDeliveryQuantity
+    source: select sum(s.dlv_qty::numeric) from stg."erp__tb_sd_dlv" s
+  audit: null
+  rules: []
+- model: Department
+  noun: Department
+  spec: mapping/impix/erp/Department.yaml
+  kind: rows
+  targets:
+  - table: ksx.Department
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - DepartmentID
+    - DepartmentName
+    - ParentDepartmentID
+  uk:
+  - EnterpriseID
+  - DepartmentID
+  expect_sql: select count(*) from stg."erp__tb_cm_dept" s where s.use_yn = 'Y'
+  sums: []
+  audit: null
+  rules: []
+- model: Enterprise
+  noun: Enterprise
+  spec: mapping/impix/erp/Enterprise.yaml
+  kind: rows
+  targets:
+  - table: ksx.Enterprise
+    columns:
+    - EnterpriseID
+    - DialNumber
+    - BaseCurrencyCode
+    - EnterpriseName
+    - BusinessRegistrationNumber
+    - CorporateRegistrationNumber
+    - RepresentativeName
+    - PostalCode
+    - BaseAddress
+    - DetailAddress
+    - UseIndicator
+    - CreationDateTime
+    - CreatorID
+  uk:
+  - EnterpriseID
+  expect_sql: select count(*) from stg."erp__tb_cm_comp" s
+  sums: []
+  audit: Enterprise__audit
+  rules:
+  - R10
+- model: GoodsIssue
+  noun: GoodsIssue
+  spec: mapping/impix/erp/GoodsIssue.yaml
+  kind: rows
+  targets:
+  - table: ksx.GoodsIssue
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - GoodsIssueID
+    - InventoryTransactionTypeCode
+    - ItemUnitQuantity
+    - WarehouseID
+    - Note
+    - ItemID
+  - table: ext.GoodsIssueExt
+    columns:
+    - EnterpriseID
+    - GoodsIssueID
+    - InventoryTransactionDate
+    - ProductionOrderID
+    - ProductionOrderSequence
+  uk:
+  - EnterpriseID
+  - GoodsIssueID
+  expect_sql: select count(*) from stg."erp__tb_mm_gi" s
+  sums:
+  - column: ItemUnitQuantity
+    source: select sum(s.gi_qty::numeric) from stg."erp__tb_mm_gi" s
+  audit: null
+  rules: []
+- model: GoodsReceipt
+  noun: GoodsReceipt
+  spec: mapping/impix/erp/GoodsReceipt.yaml
+  kind: rows
+  targets:
+  - table: ksx.GoodsReceipt
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - GoodsReceiptID
+    - GoodsReceiptSequence
+    - GoodsReceiptDate
+    - GoodsReceiptQuantity
+    - WarehouseID
+    - IncomingInspectionIndicator
+    - IncomingInspectionAcceptedQuantity
+    - IncomingInspectionRejectedQuantity
+    - VendorID
+    - ItemID
+  - table: ext.GoodsReceiptExt
+    columns:
+    - EnterpriseID
+    - GoodsReceiptID
+    - GoodsReceiptSequence
+    - PurchaseDocumentNumber
+    - PurchaseDocumentSequence
+    - LotID
+  uk:
+  - EnterpriseID
+  - GoodsReceiptID
+  - GoodsReceiptSequence
+  expect_sql: select count(*) from stg."erp__tb_mm_gr" s
+  sums:
+  - column: GoodsReceiptQuantity
+    source: select sum(s.gr_qty::numeric) from stg."erp__tb_mm_gr" s
+  audit: null
+  rules: []
+- model: Inventory
+  noun: Inventory
+  spec: mapping/impix/erp/Inventory.yaml
+  kind: rows
+  targets:
+  - table: ksx.Inventory
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - WarehouseID
+    - InventoryQuantity
+    - ItemID
+  uk:
+  - EnterpriseID
+  - WarehouseID
+  - ItemID
+  expect_sql: select count(*) from stg."erp__tb_mm_stock_day" s where s.stk_dt = (SELECT max(d.stk_dt) FROM stg."erp__tb_mm_stock_day" d)
+  sums:
+  - column: InventoryQuantity
+    source: select sum(s.stk_qty::numeric) from stg."erp__tb_mm_stock_day" s where s.stk_dt = (SELECT max(d.stk_dt) FROM stg."erp__tb_mm_stock_day" d)
+  audit: null
+  rules: []
+- model: InventoryCount
+  noun: InventoryCount
+  spec: mapping/impix/erp/InventoryCount.yaml
+  kind: rows
+  targets:
+  - table: ksx.InventoryCount
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - InventoryCountDocumentNumber
+    - WarehouseID
+    - InventoryQuantity
+    - InventoryCountDateTime
+    - ItemID
+    - InventoryCountQuantity
+  uk:
+  - EnterpriseID
+  - InventoryCountDocumentNumber
+  - WarehouseID
+  - ItemID
+  expect_sql: select count(*) from stg."erp__tb_mm_cnt" s
+  sums:
+  - column: InventoryQuantity
+    source: select sum(s.book_qty::numeric) from stg."erp__tb_mm_cnt" s
+  - column: InventoryCountQuantity
+    source: select sum(s.cnt_qty::numeric) from stg."erp__tb_mm_cnt" s
+  audit: null
+  rules: []
+- model: InventorySnapshot
+  noun: InventorySnapshot
+  spec: mapping/impix/erp/InventorySnapshot.yaml
+  kind: rows
+  targets:
+  - table: ext.InventorySnapshot
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - InventorySnapshotDate
+    - WarehouseID
+    - InventoryQuantity
+    - ItemID
+  uk:
+  - EnterpriseID
+  - InventorySnapshotDate
+  - WarehouseID
+  - ItemID
+  expect_sql: select count(*) from stg."erp__tb_mm_stock_day" s
+  sums:
+  - column: InventoryQuantity
+    source: select sum(s.stk_qty::numeric) from stg."erp__tb_mm_stock_day" s
+  audit: null
+  rules: []
+- model: ItemMaster
+  noun: ItemMaster
+  spec: mapping/impix/erp/ItemMaster.yaml
+  kind: rows
+  targets:
+  - table: ksx.ItemMaster
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - ItemType
+    - ItemLargeClass
+    - ItemUOMCode
+    - WeightUOMCode
+    - SafetyStock
+    - PurchaseLeadTime
+    - ProductionLeadTime
+    - DrawingNumber
+    - IncomingInspectionIndicator
+    - FinalInspectionIndicator
+    - OutgoingInspectionIndicator
+    - ItemID
+    - ItemName
+    - ItemSpecification
+    - ModelName
+    - Weight
+    - LotControlIndicator
+    - LotSize
+    - UseIndicator
+    - CreationDateTime
+    - ModificationDateTime
+  uk:
+  - EnterpriseID
+  - ItemID
+  expect_sql: select count(*) from stg."erp__tb_mm_item" s where s.item_cd NOT LIKE 'TEST%'
+  sums: []
+  audit: ItemMaster__audit
+  rules:
+  - R01
+- model: Line
+  noun: Line
+  spec: mapping/impix/erp/Line.yaml
+  kind: rows
+  targets:
+  - table: ksx.Line
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - LineType
+    - StandardCapacity
+    - CapacityUOMCode
+    - LineID
+    - LineName
+    - ShiftCount
+    - UseIndicator
+  uk:
+  - EnterpriseID
+  - LineID
+  expect_sql: select count(*) from stg."erp__tb_pp_line" s
+  sums:
+  - column: StandardCapacity
+    source: select sum(s.capa_qty::numeric) from stg."erp__tb_pp_line" s
+  audit: null
+  rules: []
+- model: LotInventory
+  noun: LotInventory
+  spec: mapping/impix/erp/LotInventory.yaml
+  kind: rows
+  targets:
+  - table: ext.LotInventory
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - WarehouseID
+    - LotID
+    - GoodsReceiptDate
+    - InventoryQuantity
+    - ItemID
+  uk:
+  - EnterpriseID
+  - WarehouseID
+  - ItemID
+  - LotID
+  expect_sql: select count(*) from stg."erp__tb_mm_stock_lot" s
+  sums:
+  - column: InventoryQuantity
+    source: select sum(s.stk_qty::numeric) from stg."erp__tb_mm_stock_lot" s
+  audit: null
+  rules: []
+- model: Lot_legacy
+  noun: Lot
+  spec: mapping/impix/erp/Lot_legacy.yaml
+  kind: rows
+  targets:
+  - table: ksx.Lot
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - LotID
+    - LotCreatedQuantity
+    - CreationDateTime
+    - ItemID
+  - table: ext.LotExt
+    columns:
+    - EnterpriseID
+    - LotID
+    - LotOriginType
+  uk:
+  - EnterpriseID
+  - LotID
+  expect_sql: select count(*) from stg."erp__tb_mm_stock_lot" s where s.rcv_dt < '20260801'
+  sums:
+  - column: LotCreatedQuantity
+    source: select sum(s.stk_qty::numeric) from stg."erp__tb_mm_stock_lot" s where s.rcv_dt < '20260801'
+  audit: null
+  rules: []
+- model: Lot_material
+  noun: Lot
+  spec: mapping/impix/erp/Lot_material.yaml
+  kind: rows
+  targets:
+  - table: ksx.Lot
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - LotID
+    - LotCreatedQuantity
+    - CreationDateTime
+    - ItemID
+  - table: ext.LotExt
+    columns:
+    - EnterpriseID
+    - LotID
+    - LotOriginType
+    - VendorLotNumber
+    - VendorID
+  uk:
+  - EnterpriseID
+  - LotID
+  expect_sql: select count(*) from stg."erp__tb_mm_gr" s where s.vend_lot IS NOT NULL
+  sums:
+  - column: LotCreatedQuantity
+    source: select sum(s.gr_qty::numeric) from stg."erp__tb_mm_gr" s where s.vend_lot IS NOT NULL
+  audit: null
+  rules: []
+- model: Lot_shipped
+  noun: Lot
+  spec: mapping/impix/erp/Lot_shipped.yaml
+  kind: distinct
+  targets:
+  - table: ksx.Lot
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - LotID
+    - ItemID
+  - table: ext.LotExt
+    columns:
+    - EnterpriseID
+    - LotID
+    - LotOriginType
+  uk:
+  - EnterpriseID
+  - LotID
+  expect_sql: select count(distinct (s.lot_no)) from stg."erp__tb_sd_dlv" s where s.lot_no < 'E260921'
+  sums: []
+  audit: null
+  rules: []
+- model: Personnel
+  noun: Personnel
+  spec: mapping/impix/erp/Personnel.yaml
+  kind: rows
+  targets:
+  - table: ksx.Personnel
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - PersonnelID
+    - PersonInChargeEmail
+    - PersonInChargeDialNumber
+    - EmploymentStatusType
+    - PersonnelName
+    - DepartmentID
+  uk:
+  - EnterpriseID
+  - PersonnelID
+  expect_sql: select count(*) from stg."erp__tb_hr_emp" s
+  sums: []
+  audit: null
+  rules: []
+- model: Plant
+  noun: Plant
+  spec: mapping/impix/erp/Plant.yaml
+  kind: rows
+  targets:
+  - table: ksx.Plant
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - DialNumber
+    - PlantName
+    - BaseAddress
+  uk:
+  - EnterpriseID
+  - PlantID
+  expect_sql: select count(*) from stg."erp__tb_cm_plant" s where s.use_yn = 'Y'
+  sums: []
+  audit: null
+  rules: []
+- model: Plant_hq
+  noun: Plant
+  spec: mapping/impix/erp/Plant_hq.yaml
+  kind: rows
+  targets:
+  - table: ksx.Plant
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - PlantName
+    - DialNumber
+    - BaseAddress
+    - DetailAddress
+    - PostalCode
+  uk:
+  - EnterpriseID
+  - PlantID
+  expect_sql: select count(*) from stg."erp__tb_cm_comp" s
+  sums: []
+  audit: null
+  rules: []
+- model: ProductIncoming
+  noun: ProductIncoming
+  spec: mapping/impix/erp/ProductIncoming.yaml
+  kind: rows
+  targets:
+  - table: ksx.ProductIncoming
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - ProductIncomingID
+    - ProductIncomingSequence
+    - InventoryTransactionDate
+    - ItemUnitQuantity
+    - WarehouseID
+    - InventoryTransactionTypeCode
+    - ItemID
+  - table: ext.ProductIncomingExt
+    columns:
+    - EnterpriseID
+    - ProductIncomingID
+    - ProductIncomingSequence
+    - ProductionOrderID
+    - ProductionOrderSequence
+  uk:
+  - EnterpriseID
+  - ProductIncomingID
+  - ProductIncomingSequence
+  expect_sql: select count(*) from stg."erp__tb_pp_rcpt" s
+  sums:
+  - column: ItemUnitQuantity
+    source: select sum(s.rcpt_qty::numeric) from stg."erp__tb_pp_rcpt" s
+  audit: ProductIncoming__audit
+  rules:
+  - R03
+- model: ProductRelease
+  noun: ProductRelease
+  spec: mapping/impix/erp/ProductRelease.yaml
+  kind: rows
+  targets:
+  - table: ksx.ProductRelease
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - ProductReleaseID
+    - ProductReleaseSequence
+    - SalesDocumentNumber
+    - SalesDocumentSequence
+    - SalesQuantity
+    - InventoryTransactionDate
+    - LotID
+    - ReturnIndicator
+    - WarehouseID
+    - CustomerID
+    - ItemID
+  uk:
+  - EnterpriseID
+  - ProductReleaseID
+  - ProductReleaseSequence
+  expect_sql: select count(*) from stg."erp__tb_sd_dlv" s
+  sums:
+  - column: SalesQuantity
+    source: select sum(s.dlv_qty::numeric) from stg."erp__tb_sd_dlv" s
+  audit: null
+  rules: []
+- model: ProductionOrder
+  noun: ProductionOrder
+  spec: mapping/impix/erp/ProductionOrder.yaml
+  kind: rows
+  targets:
+  - table: ksx.ProductionOrder
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - ProductionOrderID
+    - ProductionOrderSequence
+    - ProductionOrderQuantity
+    - ItemUOMCode
+    - ScheduleStartDateTime
+    - ScheduleEndDateTime
+    - SalesDocumentNumber
+    - SalesDocumentSequence
+    - ItemID
+    - LineID
+    - RoutingID
+    - BOMRevisionNumber
+    - ProductionDueDateTime
+    - CreationDateTime
+    - CreatorID
+  - table: ext.ProductionOrderExt
+    columns:
+    - EnterpriseID
+    - ProductionOrderID
+    - ProductionOrderSequence
+    - ProductionOrderStatusCode
+  uk:
+  - EnterpriseID
+  - ProductionOrderID
+  - ProductionOrderSequence
+  expect_sql: select count(*) from stg."erp__tb_pp_mo" s
+  sums: []
+  audit: null
+  rules: []
+- model: ProductionPlanning
+  noun: ProductionPlanning
+  spec: mapping/impix/erp/ProductionPlanning.yaml
+  kind: rows
+  targets:
+  - table: ksx.ProductionPlanning
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - ProductionPlanID
+    - ScheduleStartDateTime
+    - ScheduleEndDateTime
+    - ItemID
+    - ProductionPlanQuantity
+  uk:
+  - EnterpriseID
+  - ProductionPlanID
+  expect_sql: select count(*) from stg."erp__tb_pp_plan" s where s.plan_ver = (SELECT max(v.plan_ver) FROM stg."erp__tb_pp_plan" v)
+  sums: []
+  audit: null
+  rules: []
+- model: PurchaseOrderHeader
+  noun: PurchaseOrderHeader
+  spec: mapping/impix/erp/PurchaseOrderHeader.yaml
+  kind: rows
+  targets:
+  - table: ksx.PurchaseOrderHeader
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - PurchaseDocumentNumber
+    - PurchaseOrderDate
+    - PersonnelID
+    - PurchaseOrderClosingIndicator
+    - VendorID
+  uk:
+  - EnterpriseID
+  - PurchaseDocumentNumber
+  expect_sql: select count(*) from stg."erp__tb_mm_po_h" s
+  sums: []
+  audit: null
+  rules: []
+- model: PurchaseOrderLine
+  noun: PurchaseOrderLine
+  spec: mapping/impix/erp/PurchaseOrderLine.yaml
+  kind: rows
+  targets:
+  - table: ksx.PurchaseOrderLine
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - PurchaseDocumentNumber
+    - PurchaseDocumentSequence
+    - PurchaseOrderQuantity
+    - PurchaseOrderUnitPrice
+    - ExpectedDeliveryDate
+    - PurchaseGoodsReceiptQuantity
+    - PurchaseOrderLineStatusCode
+    - ItemID
+  uk:
+  - EnterpriseID
+  - PurchaseDocumentNumber
+  - PurchaseDocumentSequence
+  expect_sql: select count(*) from stg."erp__tb_mm_po_d" s
+  sums:
+  - column: PurchaseOrderQuantity
+    source: select sum(s.po_qty::numeric) from stg."erp__tb_mm_po_d" s
+  - column: PurchaseOrderUnitPrice
+    source: select sum(s.unit_prc::numeric) from stg."erp__tb_mm_po_d" s
+  - column: PurchaseGoodsReceiptQuantity
+    source: select sum(s.gr_qty::numeric) from stg."erp__tb_mm_po_d" s
+  audit: null
+  rules: []
+- model: RoutingHeader
+  noun: RoutingHeader
+  spec: mapping/impix/erp/RoutingHeader.yaml
+  kind: rows
+  targets:
+  - table: ksx.RoutingHeader
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - RoutingID
+    - RoutingName
+    - ItemID
+    - UseIndicator
+  uk:
+  - EnterpriseID
+  - RoutingID
+  expect_sql: select count(*) from stg."erp__tb_pp_rout_h" s
+  sums: []
+  audit: null
+  rules: []
+- model: RoutingLine
+  noun: RoutingLine
+  spec: mapping/impix/erp/RoutingLine.yaml
+  kind: rows
+  targets:
+  - table: ksx.RoutingLine
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - RoutingID
+    - OperationID
+    - SetupTime
+    - RunTime
+    - MoveTime
+    - OperationSequence
+    - LastOperationIndicator
+  uk:
+  - EnterpriseID
+  - RoutingID
+  - OperationSequence
+  expect_sql: select count(*) from stg."erp__tb_pp_rout_d" s
+  sums: []
+  audit: null
+  rules: []
+- model: SalesOrderHeader
+  noun: SalesOrderHeader
+  spec: mapping/impix/erp/SalesOrderHeader.yaml
+  kind: rows
+  targets:
+  - table: ksx.SalesOrderHeader
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - SalesDocumentNumber
+    - SalesOrderType
+    - SalesStatus
+    - CustomerID
+    - SalesDate
+    - CreatorID
+  uk:
+  - EnterpriseID
+  - SalesDocumentNumber
+  expect_sql: select count(*) from stg."erp__tb_sd_so_h" s
+  sums: []
+  audit: null
+  rules: []
+- model: SalesOrderLine
+  noun: SalesOrderLine
+  spec: mapping/impix/erp/SalesOrderLine.yaml
+  kind: rows
+  targets:
+  - table: ksx.SalesOrderLine
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - SalesDocumentNumber
+    - SalesDocumentSequence
+    - ItemQuantity
+    - ItemUOMCode
+    - ItemID
+    - RequestedDeliveryDate
+  - table: ext.SalesOrderLineExt
+    columns:
+    - EnterpriseID
+    - SalesDocumentNumber
+    - SalesDocumentSequence
+    - CurrencyCode
+    - SalesAmount
+    - UnitPrice
+  uk:
+  - EnterpriseID
+  - SalesDocumentNumber
+  - SalesDocumentSequence
+  expect_sql: select count(*) from stg."erp__tb_sd_so_d" s
+  sums:
+  - column: ItemQuantity
+    source: select sum(s.so_qty::numeric) from stg."erp__tb_sd_so_d" s
+  - column: UnitPrice
+    source: select sum(s.unit_prc::numeric) from stg."erp__tb_sd_so_d" s
+  audit: null
+  rules: []
+- model: SalesPlan
+  noun: SalesPlan
+  spec: mapping/impix/erp/SalesPlan.yaml
+  kind: rows
+  targets:
+  - table: ksx.SalesPlan
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - SalesPlanID
+    - SalesProjection
+    - ProjectionStartDate
+    - ProjectionEndDate
+    - ItemID
+    - CreationDateTime
+  - table: ext.SalesPlanExt
+    columns:
+    - EnterpriseID
+    - SalesPlanID
+    - SalesPlanType
+    - SalesPlanVersion
+    - CustomerID
+  uk:
+  - EnterpriseID
+  - SalesPlanID
+  expect_sql: select count(*) from stg."erp__tb_sd_plan" s
+  sums:
+  - column: SalesProjection
+    source: select sum(s.plan_qty::numeric) from stg."erp__tb_sd_plan" s
+  audit: null
+  rules: []
+- model: Site
+  noun: Site
+  spec: mapping/impix/erp/Site.yaml
+  kind: rows
+  targets:
+  - table: ksx.Site
+    columns:
+    - EnterpriseID
+    - SiteID
+    - BusinessRegistrationNumber
+    - DialNumber
+    - SiteName
+    - BaseAddress
+    - UseIndicator
+  uk:
+  - EnterpriseID
+  - SiteID
+  expect_sql: select count(*) from stg."erp__tb_cm_bizarea" s
+  sums: []
+  audit: null
+  rules: []
+- model: StandardCost
+  noun: StandardCost
+  spec: mapping/impix/erp/StandardCost.yaml
+  kind: rows
+  targets:
+  - table: ext.StandardCost
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - StandardCostID
+    - ItemID
+    - CostPeriodStartDate
+    - CostPeriodEndDate
+    - StandardCostAmount
+    - MaterialCostAmount
+    - LaborCostAmount
+    - OverheadCostAmount
+    - CurrencyCode
+  uk:
+  - EnterpriseID
+  - StandardCostID
+  expect_sql: select count(*) from stg."erp__tb_co_std_cost" s
+  sums:
+  - column: StandardCostAmount
+    source: select sum(s.std_cost::numeric) from stg."erp__tb_co_std_cost" s
+  - column: MaterialCostAmount
+    source: select sum(s.mat_cost::numeric) from stg."erp__tb_co_std_cost" s
+  - column: LaborCostAmount
+    source: select sum(s.lab_cost::numeric) from stg."erp__tb_co_std_cost" s
+  - column: OverheadCostAmount
+    source: select sum(s.ovh_cost::numeric) from stg."erp__tb_co_std_cost" s
+  audit: null
+  rules: []
+- model: VendorPartyMaster
+  noun: VendorPartyMaster
+  spec: mapping/impix/erp/VendorPartyMaster.yaml
+  kind: rows
+  targets:
+  - table: ksx.VendorPartyMaster
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - BusinessRegistrationNumber
+    - VendorID
+    - VendorName
+    - PersonInChargeName
+    - PersonInChargeEmail
+    - UseIndicator
+  uk:
+  - EnterpriseID
+  - VendorID
+  expect_sql: select count(*) from stg."erp__tb_mm_vend" s
+  sums: []
+  audit: null
+  rules: []
+- model: WarehouseLocationHeader
+  noun: WarehouseLocationHeader
+  spec: mapping/impix/erp/WarehouseLocationHeader.yaml
+  kind: rows
+  targets:
+  - table: ksx.WarehouseLocationHeader
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - WarehouseType
+    - WarehouseID
+    - WarehouseName
+    - UseIndicator
+  uk:
+  - EnterpriseID
+  - WarehouseID
+  expect_sql: select count(*) from stg."erp__tb_mm_wh" s
+  sums: []
+  audit: null
+  rules: []
+- model: Alarm
+  noun: Alarm
+  spec: mapping/impix/mes/Alarm.yaml
+  kind: unpivot
+  targets:
+  - table: ksx.Alarm
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - AlarmID
+    - EventDateTime
+    - AlarmState
+    - ErrorCode
+    - ErrorMessage
+    - EquipmentID
+  - table: ext.AlarmExt
+    columns:
+    - EnterpriseID
+    - AlarmID
+    - AlarmSeverityCode
+  uk:
+  - EnterpriseID
+  - AlarmID
+  expect_sql: select count(s.occur_dtm) + count(s.clear_dtm) from stg."mes__tb_alarm" s
+  sums: []
+  audit: null
+  rules: []
+- model: Equipment
+  noun: Equipment
+  spec: mapping/impix/mes/Equipment.yaml
+  kind: rows
+  targets:
+  - table: ksx.Equipment
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - EquipmentType
+    - EquipmentLargeClass
+    - Manufacturer
+    - ModelNumber
+    - SerialNumber
+    - AcquisitionDate
+    - DAQDevice
+    - PersonInChargeID
+    - EquipmentID
+    - EquipmentName
+    - OperationID
+    - UseIndicator
+  uk:
+  - EnterpriseID
+  - EquipmentID
+  expect_sql: select count(*) from stg."mes__tm_eqp" s
+  sums: []
+  audit: null
+  rules: []
+- model: EquipmentParameter
+  noun: EquipmentParameter
+  spec: mapping/impix/mes/EquipmentParameter.yaml
+  kind: rows
+  targets:
+  - table: ksx.EquipmentParameter
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - EquipmentID
+    - ParameterType
+    - ParameterGrade
+    - ParameterUOMCode
+    - DataCollectionPeriod
+    - PeriodicDataCollectionIndicator
+    - ParameterID
+    - ParameterName
+    - LSL
+    - USL
+  - table: ext.EquipmentParameterExt
+    columns:
+    - EnterpriseID
+    - ParameterID
+    - LCL
+    - UCL
+  uk:
+  - EnterpriseID
+  - ParameterID
+  expect_sql: select count(*) from stg."mes__tm_param" s where s.use_flag = 'Y'
+  sums:
+  - column: LSL
+    source: select sum(s.lsl::numeric) from stg."mes__tm_param" s where s.use_flag = 'Y'
+  - column: USL
+    source: select sum(s.usl::numeric) from stg."mes__tm_param" s where s.use_flag = 'Y'
+  - column: LCL
+    source: select sum(s.lcl::numeric) from stg."mes__tm_param" s where s.use_flag = 'Y'
+  - column: UCL
+    source: select sum(s.ucl::numeric) from stg."mes__tm_param" s where s.use_flag = 'Y'
+  audit: null
+  rules: []
+- model: EquipmentState
+  noun: EquipmentState
+  spec: mapping/impix/mes/EquipmentState.yaml
+  kind: rows
+  targets:
+  - table: ksx.EquipmentState
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - EquipmentStateID
+    - EquipmentState
+    - ErrorCode
+    - EquipmentID
+    - EquipmentControlMode
+    - EquipmentOperationMode
+    - LastProcessedLotID
+    - ErrorMessage
+  - table: ext.EquipmentStateExt
+    columns:
+    - EnterpriseID
+    - EquipmentStateID
+    - StateStartDateTime
+    - StateEndDateTime
+  uk:
+  - EnterpriseID
+  - EquipmentStateID
+  expect_sql: select count(*) from stg."mes__tb_eqp_stat" s
+  sums: []
+  audit: null
+  rules: []
+- model: Lot
+  noun: Lot
+  spec: mapping/impix/mes/Lot.yaml
+  kind: rows
+  targets:
+  - table: ksx.Lot
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - LotID
+    - LotType
+    - LotState
+    - ProductionOrderID
+    - ProductionOrderSequence
+    - ProducedQuantity
+    - CurrentOperationID
+    - LotPriority
+    - CreatorID
+    - ItemID
+    - LotCreatedQuantity
+    - DefectQuantity
+    - NextOperationID
+    - HoldIndicator
+    - HotIndicator
+    - ReworkCount
+    - ScheduledDueDate
+    - CreationDateTime
+    - ModificationDateTime
+  - table: ext.LotExt
+    columns:
+    - EnterpriseID
+    - LotID
+    - LotOriginType
+  uk:
+  - EnterpriseID
+  - LotID
+  expect_sql: select count(*) from stg."mes__tb_lot" s
+  sums:
+  - column: ProducedQuantity
+    source: select sum(s.cur_qty::numeric) from stg."mes__tb_lot" s
+  - column: LotCreatedQuantity
+    source: select sum(s.lot_qty::numeric) from stg."mes__tb_lot" s
+  - column: DefectQuantity
+    source: select sum(s.ng_qty::numeric) from stg."mes__tb_lot" s
+  audit: Lot__audit
+  rules:
+  - R04
+- model: Operation
+  noun: Operation
+  spec: mapping/impix/mes/Operation.yaml
+  kind: rows
+  targets:
+  - table: ksx.Operation
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - OperationType
+    - OperationID
+    - OperationName
+    - UseIndicator
+  uk:
+  - EnterpriseID
+  - OperationID
+  expect_sql: select count(*) from stg."mes__tm_proc" s
+  sums: []
+  audit: null
+  rules: []
+- model: OperationEnd
+  noun: OperationEnd
+  spec: mapping/impix/mes/OperationEnd.yaml
+  kind: rows
+  targets:
+  - table: ksx.OperationEnd
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - OperationEndID
+    - LotID
+    - OperationEndTime
+    - PersonnelID
+    - OperationID
+    - EquipmentID
+    - ProducedQuantity
+    - DefectQuantity
+  uk:
+  - EnterpriseID
+  - OperationEndID
+  expect_sql: select count(*) from stg."mes__tb_trk_out" s
+  sums:
+  - column: DefectQuantity
+    source: select sum(s.ng_qty::numeric) from stg."mes__tb_trk_out" s
+  audit: OperationEnd__audit
+  rules:
+  - R07b
+  - R08b
+- model: OperationEquipment
+  noun: OperationEquipment
+  spec: mapping/impix/mes/OperationEquipment.yaml
+  kind: rows
+  targets:
+  - table: ksx.OperationEquipment
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - EquipmentID
+    - EquipmentName
+    - OperationID
+  uk:
+  - EnterpriseID
+  - OperationID
+  - EquipmentID
+  expect_sql: select count(*) from stg."mes__tm_eqp" s
+  sums: []
+  audit: null
+  rules: []
+- model: OperationStart
+  noun: OperationStart
+  spec: mapping/impix/mes/OperationStart.yaml
+  kind: rows
+  targets:
+  - table: ksx.OperationStart
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - OperationStartID
+    - LotID
+    - LotCreatedQuantity
+    - OperationStartTime
+    - PersonnelID
+    - OperationID
+    - EquipmentID
+  uk:
+  - EnterpriseID
+  - OperationStartID
+  expect_sql: select count(*) from stg."mes__tb_trk_in" s
+  sums:
+  - column: LotCreatedQuantity
+    source: select sum(s.in_qty::numeric) from stg."mes__tb_trk_in" s
+  audit: OperationStart__audit
+  rules:
+  - R06
+- model: ProductionPerformance
+  noun: ProductionPerformance
+  spec: mapping/impix/mes/ProductionPerformance.yaml
+  kind: rows
+  targets:
+  - table: ksx.ProductionPerformance
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - ProductionPerformanceID
+    - ProductionPerformanceSequence
+    - LotID
+    - OperationID
+    - ItemID
+    - ProductionOrderID
+    - ProductionOrderSequence
+    - ExecutionStartDateTime
+    - ExecutionEndDateTime
+    - ProductionPerformanceDate
+    - PersonnelID
+    - ProducedQuantity
+    - DefectQuantity
+  - table: ext.ProductionPerformanceExt
+    columns:
+    - EnterpriseID
+    - ProductionPerformanceID
+    - ProductionPerformanceSequence
+    - InspectionResult
+    - InspectionQuantity
+  uk:
+  - EnterpriseID
+  - ProductionPerformanceID
+  - ProductionPerformanceSequence
+  expect_sql: select count(*) from stg."mes__tb_trk_out" s
+  sums:
+  - column: DefectQuantity
+    source: select sum(s.ng_qty::numeric) from stg."mes__tb_trk_out" s
+  audit: ProductionPerformance__audit
+  rules:
+  - R09
+  - R07
+  - R08
+- model: ProductionPerformanceEquipment
+  noun: ProductionPerformanceEquipment
+  spec: mapping/impix/mes/ProductionPerformanceEquipment.yaml
+  kind: rows
+  targets:
+  - table: ksx.ProductionPerformanceEquipment
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - ProductionPerformanceID
+    - ProductionPerformanceSequence
+    - ProductionOrderID
+    - ExecutionStartDateTime
+    - ExecutionEndDateTime
+    - PersonnelID
+    - OperationID
+    - EquipmentID
+    - ProducedQuantity
+    - DefectQuantity
+  uk:
+  - EnterpriseID
+  - ProductionPerformanceID
+  - ProductionPerformanceSequence
+  - EquipmentID
+  expect_sql: select count(*) from stg."mes__tb_trk_out" s
+  sums:
+  - column: DefectQuantity
+    source: select sum(s.ng_qty::numeric) from stg."mes__tb_trk_out" s
+  audit: ProductionPerformanceEquipment__audit
+  rules:
+  - R07c
+  - R08c
+- model: ProductionPerformanceItem
+  noun: ProductionPerformanceItem
+  spec: mapping/impix/mes/ProductionPerformanceItem.yaml
+  kind: rows
+  targets:
+  - table: ksx.ProductionPerformanceItem
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - ProductionPerformanceID
+    - ProductionPerformanceSequence
+    - ItemID
+    - LotID
+    - IssuedQuantity
+    - IssuedIndicator
+    - OperationID
+    - ProductionOrderID
+  uk:
+  - EnterpriseID
+  - ProductionPerformanceID
+  - ProductionPerformanceSequence
+  - ItemID
+  expect_sql: select count(*) from stg."mes__tb_lot_link" s where s.link_tp = 'CONSUME'
+  sums: []
+  audit: null
+  rules: []
+- model: ProductionPerformanceQuality
+  noun: ProductionPerformanceQuality
+  spec: mapping/impix/mes/ProductionPerformanceQuality.yaml
+  kind: rows
+  targets:
+  - table: ksx.ProductionPerformanceQuality
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - ProductionPerformanceID
+    - ProductionPerformanceSequence
+    - DefectTypeCode
+    - DefectTypeDetailCode
+    - OperationID
+    - LotID
+    - ItemID
+    - ProductionOrderID
+    - DefectTypeQuantity
+  uk:
+  - EnterpriseID
+  - ProductionPerformanceID
+  - ProductionPerformanceSequence
+  - DefectTypeCode
+  - DefectTypeDetailCode
+  expect_sql: select count(*) from stg."mes__tb_qc_defect" s
+  sums: []
+  audit: null
+  rules: []
+- model: TraceParameter
+  noun: TraceParameter
+  spec: mapping/impix/mes/TraceParameter.yaml
+  kind: rows
+  targets:
+  - table: ksx.TraceParameter
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - TraceParameterID
+    - EquipmentID
+    - ParameterID
+    - EventDateTime
+    - ParameterValue
+    - ParameterUOMCode
+    - ValidationResultCode
+  - table: ext.TraceParameterExt
+    columns:
+    - EnterpriseID
+    - TraceParameterID
+    - LotID
+  uk:
+  - EnterpriseID
+  - TraceParameterID
+  expect_sql: select count(*) from stg."mes__tb_param_val" s
+  sums: []
+  audit: TraceParameter__audit
+  rules:
+  - R05
+- model: CorrectiveActionRequest
+  noun: CorrectiveActionRequest
+  spec: mapping/impix/qms/CorrectiveActionRequest.yaml
+  kind: rows
+  targets:
+  - table: ksx.CorrectiveActionRequest
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - CorrectiveActionRequestID
+    - VendorID
+    - ItemID
+  - table: ext.CorrectiveActionRequestExt
+    columns:
+    - EnterpriseID
+    - CorrectiveActionRequestID
+    - DetectionLocationType
+    - InspectionResultID
+    - OccurrenceDate
+    - DefectTypeCode
+    - DefectTypeDetailCode
+    - CorrectiveActionDueDate
+    - DefectQuantity
+  uk:
+  - EnterpriseID
+  - CorrectiveActionRequestID
+  expect_sql: select count(*) from stg."qms__qm_vend_ncr" s
+  sums:
+  - column: DefectQuantity
+    source: select sum(s.ng_qty::numeric) from stg."qms__qm_vend_ncr" s
+  audit: null
+  rules: []
+- model: CorrectiveActionResult
+  noun: CorrectiveActionResult
+  spec: mapping/impix/qms/CorrectiveActionResult.yaml
+  kind: rows
+  targets:
+  - table: ksx.CorrectiveActionResult
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - CorrectiveActionResultID
+    - CorrectiveActionRequestID
+    - CorrectiveActionDateTime
+    - CorrectiveActionStatusCode
+    - VendorID
+    - ItemID
+  uk:
+  - EnterpriseID
+  - CorrectiveActionResultID
+  expect_sql: select count(*) from stg."qms__qm_vend_ncr" s where s.car_cls_dt IS NOT NULL
+  sums: []
+  audit: null
+  rules: []
+- model: CustomerComplaint
+  noun: CustomerComplaint
+  spec: mapping/impix/qms/CustomerComplaint.yaml
+  kind: rows
+  targets:
+  - table: ext.CustomerComplaint
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - CustomerComplaintID
+    - CustomerComplaintType
+    - ResponseDueDate
+    - LotID
+    - ComplaintReceiptDate
+    - DefectTypeCode
+    - DefectTypeDetailCode
+    - ComplaintQuantity
+    - ResponseDate
+    - CustomerComplaintStatusCode
+    - ComplaintAmount
+    - CurrencyCode
+    - CauseOperationID
+    - ComplaintDescription
+    - CustomerID
+    - ItemID
+    - OccurrenceDate
+    - CloseDate
+  uk:
+  - EnterpriseID
+  - CustomerComplaintID
+  expect_sql: select count(*) from stg."qms__qm_claim" s
+  sums:
+  - column: ComplaintQuantity
+    source: select sum(s.claim_qty::numeric) from stg."qms__qm_claim" s
+  - column: ComplaintAmount
+    source: select sum(s.claim_amt::numeric) from stg."qms__qm_claim" s
+  audit: null
+  rules: []
+- model: GoodsIssue_scrap
+  noun: GoodsIssue
+  spec: mapping/impix/qms/GoodsIssue_scrap.yaml
+  kind: rows
+  targets:
+  - table: ksx.GoodsIssue
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - GoodsIssueID
+    - InventoryTransactionTypeCode
+    - LotID
+    - ItemUnitQuantity
+    - ItemID
+  - table: ext.GoodsIssueExt
+    columns:
+    - EnterpriseID
+    - GoodsIssueID
+    - InventoryTransactionDate
+  uk:
+  - EnterpriseID
+  - GoodsIssueID
+  expect_sql: select count(*) from stg."qms__qm_scrap" s
+  sums:
+  - column: ItemUnitQuantity
+    source: select sum(s.scrap_qty::numeric) from stg."qms__qm_scrap" s
+  audit: null
+  rules: []
+- model: QualityCost
+  noun: QualityCost
+  spec: mapping/impix/qms/QualityCost.yaml
+  kind: rows
+  targets:
+  - table: ext.QualityCost
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - QualityCostID
+    - CostPeriodStartDate
+    - CostPeriodEndDate
+    - QualityCostClass
+    - QualityCostItem
+    - QualityCostAmount
+    - CurrencyCode
+    - SourceDocumentReference
+  uk:
+  - EnterpriseID
+  - QualityCostID
+  expect_sql: select count(*) from stg."qms__qm_qcost" s
+  sums:
+  - column: QualityCostAmount
+    source: select sum(s.amount::numeric) from stg."qms__qm_qcost" s
+  audit: null
+  rules: []
+- model: Return
+  noun: Return
+  spec: mapping/impix/qms/Return.yaml
+  kind: rows
+  targets:
+  - table: ksx.Return
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - ReturnID
+    - ReturnSequence
+    - ReturnDateTime
+    - ReturnQuantity
+    - LotID
+    - ReturnType
+    - CustomerID
+    - ItemID
+  uk:
+  - EnterpriseID
+  - ReturnID
+  - ReturnSequence
+  expect_sql: select count(*) from stg."qms__qm_claim" s where s.claim_tp = 'FR'
+  sums:
+  - column: ReturnQuantity
+    source: select sum(s.claim_qty::numeric) from stg."qms__qm_claim" s where s.claim_tp = 'FR'
+  audit: null
+  rules: []
+- model: SupplierInspectionResult
+  noun: SupplierInspectionResult
+  spec: mapping/impix/qms/SupplierInspectionResult.yaml
+  kind: rows
+  targets:
+  - table: ksx.SupplierInspectionResult
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - InspectionResultID
+    - LotID
+    - InspectionQuantity
+    - InspectionResult
+    - Inspector
+    - VendorID
+    - ItemID
+    - InspectionDate
+  - table: ext.SupplierInspectionResultExt
+    columns:
+    - EnterpriseID
+    - InspectionResultID
+    - GoodsReceiptID
+    - GoodsReceiptSequence
+    - DefectTypeCode
+    - DefectTypeDetailCode
+    - DefectQuantity
+  uk:
+  - EnterpriseID
+  - InspectionResultID
+  expect_sql: select count(*) from stg."qms__qm_iqc" s
+  sums:
+  - column: InspectionQuantity
+    source: select sum(s.smpl_qty::numeric) from stg."qms__qm_iqc" s
+  - column: DefectQuantity
+    source: select sum(s.ng_qty::numeric) from stg."qms__qm_iqc" s
+  audit: null
+  rules: []

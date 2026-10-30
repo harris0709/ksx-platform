@@ -21,6 +21,8 @@ CREATE ROLE ksx_audit  LOGIN PASSWORD :'audit_pw'  NOBYPASSRLS;
 
 REVOKE ALL ON DATABASE ksx FROM PUBLIC;
 GRANT CONNECT ON DATABASE ksx TO ksx_owner, ksx_loader, ksx_reader, ksx_bod, ksx_audit;
+-- S3: dbt가 변환 스키마(xfm)를 만들고 확인할 수 있도록 DDL 소유 계정에 스키마 생성 권한
+GRANT CREATE ON DATABASE ksx TO ksx_owner;
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 
 -- ---------------------------------------------------------------

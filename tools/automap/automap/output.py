@@ -35,6 +35,8 @@ def _spec_yaml(eng, r) -> str:
     src = {"system": r.system, "table": r.table}
     if sp.get("filter"):
         src["filter"] = sp["filter"]
+    if sp.get("distinct"):
+        src["distinct"] = True                      # 같은 식별자의 여러 원천 행 → 1행
     doc = {"noun": r.noun, "layer": noun.layer, "structure": sp.get("structure", "1:1"), "source": _Flow(src)}
     if sp.get("join"):
         doc["join"] = [_Flow({k: v for k, v in j.items() if k != "exclude"}) for j in sp["join"]]

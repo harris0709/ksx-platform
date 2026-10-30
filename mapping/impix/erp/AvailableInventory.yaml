@@ -16,7 +16,7 @@ attributes:
 extension:
   ProductionOrderID: {from: mo_no, match: normalized, status: approved}
   ProductionOrderSequence: {match: const, transform: const(1), status: approved}
-  AvailabilityCheckDateTime: {from: chk_dt, match: manual, transform: 'to_ts(to_date8(chk_dt) + ''06:00'')', note: '점검 배치 06:00', status: approved}
+  AvailabilityCheckDateTime: {from: chk_dt, match: manual, transform: 'to_ts(to_date8(chk_dt) + time ''06:00'')', note: '점검 배치 06:00', status: approved}
   MaterialRequirementQuantity: {from: req_qty, match: manual, status: approved}
   ShortageQuantity: {from: short_qty, match: component, status: approved}
 excluded: []

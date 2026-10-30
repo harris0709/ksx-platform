@@ -3,7 +3,7 @@
 noun: Lot
 layer: core
 structure: N→1(MES 도입 전 출하 LOT — LOT별 1행)
-source: {system: ERP, table: erp.tb_sd_dlv, filter: lot_no < 'E260921'}
+source: {system: ERP, table: erp.tb_sd_dlv, filter: lot_no < 'E260921', distinct: true}
 base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'xref(wh_plant, wh_cd)'}
 identity:
 - LotID

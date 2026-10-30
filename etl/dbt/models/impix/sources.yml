@@ -1,0 +1,62 @@
+# ksxload gen 생성물 — 원천 복제(stg)
+version: 2
+sources:
+- name: stg
+  schema: stg
+  tables:
+  - name: erp__tb_cm_bizarea
+  - name: erp__tb_cm_code
+  - name: erp__tb_cm_comp
+  - name: erp__tb_cm_dept
+  - name: erp__tb_cm_plant
+  - name: erp__tb_co_std_cost
+  - name: erp__tb_hr_emp
+  - name: erp__tb_mm_cnt
+  - name: erp__tb_mm_gi
+  - name: erp__tb_mm_gr
+  - name: erp__tb_mm_item
+  - name: erp__tb_mm_po_d
+  - name: erp__tb_mm_po_h
+  - name: erp__tb_mm_price
+  - name: erp__tb_mm_stock_day
+  - name: erp__tb_mm_stock_lot
+  - name: erp__tb_mm_vend
+  - name: erp__tb_mm_wh
+  - name: erp__tb_pp_bom_d
+  - name: erp__tb_pp_bom_h
+  - name: erp__tb_pp_line
+  - name: erp__tb_pp_mat_chk
+  - name: erp__tb_pp_mo
+  - name: erp__tb_pp_plan
+  - name: erp__tb_pp_rcpt
+  - name: erp__tb_pp_rout_d
+  - name: erp__tb_pp_rout_h
+  - name: erp__tb_pp_wc
+  - name: erp__tb_sd_cust
+  - name: erp__tb_sd_dlv
+  - name: erp__tb_sd_plan
+  - name: erp__tb_sd_so_d
+  - name: erp__tb_sd_so_h
+  - name: mes__tb_alarm
+  - name: mes__tb_eqp_stat
+  - name: mes__tb_lot
+  - name: mes__tb_lot_link
+  - name: mes__tb_param_val
+  - name: mes__tb_prod_rslt
+  - name: mes__tb_qc_defect
+  - name: mes__tb_qc_insp
+  - name: mes__tb_trk_in
+  - name: mes__tb_trk_out
+  - name: mes__tm_code
+  - name: mes__tm_eqp
+  - name: mes__tm_factory
+  - name: mes__tm_item
+  - name: mes__tm_line
+  - name: mes__tm_param
+  - name: mes__tm_proc
+  - name: qms__qm_claim
+  - name: qms__qm_code
+  - name: qms__qm_iqc
+  - name: qms__qm_qcost
+  - name: qms__qm_scrap
+  - name: qms__qm_vend_ncr

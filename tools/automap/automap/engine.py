@@ -140,9 +140,9 @@ class Engine:
             for an, expr in base.items():
                 if an not in noun.attrs:
                     continue
-                stage = "const" if str(expr).startswith("const(") else ("xref" if str(expr).startswith("xref(") else "derived")
+                stage = "const" if str(expr).startswith("const(") else ("xref" if "xref(" in str(expr) else "derived")
                 src = None
-                m = re.match(r"xref\(\w+,\s*([\w.]+)\)", str(expr))
+                m = re.search(r"xref\(\w+,\s*([\w.]+)\)", str(expr))   # coalesce(xref(…), const(…))도
                 if m:
                     src = m.group(1)
                     r.used_cols.add(src.split(".")[-1])
@@ -234,12 +234,16 @@ class Engine:
         txt = re.sub(r"'[^']*'", "''", f)
         schemas = {t.split(".")[0] for t in self.src}
         names = {c["name"] for c in self.cols(r.table)}
+        sub = {}                                   # 서브쿼리 별칭: FROM erp.tb_x d → d = erp.tb_x
+        for sm in re.finditer(r"\b(?:FROM|JOIN)\s+(\w+\.\w+)(?:\s+(?:AS\s+)?(\w+))?", txt, re.I):
+            if sm.group(2) and sm.group(2).lower() not in self._SQL_WORDS:
+                sub[sm.group(2)] = sm.group(1)
         for m in re.finditer(r"\b(?:(\w+)\.)?([A-Za-z_][A-Za-z0-9_]*)\b(\s*\()?", txt):
             q, c, fn = m.group(1), m.group(2), m.group(3)
-            if fn or c.lower() in self._SQL_WORDS or c in schemas or q in schemas or c.isdigit():
+            if fn or c.lower() in self._SQL_WORDS or c in schemas or q in schemas or c.isdigit() or (not q and c in sub):
                 continue
             if q:
-                tb = r.aliases.get(q)
+                tb = r.aliases.get(q) or sub.get(q)
                 ok = tb is not None and c in {x["name"] for x in self.cols(tb)}
             else:
                 ok = c in names

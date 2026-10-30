@@ -1,0 +1,25 @@
+# Plant ← erp.tb_cm_comp (1:1(본사 — 생산하지 않는 조직 단위, S3 검토에서 추가)) — automap 생성, 계획: s2_plan.yaml
+# 상태: draft(자동) → reviewed(데이터 엔지니어) → approved(도메인·현업)
+noun: Plant
+layer: core
+structure: 1:1(본사 — 생산하지 않는 조직 단위, S3 검토에서 추가)
+source: {system: ERP, table: erp.tb_cm_comp}
+base: {EnterpriseID: 'xref(enterprise, comp_cd)', SiteID: const(HQ), PlantID: const(HQ)}
+identity:
+- PlantID
+attributes:
+  PlantName: {match: const, transform: const(본사), note: 생산 설비·라인 없음 — 생산능력·OEE 집계 대상 아님, status: approved}
+  DialNumber: {from: tel_no, match: normalized, status: approved}
+  BaseAddress: {from: addr1, match: normalized, status: approved}
+  DetailAddress: {from: addr2, match: normalized, status: approved}
+  PostalCode: {from: zip_cd, match: normalized, status: approved}
+extension: {}
+excluded:
+- {column: comp_nm, reason: 회사명 — 회사(Enterprise) 명세에서 적재}
+- {column: use_yn, reason: 회사 사용여부 — 회사 명세 판정}
+- {column: biz_reg_no, reason: '사업자번호 — 등록자 아님(자동 근사 대응 제외), 회사 명세에서 적재'}
+- {column: corp_reg_no, reason: 법인번호 — 등록자 아님(자동 근사 대응 제외)}
+- {column: reg_id, reason: 회사 등록자 SYS — 시스템 계정(R10)}
+- {column: reg_dt, reason: 회사 등록일 — 본사 공장 생성일 아님}
+- {column: ceo_nm, reason: Enterprise 명세에서 판정}
+- {column: curr_cd, reason: Enterprise 명세에서 판정}

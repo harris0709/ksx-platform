@@ -7,4 +7,6 @@ python -m ksxgen check --std standards --ext extensions/impix --out ontologies
 python tests/coverage/test_ksxgen.py
 PYTHONPATH=tools/automap python -m automap check --plan mapping/impix/s2_plan.yaml
 python tests/coverage/test_automap.py
+PYTHONPATH=tools/ksxload python -m ksxload check --plan mapping/impix/s3_plan.yaml
+python tests/coverage/test_ksxload.py
 python tests/regression/test_e2e_minimal.py
