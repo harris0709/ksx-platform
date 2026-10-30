@@ -25,6 +25,7 @@ docker compose --profile tools run --rm s3-tools stage      # 원천 56개 테�
 docker compose --profile tools run --rm s3-tools gen        # 명세·규칙 → dbt 모델(저장소에 커밋된 것과 같아야 함)
 docker compose --profile tools run --rm s3-tools dbt build  # seed → run(뷰 79) → test(382)
 docker compose --profile tools run --rm s3-tools publish    # xfm → 표준 원장 + 대사(--dry-run: 되돌림)
+docker compose --profile tools run --rm s3-tools review     # 정제 규칙 검토서(xlsx) — 현업 공동 검토 자료
 ```
 
 | 명령 | 하는 일 | 결과 확인 |
@@ -36,6 +37,7 @@ docker compose --profile tools run --rm s3-tools publish    # xfm → 표준 원
 | `xfm` | dbt 없이 같은 SQL로 seed·뷰·테스트를 실행한다(dbt를 쓸 수 없는 환경용) | `dbt build`와 같음 |
 | `publish` | 대상 70개 테이블을 비우고 FK 순서대로 적재한다. FK 고아가 있으면 커밋이 실패해 원장은 그대로 남는다 | 아래 대사 |
 | `check` | gen 생성물이 명세·규칙과 같은지 본다(CI) | 통과 |
+| `review` | 계획의 `review`·`s2_regressions`·`approval` 절과 마지막 publish 기록으로 `mapping/<기업>/S3_정제규칙_검토서_<기업>.xlsx`를 만든다(작성기준·검토목록·처리행·대사·원천정정요청·S2회귀·승인) | 미결정 0 |
 
 ## 대사 (구현안내서 6.6 표 15)
 
@@ -61,7 +63,9 @@ docker compose --profile tools run --rm s3-tools publish    # xfm → 표준 원
 | `correct` | `when`이 참인 행의 `set` 컬럼을 식으로 고침(여러 근거가 일치할 때만). 보정 컬럼은 합계 대사에서 뺀다 | 원래 값이 든 행 |
 | `flag` | 적재는 그대로, 현업 확인 대상으로 표시 | 해당 행 |
 
-모든 규칙은 S1 품질 이슈 ID(Q…)나 S3에서 새로 발견한 ID(S3-…)를 단다. 결과는 `audit.quarantine`에 행 전체(JSON)로 남는다.
+모든 규칙은 S1 품질 이슈 ID(Q…)나 S3에서 새로 발견한 ID(S3-…)를 단다.
+처리 방식은 데이터 엔지니어가 혼자 정하지 않는다. 규칙마다 원천을 현업과 함께 보고(검토 카드 양식 `mapping/_template/S3_정제규칙_검토카드_양식.md`)
+결정을 계획의 `review` 절에 적는다(구현안내서 6.7 보완, `docs/방법론_보완_v1.2.md`). 결과는 `audit.quarantine`에 행 전체(JSON)로 남는다.
 원천 정정을 요청할 때 이 기록을 근거로 쓴다.
 
 ## 변환 어휘

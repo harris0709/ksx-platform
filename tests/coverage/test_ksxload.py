@@ -79,6 +79,21 @@ def test_rules_cover_s1_high_issues():
         assert r["model"] in names
 
 
+def test_review_decisions():
+    """정제 규칙마다 현업 검토 결정이 있다(구현안내서 6.7) — 파생 규칙(R07b)은 앞 규칙(R07)을 따른다."""
+    from ksxload.review import ACTION_KO, _parent_review
+    c = cfg()
+    rv = c.raw.get("review", {})
+    for r in c.raw["rules"]:
+        assert r["action"] in ACTION_KO, r["id"]
+        d, of = _parent_review(r["id"], rv)
+        assert d.get("decision") and d.get("decided"), f"{r['id']}: review.decision 없음"
+    assert set(rv) <= {r["id"] for r in c.raw["rules"]}
+    assert c.raw["approval"]["status"] in ("approved", "conditional", "rejected")
+    for x in c.raw.get("s2_regressions", []):
+        assert x.get("decision"), x.get("id")
+
+
 def test_topo_order():
     t = parse_ddl([os.path.join(ROOT, "ontologies", "ddl", "ksx.sql"), os.path.join(ROOT, "ontologies", "ddl", "ext_impix.sql")])
     o = topo_order(t, list(t))

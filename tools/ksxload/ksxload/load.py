@@ -114,14 +114,23 @@ def stage(cfg: Config, only: list[str] | None = None, out=print) -> bool:
     if only:
         tables = [t for t in tables if f"{t['schema']}.{t['table']}" in only]
     total, bad = 0, []
+    dropped_views = False
     for t in tables:
         src_dsn, _ = cfg.sources[t["system"]]
         name = stg_name(t)
         cols = [c["name"] for c in t["columns"]]
         coldefs = ", ".join(f'"{c["name"]}" {c["type"]}' for c in t["columns"])
-        psql(cfg.owner, f'drop table if exists stg."{name}"; '
-                        f'create table stg."{name}" ({coldefs}, _run_id uuid, _loaded_at timestamptz not null default now()); '
-                        f"comment on table stg.\"{name}\" is '원천 복제: {t['schema']}.{t['table']} ({t['system']})'")
+        have = [r["c"] for r in rows(cfg.owner, "select column_name c from information_schema.columns where table_schema = 'stg' "
+                                                f"and table_name = '{name}' order by ordinal_position")]
+        if have == cols + ["_run_id", "_loaded_at"]:
+            # 다시 적재: 구조가 같으면 비우기만 한다 — xfm 뷰(dbt)가 이 테이블을 참조하므로 지우지 않음
+            psql(cfg.owner, f'truncate stg."{name}"')
+        else:
+            if have:
+                dropped_views = True          # 원천 구조가 바뀜 → 참조하는 xfm 뷰도 함께 지움(dbt build로 다시 생성)
+            psql(cfg.owner, f'drop table if exists stg."{name}" cascade; '
+                            f'create table stg."{name}" ({coldefs}, _run_id uuid, _loaded_at timestamptz not null default now()); '
+                            f"comment on table stg.\"{name}\" is '원천 복제: {t['schema']}.{t['table']} ({t['system']})'")
         cl = ", ".join(f'"{c}"' for c in cols)
         pout = subprocess.Popen(["psql", *src_dsn.args(), "-c",
                                  f"\\copy (select {cl} from {t['schema']}.{t['table']}) to stdout with (format csv)"],
@@ -145,5 +154,7 @@ def stage(cfg: Config, only: list[str] | None = None, out=print) -> bool:
         out(f"  {'OK ' if ok else '불일치'} {t['schema']}.{t['table']:<18} → stg.{name:<22} {n_src:>7,} → {n_stg:>7,}")
     psql(cfg.owner, "grant select on all tables in schema stg to ksx_reader")
     end_run(cfg, run_id, not bad, {"tables": len(tables), "rows": total, "mismatch": bad})
+    if dropped_views:
+        out("  원천 구조가 바뀐 테이블이 있어 참조하는 xfm 뷰를 함께 지웠다 — gen → dbt build를 다시 실행")
     out(f"ksxload stage: 테이블 {len(tables)}개, 행 {total:,} — 행 수 대사 {'일치' if not bad else '불일치 ' + str(len(bad))} (run {run_id})")
     return not bad
