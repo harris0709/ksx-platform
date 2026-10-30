@@ -4,7 +4,7 @@ noun: Department
 layer: core
 structure: '1:1'
 source: {system: ERP, table: erp.tb_cm_dept, filter: use_yn = 'Y'}
-base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'coalesce(xref(plant, plant_cd), const(P2))'}
+base: {EnterpriseID: const(IMPIX), SiteID: const(HQ), PlantID: 'coalesce(xref(plant, plant_cd), const(HQ))'}
 identity:
 - DepartmentID
 attributes:

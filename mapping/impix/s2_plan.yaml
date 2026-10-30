@@ -60,16 +60,36 @@ specs:
     filter: "use_yn = 'Y'"
     map: { DialNumber: tel_no }
     exclude: { use_yn: "표준 공장에 사용여부 없음 — 전 건 Y(적재 필터)" }
+  - noun: Plant
+    source: erp.tb_cm_comp
+    file: Plant_hq
+    structure: "1:1(본사 — 생산하지 않는 조직 단위, S3 검토에서 추가)"
+    # S3 검토(2026-10-30) C안: 공장 미지정 본사 조직(생산본부·품질경영팀·생산관리팀과 소속 인원)을 담을 본사(HQ) 1행
+    base: { EnterpriseID: "xref(enterprise, comp_cd)", SiteID: const(HQ), PlantID: const(HQ) }
+    map:
+      PlantName: { transform: "const(본사)", note: "생산 설비·라인 없음 — 생산능력·OEE 집계 대상 아님" }
+      DialNumber: tel_no
+      BaseAddress: addr1
+      DetailAddress: addr2
+      PostalCode: zip_cd
+    exclude:
+      comp_nm: "회사명 — 회사(Enterprise) 명세에서 적재"
+      use_yn: "회사 사용여부 — 회사 명세 판정"
+      biz_reg_no: "사업자번호 — 등록자 아님(자동 근사 대응 제외), 회사 명세에서 적재"
+      corp_reg_no: "법인번호 — 등록자 아님(자동 근사 대응 제외)"
+      reg_id: "회사 등록자 SYS — 시스템 계정(R10)"
+      reg_dt: "회사 등록일 — 본사 공장 생성일 아님"
+    rest: "Enterprise 명세에서 판정"
   - noun: Department
     source: erp.tb_cm_dept
-    # S3 테스트에서 발견: 본사 조직(공장 미지정)은 plant_cd가 비어 있음 → 제2공장(P2)에 귀속(승인 확인 사항)
-    base: { PlantID: "coalesce(xref(plant, plant_cd), const(P2))" }
+    # S3 검토(2026-10-30) C안: 본사 조직(공장 미지정)은 plant_cd가 비어 있음 → 본사(HQ) 공장에 귀속
+    base: { PlantID: "coalesce(xref(plant, plant_cd), const(HQ))" }
     filter: "use_yn = 'Y'"
     exclude: { use_yn: "표준 부서에 사용여부 없음 — 전 건 Y(적재 필터)" }
   - noun: Personnel
     source: erp.tb_hr_emp
-    # S3 테스트에서 발견: 본사 조직(공장 미지정)은 plant_cd가 비어 있음 → 제2공장(P2)에 귀속(승인 확인 사항)
-    base: { PlantID: "coalesce(xref(plant, plant_cd), const(P2))" }
+    # S3 검토(2026-10-30) C안: 본사 조직(공장 미지정)은 plant_cd가 비어 있음 → 본사(HQ) 공장에 귀속
+    base: { PlantID: "coalesce(xref(plant, plant_cd), const(HQ))" }
     map:
       PersonnelID: emp_no
       PersonInChargeEmail: email

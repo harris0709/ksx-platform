@@ -675,6 +675,28 @@ models:
   sums: []
   audit: null
   rules: []
+- model: Plant_hq
+  noun: Plant
+  spec: mapping/impix/erp/Plant_hq.yaml
+  kind: rows
+  targets:
+  - table: ksx.Plant
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - PlantName
+    - DialNumber
+    - BaseAddress
+    - DetailAddress
+    - PostalCode
+  uk:
+  - EnterpriseID
+  - PlantID
+  expect_sql: select count(*) from stg."erp__tb_cm_comp" s
+  sums: []
+  audit: null
+  rules: []
 - model: ProductIncoming
   noun: ProductIncoming
   spec: mapping/impix/erp/ProductIncoming.yaml

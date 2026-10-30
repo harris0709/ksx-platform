@@ -53,7 +53,7 @@ def test_generated_current():
 def test_manifest():
     c = cfg()
     man = yaml.safe_load(open(os.path.join(c.dbt_dir, "publish", "impix.yml"), encoding="utf-8"))
-    assert len(man["models"]) == 58
+    assert len(man["models"]) == 59
     tables = {t["table"] for m in man["models"] for t in m["targets"]}
     assert len(tables) == len(man["order"]) == 70
     lots = [m["model"] for m in man["models"] if m["noun"] == "Lot"]

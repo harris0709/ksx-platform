@@ -647,6 +647,26 @@ models:
     quote: true
     tests:
     - not_null
+- name: Plant_hq
+  description: Plant ← erp.tb_cm_comp — mapping/impix/erp/Plant_hq.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - PlantID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
 - name: ProductIncoming
   description: ProductIncoming ← erp.tb_pp_rcpt — mapping/impix/erp/ProductIncoming.yaml
   tests:

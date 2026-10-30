@@ -3,7 +3,7 @@
 select
     cast('IMPIX' as text) as "EnterpriseID",
     cast('HQ' as text) as "SiteID",
-    cast(coalesce(xfm.xref('plant', (s.plant_cd)::text), 'P2') as text) as "PlantID",
+    cast(coalesce(xfm.xref('plant', (s.plant_cd)::text), 'HQ') as text) as "PlantID",
     cast(s.emp_no as text) as "PersonnelID",
     cast(s.email as text) as "PersonInChargeEmail",
     cast(s.hp_no as text) as "PersonInChargeDialNumber",
