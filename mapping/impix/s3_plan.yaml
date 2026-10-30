@@ -34,6 +34,7 @@ dbt:
 #   dedupe          같은 UK가 여러 행이면 keep 순서로 1행만 남기고 나머지는 격리 기록
 #   quarantine      when(모델 출력 컬럼, 별칭 m)이 참인 행을 적재하지 않고 audit.quarantine에 기록
 #   nullify_orphan  columns가 부모 명사(parent)에 없으면 그 컬럼만 NULL로 비우고 기록(행은 적재)
+#   replace_orphan  columns가 부모 명사에 없으면 with의 식(모델 컬럼, 별칭 m)으로 바꾸고 기록
 #   flag            적재는 그대로, 해당 행을 기록만(현업 확인 대상)
 # 처리 결과는 publish가 audit.quarantine·audit.load_log에 남긴다.
 rules:
@@ -42,7 +43,7 @@ rules:
       note: "대소문자·공백만 다른 품목코드 중복 — upper_trim 후 같은 키. 최근 수정·사용 중인 행을 남김" }
   - { id: R02, issue: Q002, model: BOMLine, action: quarantine,
       orphan: { columns: [ChildItemID], parent: ItemMaster },
-      note: "BOM 자품목 IMP-B300이 품목마스터에 없음 — 기준정보 등록 전까지 적재 보류" }
+      note: "BOM 자품목 IMP-B300이 품목마스터에 없음 — 입력 오류로 판단(임펠러 IMP-B200 중복), ERP에서 BOM 행 삭제 요청(2026-10-30 결정)" }
   - { id: R03, issue: Q003, model: ProductIncoming, action: nullify_orphan,
       orphan: { columns: [ProductionOrderID, ProductionOrderSequence], parent: ProductionOrder },
       note: "제품입고의 생산지시 MO260999001이 ERP에 없음 — 입고는 적재, 오더 참조만 비움" }
@@ -58,9 +59,10 @@ rules:
   - { id: R05, issue: Q006, model: TraceParameter, action: quarantine,
       when: 'm."ParameterValue" > 10 * (select p."USL" from {{ ref(''EquipmentParameter'') }} p where p."ParameterID" = m."ParameterID")',
       note: "규격 상한의 10배를 넘는 수집값 — 단위 오류 의심, 시계열 분석에서 제외" }
-  - { id: R06, issue: Q008, model: OperationStart, action: nullify_orphan,
+  - { id: R06, issue: Q008, model: OperationStart, action: replace_orphan,
       orphan: { columns: [PersonnelID], parent: Personnel },
-      note: "작업자 사번 20180041이 인사 마스터에 없음 — 착공은 적재, 작업자만 비움" }
+      with: { PersonnelID: '(select pp."PersonnelID" from {{ ref(''ProductionPerformance'') }} pp where pp."LotID" = m."LotID" and pp."OperationID" = m."OperationID")' },
+      note: "착공 작업자 OP01(포장 단말 공용 계정, MES 도입 초기 9/21~22)은 사번이 아님 — 같은 LOT·공정의 완공 작업자로 보정(2026-10-30 결정)" }
   - { id: R07, issue: Q009, model: ProductionPerformance, action: flag,
       when: 'm."ProducedQuantity" + m."DefectQuantity" <> (select os."LotCreatedQuantity" from {{ ref(''OperationStart'') }} os where os."LotID" = m."LotID" and os."OperationID" = m."OperationID")',
       note: "양품+불량 ≠ 착공 투입 — 유실·재작업 여부 현업 확인" }

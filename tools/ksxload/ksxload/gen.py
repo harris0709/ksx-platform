@@ -233,7 +233,7 @@ class Gen:
                 conds = {r["id"]: self.rule_cond(sp, info, r) for r in rules if r["action"] != "dedupe"}
                 q = [r for r in rules if r["action"] == "quarantine"]
                 d = [r for r in rules if r["action"] == "dedupe"]
-                nz = [r for r in rules if r["action"] == "nullify_orphan"]
+                nz = [r for r in rules if r["action"] in ("nullify_orphan", "replace_orphan")]
                 ref_src = f"{{{{ ref('{name}__src') }}}}"
                 lines = [hdr + "-- 정제 규칙: " + ", ".join(f"{r['id']}({r['issue']} {r['action']})" for r in rules)]
                 lines.append("with kept as (")
@@ -253,7 +253,12 @@ class Gen:
                     expr = f"m.{_q(c)}"
                     for r in nz:
                         if c in r["orphan"]["columns"]:
-                            expr = f"case when {conds[r['id']]} then null else {expr} end"
+                            new = "null"
+                            if r["action"] == "replace_orphan":
+                                if c not in (r.get("with") or {}):
+                                    raise GenError(f"규칙 {r['id']}: replace_orphan은 with.{c} 필요")
+                                new = r["with"][c]
+                            expr = f"case when {conds[r['id']]} then {new} else {expr} end"
                     sel.append(f"    {expr} as {_q(c)}")
                 lines.append("select\n" + ",\n".join(sel) + f"\nfrom {inner} m\n")
                 self.files[f"{mdir}/xfm/{name}.sql"] = "\n".join(lines)
