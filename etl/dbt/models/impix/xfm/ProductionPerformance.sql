@@ -1,6 +1,6 @@
 -- ksxload gen 생성물 — 직접 수정 금지. 원본: mapping/impix/mes/ProductionPerformance.yaml
 -- ProductionPerformance ← mes.tb_trk_out (N→1(완공+착공+LOT+검사))
--- 정제 규칙: R09(Q005 nullify_orphan), R07(Q009 flag), R08(Q010 flag)
+-- 정제 규칙: R09(Q005 nullify_orphan), R07(Q009 correct), R08(Q010 flag)
 with kept as (
     select m.* from {{ ref('ProductionPerformance__src') }} m
 )
@@ -19,7 +19,7 @@ select
     m."ExecutionEndDateTime" as "ExecutionEndDateTime",
     m."ProductionPerformanceDate" as "ProductionPerformanceDate",
     m."PersonnelID" as "PersonnelID",
-    m."ProducedQuantity" as "ProducedQuantity",
+    case when coalesce((m."ProducedQuantity" + m."DefectQuantity" <> (select os."LotCreatedQuantity" from {{ ref('OperationStart__src') }} os where os."LotID" = m."LotID" and os."OperationID" = m."OperationID")), false) then (select os."LotCreatedQuantity" from {{ ref('OperationStart__src') }} os where os."LotID" = m."LotID" and os."OperationID" = m."OperationID") - m."DefectQuantity" else m."ProducedQuantity" end as "ProducedQuantity",
     m."DefectQuantity" as "DefectQuantity",
     m."InspectionResult" as "InspectionResult",
     m."InspectionQuantity" as "InspectionQuantity",

@@ -1,16 +1,19 @@
 -- ksxload gen 생성물 — 직접 수정 금지. 원본: mapping/impix/mes/OperationEnd.yaml
 -- OperationEnd ← mes.tb_trk_out (이력→이벤트)
+-- 정제 규칙: R07b(Q009 correct)
+with kept as (
+    select m.* from {{ ref('OperationEnd__src') }} m
+)
 select
-    cast('IMPIX' as text) as "EnterpriseID",
-    cast('HQ' as text) as "SiteID",
-    cast(xfm.xref('plant', (i.fac_id)::text) as text) as "PlantID",
-    cast(concat('TO-', s.trk_out_id) as text) as "OperationEndID",
-    cast(s.lot_no as text) as "LotID",
-    cast(xfm.to_ts14(s.trk_out_dtm) as timestamp) as "OperationEndTime",
-    cast(s.oper_emp_no as text) as "PersonnelID",
-    cast(s.proc_cd as text) as "OperationID",
-    cast(s.eqp_id as text) as "EquipmentID",
-    cast(s.good_qty as numeric) as "ProducedQuantity",
-    cast(s.ng_qty as numeric) as "DefectQuantity"
-from {{ source('stg', 'mes__tb_trk_out') }} s
-left join {{ source('stg', 'mes__tb_trk_in') }} i on s.trk_in_id = i.trk_in_id
+    m."EnterpriseID" as "EnterpriseID",
+    m."SiteID" as "SiteID",
+    m."PlantID" as "PlantID",
+    m."OperationEndID" as "OperationEndID",
+    m."LotID" as "LotID",
+    m."OperationEndTime" as "OperationEndTime",
+    m."PersonnelID" as "PersonnelID",
+    m."OperationID" as "OperationID",
+    m."EquipmentID" as "EquipmentID",
+    case when coalesce((m."ProducedQuantity" + m."DefectQuantity" <> (select os."LotCreatedQuantity" from {{ ref('OperationStart__src') }} os where os."LotID" = m."LotID" and os."OperationID" = m."OperationID")), false) then (select os."LotCreatedQuantity" from {{ ref('OperationStart__src') }} os where os."LotID" = m."LotID" and os."OperationID" = m."OperationID") - m."DefectQuantity" else m."ProducedQuantity" end as "ProducedQuantity",
+    m."DefectQuantity" as "DefectQuantity"
+from kept m

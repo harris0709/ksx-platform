@@ -58,6 +58,7 @@ docker compose --profile tools run --rm s3-tools publish    # xfm → 표준 원
 | `quarantine` | `when`(모델 컬럼, 별칭 m) 또는 `orphan`(부모에 없는 참조)인 행을 적재 안 함 | 격리 행 |
 | `nullify_orphan` | 부모에 없는 참조 컬럼만 NULL(행은 적재) | 원래 값이 든 행 |
 | `replace_orphan` | 부모에 없는 참조 컬럼을 `with` 식(다른 모델에서 찾은 값)으로 바꿈 | 원래 값이 든 행 |
+| `correct` | `when`이 참인 행의 `set` 컬럼을 식으로 고침(여러 근거가 일치할 때만). 보정 컬럼은 합계 대사에서 뺀다 | 원래 값이 든 행 |
 | `flag` | 적재는 그대로, 현업 확인 대상으로 표시 | 해당 행 |
 
 모든 규칙은 S1 품질 이슈 ID(Q…)나 S3에서 새로 발견한 ID(S3-…)를 단다. 결과는 `audit.quarantine`에 행 전체(JSON)로 남는다.

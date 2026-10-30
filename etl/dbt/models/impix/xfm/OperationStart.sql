@@ -12,7 +12,7 @@ select
     m."LotID" as "LotID",
     m."LotCreatedQuantity" as "LotCreatedQuantity",
     m."OperationStartTime" as "OperationStartTime",
-    case when (m."PersonnelID" is not null and not exists (select 1 from (select "EnterpriseID", "PersonnelID" from {{ ref('Personnel') }}) p where p."EnterpriseID" = m."EnterpriseID" and p."PersonnelID" = m."PersonnelID")) then (select pp."PersonnelID" from {{ ref('ProductionPerformance') }} pp where pp."LotID" = m."LotID" and pp."OperationID" = m."OperationID") else m."PersonnelID" end as "PersonnelID",
+    case when (m."PersonnelID" is not null and not exists (select 1 from (select "EnterpriseID", "PersonnelID" from {{ ref('Personnel') }}) p where p."EnterpriseID" = m."EnterpriseID" and p."PersonnelID" = m."PersonnelID")) then (select pp."PersonnelID" from {{ ref('ProductionPerformance__src') }} pp where pp."LotID" = m."LotID" and pp."OperationID" = m."OperationID") else m."PersonnelID" end as "PersonnelID",
     m."OperationID" as "OperationID",
     m."EquipmentID" as "EquipmentID"
 from kept m

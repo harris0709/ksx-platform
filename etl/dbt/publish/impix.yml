@@ -1313,12 +1313,11 @@ models:
   - OperationEndID
   expect_sql: select count(*) from stg."mes__tb_trk_out" s
   sums:
-  - column: ProducedQuantity
-    source: select sum(s.good_qty::numeric) from stg."mes__tb_trk_out" s
   - column: DefectQuantity
     source: select sum(s.ng_qty::numeric) from stg."mes__tb_trk_out" s
-  audit: null
-  rules: []
+  audit: OperationEnd__audit
+  rules:
+  - R07b
 - model: OperationEquipment
   noun: OperationEquipment
   spec: mapping/impix/mes/OperationEquipment.yaml
@@ -1403,8 +1402,6 @@ models:
   - ProductionPerformanceSequence
   expect_sql: select count(*) from stg."mes__tb_trk_out" s
   sums:
-  - column: ProducedQuantity
-    source: select sum(s.good_qty::numeric) from stg."mes__tb_trk_out" s
   - column: DefectQuantity
     source: select sum(s.ng_qty::numeric) from stg."mes__tb_trk_out" s
   audit: ProductionPerformance__audit
@@ -1439,12 +1436,11 @@ models:
   - EquipmentID
   expect_sql: select count(*) from stg."mes__tb_trk_out" s
   sums:
-  - column: ProducedQuantity
-    source: select sum(s.good_qty::numeric) from stg."mes__tb_trk_out" s
   - column: DefectQuantity
     source: select sum(s.ng_qty::numeric) from stg."mes__tb_trk_out" s
-  audit: null
-  rules: []
+  audit: ProductionPerformanceEquipment__audit
+  rules:
+  - R07c
 - model: ProductionPerformanceItem
   noun: ProductionPerformanceItem
   spec: mapping/impix/mes/ProductionPerformanceItem.yaml

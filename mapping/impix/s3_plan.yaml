@@ -35,6 +35,7 @@ dbt:
 #   quarantine      when(모델 출력 컬럼, 별칭 m)이 참인 행을 적재하지 않고 audit.quarantine에 기록
 #   nullify_orphan  columns가 부모 명사(parent)에 없으면 그 컬럼만 NULL로 비우고 기록(행은 적재)
 #   replace_orphan  columns가 부모 명사에 없으면 with의 식(모델 컬럼, 별칭 m)으로 바꾸고 기록
+#   correct         when이 참인 행의 set 컬럼을 식으로 고치고 원래 행을 기록(근거가 일치할 때만)
 #   flag            적재는 그대로, 해당 행을 기록만(현업 확인 대상)
 # 처리 결과는 publish가 audit.quarantine·audit.load_log에 남긴다.
 rules:
@@ -61,11 +62,20 @@ rules:
       note: "규격 상한의 10배를 넘는 수집값 — 단위 오류 의심, 시계열 분석에서 제외" }
   - { id: R06, issue: Q008, model: OperationStart, action: replace_orphan,
       orphan: { columns: [PersonnelID], parent: Personnel },
-      with: { PersonnelID: '(select pp."PersonnelID" from {{ ref(''ProductionPerformance'') }} pp where pp."LotID" = m."LotID" and pp."OperationID" = m."OperationID")' },
+      with: { PersonnelID: '(select pp."PersonnelID" from {{ ref(''ProductionPerformance__src'') }} pp where pp."LotID" = m."LotID" and pp."OperationID" = m."OperationID")' },
       note: "착공 작업자 OP01(포장 단말 공용 계정, MES 도입 초기 9/21~22)은 사번이 아님 — 같은 LOT·공정의 완공 작업자로 보정(2026-10-30 결정)" }
-  - { id: R07, issue: Q009, model: ProductionPerformance, action: flag,
-      when: 'm."ProducedQuantity" + m."DefectQuantity" <> (select os."LotCreatedQuantity" from {{ ref(''OperationStart'') }} os where os."LotID" = m."LotID" and os."OperationID" = m."OperationID")',
-      note: "양품+불량 ≠ 착공 투입 — 유실·재작업 여부 현업 확인" }
+  - { id: R07, issue: Q009, model: ProductionPerformance, action: correct,
+      when: 'm."ProducedQuantity" + m."DefectQuantity" <> (select os."LotCreatedQuantity" from {{ ref(''OperationStart__src'') }} os where os."LotID" = m."LotID" and os."OperationID" = m."OperationID")',
+      set: { ProducedQuantity: '(select os."LotCreatedQuantity" from {{ ref(''OperationStart__src'') }} os where os."LotID" = m."LotID" and os."OperationID" = m."OperationID") - m."DefectQuantity"' },
+      note: "완공 양품 +3 과다 입력(E260925B1 A100·A200) — 양품 = 착공 투입 − 불량으로 보정. 다음 공정 투입·공정검사 양품과 일치(2026-10-30 결정)" }
+  - { id: R07b, issue: Q009, model: OperationEnd, action: correct,
+      when: 'm."ProducedQuantity" + m."DefectQuantity" <> (select os."LotCreatedQuantity" from {{ ref(''OperationStart__src'') }} os where os."LotID" = m."LotID" and os."OperationID" = m."OperationID")',
+      set: { ProducedQuantity: '(select os."LotCreatedQuantity" from {{ ref(''OperationStart__src'') }} os where os."LotID" = m."LotID" and os."OperationID" = m."OperationID") - m."DefectQuantity"' },
+      note: "R07과 같은 완공 기록 — 완공(OperationEnd) 양품도 같은 값으로 보정" }
+  - { id: R07c, issue: Q009, model: ProductionPerformanceEquipment, action: correct,
+      when: 'm."ProducedQuantity" <> (select pp."ProducedQuantity" from {{ ref(''ProductionPerformance'') }} pp where pp."ProductionPerformanceID" = m."ProductionPerformanceID")',
+      set: { ProducedQuantity: '(select pp."ProducedQuantity" from {{ ref(''ProductionPerformance'') }} pp where pp."ProductionPerformanceID" = m."ProductionPerformanceID")' },
+      note: "R07과 같은 완공 기록 — 생산실적 설비의 양품도 보정된 생산실적 값으로" }
   - { id: R08, issue: Q010, model: ProductionPerformance, action: flag,
       when: 'm."ExecutionEndDateTime" < m."ExecutionStartDateTime"',
       note: "완공 일시가 착공보다 빠름 — 단말 시각 오류 의심, 현업 확인" }

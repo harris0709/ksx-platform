@@ -251,6 +251,9 @@ class Gen:
                 sel = []
                 for c in cols:
                     expr = f"m.{_q(c)}"
+                    for r in [x for x in rules if x["action"] == "correct"]:
+                        if c in (r.get("set") or {}):
+                            expr = f"case when coalesce({conds[r['id']]}, false) then {r['set'][c]} else {expr} end"
                     for r in nz:
                         if c in r["orphan"]["columns"]:
                             new = "null"
@@ -343,12 +346,13 @@ class Gen:
             kind = "rows"
         sums = []
         removes = any(r["action"] in ("quarantine", "dedupe") for r in rules)
+        corrected = {c for r in rules if r["action"] == "correct" for c in (r.get("set") or {})}
         if kind == "rows" and not removes:
             for an, m in info["attrs"].items():
                 f = m.get("from")
                 t = (m.get("transform") or "").strip()
                 typ = (core.cols.get(an) or (ext.cols.get(an) if ext else None))
-                if not f or "," in f or "." in f or m.get("code") or m.get("uom") or typ is None:
+                if not f or "," in f or "." in f or m.get("code") or m.get("uom") or typ is None or an in corrected:
                     continue
                 if typ.base != "numeric":                   # 수량·금액(NUMERIC)만 — 정수는 순번·횟수
                     continue
