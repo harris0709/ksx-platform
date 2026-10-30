@@ -5,4 +5,4 @@ select 'R09' as rule_id, 'Q005' as issue_id, 'nullify_orphan' as action, to_json
 union all
 select 'R07' as rule_id, 'Q009' as issue_id, 'correct' as action, to_jsonb(m) as row_data from {{ ref('ProductionPerformance__src') }} m where coalesce((m."ProducedQuantity" + m."DefectQuantity" <> (select os."LotCreatedQuantity" from {{ ref('OperationStart__src') }} os where os."LotID" = m."LotID" and os."OperationID" = m."OperationID")), false)
 union all
-select 'R08' as rule_id, 'Q010' as issue_id, 'flag' as action, to_jsonb(m) as row_data from {{ ref('ProductionPerformance') }} m where coalesce((m."ExecutionEndDateTime" < m."ExecutionStartDateTime"), false)
+select 'R08' as rule_id, 'Q010' as issue_id, 'correct' as action, to_jsonb(m) as row_data from {{ ref('ProductionPerformance__src') }} m where coalesce((m."ExecutionEndDateTime" < m."ExecutionStartDateTime" and (select max(q.insp_dtm) from {{ source('stg', 'mes__tb_qc_insp') }} q where q.lot_no = m."LotID" and q.proc_cd = m."OperationID") >= m."ExecutionStartDateTime"), false)

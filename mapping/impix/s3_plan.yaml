@@ -76,7 +76,16 @@ rules:
       when: 'm."ProducedQuantity" <> (select pp."ProducedQuantity" from {{ ref(''ProductionPerformance'') }} pp where pp."ProductionPerformanceID" = m."ProductionPerformanceID")',
       set: { ProducedQuantity: '(select pp."ProducedQuantity" from {{ ref(''ProductionPerformance'') }} pp where pp."ProductionPerformanceID" = m."ProductionPerformanceID")' },
       note: "R07과 같은 완공 기록 — 생산실적 설비의 양품도 보정된 생산실적 값으로" }
-  - { id: R08, issue: Q010, model: ProductionPerformance, action: flag,
+  - { id: R08, issue: Q010, model: ProductionPerformance, action: correct,
+      when: 'm."ExecutionEndDateTime" < m."ExecutionStartDateTime" and (select max(q.insp_dtm) from {{ source(''stg'', ''mes__tb_qc_insp'') }} q where q.lot_no = m."LotID" and q.proc_cd = m."OperationID") >= m."ExecutionStartDateTime"',
+      set: { ExecutionEndDateTime: '(select max(q.insp_dtm) from {{ source(''stg'', ''mes__tb_qc_insp'') }} q where q.lot_no = m."LotID" and q.proc_cd = m."OperationID")', ProductionPerformanceDate: 'cast((select max(q.insp_dtm) from {{ source(''stg'', ''mes__tb_qc_insp'') }} q where q.lot_no = m."LotID" and q.proc_cd = m."OperationID") as date)' },
+      note: "완공 일시가 착공보다 5분 빠름(E261009A2 A200 14:52) — 완공 = 공정검사 시각(16:35)으로 보정. A200 77건 중 76건이 검사 시각 = 완공 시각, 보정 후 98분(중앙값 99분), 다음 공정 착공 16:45(2026-10-30 결정)" }
+  - { id: R08b, issue: Q010, model: OperationEnd, action: correct,
+      when: 'm."OperationEndTime" < (select os."OperationStartTime" from {{ ref(''OperationStart__src'') }} os where os."LotID" = m."LotID" and os."OperationID" = m."OperationID") and (select max(q.insp_dtm) from {{ source(''stg'', ''mes__tb_qc_insp'') }} q where q.lot_no = m."LotID" and q.proc_cd = m."OperationID") >= (select os."OperationStartTime" from {{ ref(''OperationStart__src'') }} os where os."LotID" = m."LotID" and os."OperationID" = m."OperationID")',
+      set: { OperationEndTime: '(select max(q.insp_dtm) from {{ source(''stg'', ''mes__tb_qc_insp'') }} q where q.lot_no = m."LotID" and q.proc_cd = m."OperationID")' },
+      note: "R08과 같은 완공 기록 — 완공(OperationEnd) 시각도 공정검사 시각으로 보정" }
+  - { id: R08c, issue: Q010, model: ProductionPerformanceEquipment, action: correct,
       when: 'm."ExecutionEndDateTime" < m."ExecutionStartDateTime"',
-      note: "완공 일시가 착공보다 빠름 — 단말 시각 오류 의심, 현업 확인" }
+      set: { ExecutionEndDateTime: '(select pp."ExecutionEndDateTime" from {{ ref(''ProductionPerformance'') }} pp where pp."ProductionPerformanceID" = m."ProductionPerformanceID")' },
+      note: "R08과 같은 완공 기록 — 생산실적 설비의 완공 일시도 보정된 생산실적 값으로" }
 # Q004·Q011(출하·클레임 LOT가 MES에 없음)은 S2 로트 A안(Lot_shipped)으로, Q007(MES 일 집계)은 테이블 제외로 처리됨.

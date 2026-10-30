@@ -1318,6 +1318,7 @@ models:
   audit: OperationEnd__audit
   rules:
   - R07b
+  - R08b
 - model: OperationEquipment
   noun: OperationEquipment
   spec: mapping/impix/mes/OperationEquipment.yaml
@@ -1441,6 +1442,7 @@ models:
   audit: ProductionPerformanceEquipment__audit
   rules:
   - R07c
+  - R08c
 - model: ProductionPerformanceItem
   noun: ProductionPerformanceItem
   spec: mapping/impix/mes/ProductionPerformanceItem.yaml
