@@ -31,7 +31,10 @@ def main(argv=None) -> int:
     if a.cmd == "dbt":                       # dbt는 etl/dbt에서 실행(profiles.yml도 그 폴더)
         import subprocess
         args = rest or ["build"]
-        return subprocess.call(["dbt", *args, "--project-dir", cfg.dbt_dir, "--profiles-dir", cfg.dbt_dir])
+        # dbt-core(1.8)를 파이썬 모듈로 직접 부른다 — PATH의 다른 dbt(예: dbt Fusion, postgres 미지원)를 피함
+        runner = "import sys; from dbt.cli.main import cli; sys.argv[0] = 'dbt'; cli()"
+        return subprocess.call([sys.executable, "-c", runner, *args, "--project-dir", cfg.dbt_dir,
+                                "--profiles-dir", cfg.dbt_dir])
     if rest:
         ap.error(f"알 수 없는 인자: {rest}")
     try:
