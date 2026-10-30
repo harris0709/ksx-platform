@@ -303,7 +303,8 @@ class Gen:
         # 적재 목록
         tkeys = sorted({t["table"] for e in self.manifest for t in e["targets"]})
         order = topo_order(self.tables, tkeys)
-        self.files[f"{mdir}/publish.yml"] = "# ksxload gen 생성물 — publish 적재 목록(대상 테이블·컬럼·대사 기준)\n" + yaml.safe_dump(
+        pdir = os.path.relpath(os.path.join(self.cfg.dbt_dir, "publish"), self.cfg.repo)   # dbt가 읽지 않는 폴더
+        self.files[f"{pdir}/{self.cfg.ent.lower()}.yml"] = "# ksxload gen 생성물 — publish 적재 목록(대상 테이블·컬럼·대사 기준)\n" + yaml.safe_dump(
             {"enterprise": self.cfg.ent, "order": order, "models": self.manifest},
             allow_unicode=True, sort_keys=False, width=200)
         return self.files
@@ -375,7 +376,7 @@ def generate(cfg: Config, out=print):
     files = g.build()
     mdir = os.path.relpath(cfg.models_dir, cfg.repo)
     sdir = os.path.relpath(cfg.seeds_dir, cfg.repo)
-    _write(files, cfg.repo, [mdir, sdir])
+    _write(files, cfg.repo, [mdir, sdir])   # publish/<기업>.yml은 덮어쓴다
     n_models = sum(1 for k in files if k.endswith(".sql"))
     n_rules = sum(1 for k in files if k.endswith("__audit.sql"))
     out(f"ksxload gen: 명세 {len(g.specs)} → 모델 {n_models}개(규칙 적용 {n_rules}), 대상 테이블 "

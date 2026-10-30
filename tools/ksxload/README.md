@@ -31,7 +31,7 @@ docker compose --profile tools run --rm s3-tools publish    # xfm → 표준 원
 |---|---|---|
 | `ddl` | `ontologies/ddl/*.sql` 적용. 이미 있으면 건너뛴다(`--recreate`는 다시 만든다). `xfm` 스키마와 `audit.load_log`·`audit.quarantine`을 만든다 | 테이블 98, FK 672 |
 | `stage` | 원천을 psql `\copy`로 그대로 복제하고 원천 행 수와 비교한다 | 56 테이블, 143,858행 일치 |
-| `gen` | 명세(`mapping/<기업>/{erp,mes,qms}/*.yaml`)와 정제 규칙(`s3_plan.yaml`)으로 `etl/dbt/models/<기업>/`·`seeds/<기업>/`를 만든다 | 모델 74(규칙 적용 8) |
+| `gen` | 명세(`mapping/<기업>/{erp,mes,qms}/*.yaml`)와 정제 규칙(`s3_plan.yaml`)으로 `etl/dbt/models/<기업>/`·`seeds/<기업>/`와 적재 목록 `etl/dbt/publish/<기업>.yml`을 만든다 | 모델 74(규칙 적용 8) |
 | `dbt build` | 변환 함수 생성(on-run-start) → seed(대응표) → 뷰 → 테스트(UK 유일·필수 값·코드 대응) | 테스트 378 통과 |
 | `xfm` | dbt 없이 같은 SQL로 seed·뷰·테스트를 실행한다(dbt를 쓸 수 없는 환경용) | `dbt build`와 같음 |
 | `publish` | 대상 70개 테이블을 비우고 FK 순서대로 적재한다. FK 고아가 있으면 커밋이 실패해 원장은 그대로 남는다 | 아래 대사 |

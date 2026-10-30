@@ -26,7 +26,7 @@ def _fq(key):
 
 
 def load_manifest(cfg: Config) -> dict:
-    return yaml.safe_load(open(os.path.join(cfg.models_dir, "publish.yml"), encoding="utf-8"))
+    return yaml.safe_load(open(os.path.join(cfg.dbt_dir, "publish", f"{cfg.ent.lower()}.yml"), encoding="utf-8"))
 
 
 def precheck(cfg: Config, man: dict) -> list[dict]:
