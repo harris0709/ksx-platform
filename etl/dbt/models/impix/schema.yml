@@ -1,0 +1,1820 @@
+# ksxload gen 생성물 — 모델 테스트(UK 유일·필수 값·코드 대응)
+version: 2
+models:
+- name: AvailableInventory
+  description: AvailableInventory ← erp.tb_pp_mat_chk — mapping/impix/erp/AvailableInventory.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - AvailableInventoryID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: AvailableInventoryID
+    quote: true
+    tests:
+    - not_null
+- name: BOMHeader
+  description: BOMHeader ← erp.tb_pp_bom_h — mapping/impix/erp/BOMHeader.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - BOMID
+      - BOMRevisionNumber
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: BOMID
+    quote: true
+    tests:
+    - not_null
+  - name: BOMRevisionNumber
+    quote: true
+    tests:
+    - not_null
+  - name: _src__BOMType
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: BOM_TP
+- name: BOMLine
+  description: BOMLine ← erp.tb_pp_bom_d — mapping/impix/erp/BOMLine.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - BOMID
+      - BOMRevisionNumber
+      - BOMLineSequence
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: BOMID
+    quote: true
+    tests:
+    - not_null
+  - name: BOMRevisionNumber
+    quote: true
+    tests:
+    - not_null
+  - name: BOMLineSequence
+    quote: true
+    tests:
+    - not_null
+- name: BasePrice
+  description: BasePrice ← erp.tb_mm_price — mapping/impix/erp/BasePrice.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - ItemID
+      - CurrencyCode
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: CurrencyCode
+    quote: true
+    tests:
+    - not_null
+  - name: ItemID
+    quote: true
+    tests:
+    - not_null
+  - name: _src__CurrencyCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: CURR
+- name: CustomerPartyMaster
+  description: CustomerPartyMaster ← erp.tb_sd_cust — mapping/impix/erp/CustomerPartyMaster.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - CustomerID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: CustomerID
+    quote: true
+    tests:
+    - not_null
+  - name: _src__CountryID
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: NATION
+  - name: _src__CustomerGroupCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: CUST_GRP
+- name: DeliveryHeader
+  description: DeliveryHeader ← erp.tb_sd_dlv — mapping/impix/erp/DeliveryHeader.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - DeliveryID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: DeliveryID
+    quote: true
+    tests:
+    - not_null
+- name: DeliveryLine
+  description: DeliveryLine ← erp.tb_sd_dlv — mapping/impix/erp/DeliveryLine.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - DeliveryID
+      - DeliveryLineSequence
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: DeliveryID
+    quote: true
+    tests:
+    - not_null
+  - name: DeliveryLineSequence
+    quote: true
+    tests:
+    - not_null
+- name: Department
+  description: Department ← erp.tb_cm_dept — mapping/impix/erp/Department.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - DepartmentID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: DepartmentID
+    quote: true
+    tests:
+    - not_null
+- name: Enterprise
+  description: Enterprise ← erp.tb_cm_comp — mapping/impix/erp/Enterprise.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: _src__BaseCurrencyCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: CURR
+- name: GoodsIssue
+  description: GoodsIssue ← erp.tb_mm_gi — mapping/impix/erp/GoodsIssue.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - GoodsIssueID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: GoodsIssueID
+    quote: true
+    tests:
+    - not_null
+  - name: InventoryTransactionDate
+    quote: true
+    tests:
+    - not_null
+  - name: _src__InventoryTransactionTypeCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: GI_TP
+- name: GoodsReceipt
+  description: GoodsReceipt ← erp.tb_mm_gr — mapping/impix/erp/GoodsReceipt.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - GoodsReceiptID
+      - GoodsReceiptSequence
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: GoodsReceiptID
+    quote: true
+    tests:
+    - not_null
+  - name: GoodsReceiptSequence
+    quote: true
+    tests:
+    - not_null
+- name: Inventory
+  description: Inventory ← erp.tb_mm_stock_day — mapping/impix/erp/Inventory.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - WarehouseID
+      - ItemID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: WarehouseID
+    quote: true
+    tests:
+    - not_null
+  - name: ItemID
+    quote: true
+    tests:
+    - not_null
+- name: InventoryCount
+  description: InventoryCount ← erp.tb_mm_cnt — mapping/impix/erp/InventoryCount.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - InventoryCountDocumentNumber
+      - WarehouseID
+      - ItemID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: InventoryCountDocumentNumber
+    quote: true
+    tests:
+    - not_null
+  - name: WarehouseID
+    quote: true
+    tests:
+    - not_null
+  - name: ItemID
+    quote: true
+    tests:
+    - not_null
+- name: InventorySnapshot
+  description: InventorySnapshot ← erp.tb_mm_stock_day — mapping/impix/erp/InventorySnapshot.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - InventorySnapshotDate
+      - WarehouseID
+      - ItemID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: InventorySnapshotDate
+    quote: true
+    tests:
+    - not_null
+  - name: WarehouseID
+    quote: true
+    tests:
+    - not_null
+  - name: ItemID
+    quote: true
+    tests:
+    - not_null
+- name: ItemMaster
+  description: ItemMaster ← erp.tb_mm_item — mapping/impix/erp/ItemMaster.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - ItemID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: ItemID
+    quote: true
+    tests:
+    - not_null
+  - name: _src__ItemType
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: ITEM_TP
+  - name: _src__ItemLargeClass
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: ITEM_GRP
+- name: Line
+  description: Line ← erp.tb_pp_line — mapping/impix/erp/Line.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - LineID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: LineID
+    quote: true
+    tests:
+    - not_null
+  - name: _src__LineType
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: LINE_TP
+- name: LotInventory
+  description: LotInventory ← erp.tb_mm_stock_lot — mapping/impix/erp/LotInventory.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - WarehouseID
+      - ItemID
+      - LotID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: WarehouseID
+    quote: true
+    tests:
+    - not_null
+  - name: LotID
+    quote: true
+    tests:
+    - not_null
+  - name: GoodsReceiptDate
+    quote: true
+    tests:
+    - not_null
+  - name: ItemID
+    quote: true
+    tests:
+    - not_null
+- name: Lot_legacy
+  description: Lot ← erp.tb_mm_stock_lot — mapping/impix/erp/Lot_legacy.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - LotID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: LotID
+    quote: true
+    tests:
+    - not_null
+  - name: LotOriginType
+    quote: true
+    tests:
+    - not_null
+- name: Lot_material
+  description: Lot ← erp.tb_mm_gr — mapping/impix/erp/Lot_material.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - LotID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: LotID
+    quote: true
+    tests:
+    - not_null
+  - name: LotOriginType
+    quote: true
+    tests:
+    - not_null
+- name: Lot_shipped
+  description: Lot ← erp.tb_sd_dlv — mapping/impix/erp/Lot_shipped.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - LotID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: LotID
+    quote: true
+    tests:
+    - not_null
+  - name: LotOriginType
+    quote: true
+    tests:
+    - not_null
+- name: Personnel
+  description: Personnel ← erp.tb_hr_emp — mapping/impix/erp/Personnel.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - PersonnelID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: PersonnelID
+    quote: true
+    tests:
+    - not_null
+  - name: _src__EmploymentStatusType
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: RETIRE_YN
+- name: Plant
+  description: Plant ← erp.tb_cm_plant — mapping/impix/erp/Plant.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - PlantID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+- name: ProductIncoming
+  description: ProductIncoming ← erp.tb_pp_rcpt — mapping/impix/erp/ProductIncoming.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - ProductIncomingID
+      - ProductIncomingSequence
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: ProductIncomingID
+    quote: true
+    tests:
+    - not_null
+  - name: ProductIncomingSequence
+    quote: true
+    tests:
+    - not_null
+- name: ProductRelease
+  description: ProductRelease ← erp.tb_sd_dlv — mapping/impix/erp/ProductRelease.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - ProductReleaseID
+      - ProductReleaseSequence
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: ProductReleaseID
+    quote: true
+    tests:
+    - not_null
+  - name: ProductReleaseSequence
+    quote: true
+    tests:
+    - not_null
+- name: ProductionOrder
+  description: ProductionOrder ← erp.tb_pp_mo — mapping/impix/erp/ProductionOrder.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - ProductionOrderID
+      - ProductionOrderSequence
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: ProductionOrderID
+    quote: true
+    tests:
+    - not_null
+  - name: ProductionOrderSequence
+    quote: true
+    tests:
+    - not_null
+  - name: _src__ProductionOrderStatusCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: MO_STAT
+- name: ProductionPlanning
+  description: ProductionPlanning ← erp.tb_pp_plan — mapping/impix/erp/ProductionPlanning.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - ProductionPlanID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: ProductionPlanID
+    quote: true
+    tests:
+    - not_null
+- name: PurchaseOrderHeader
+  description: PurchaseOrderHeader ← erp.tb_mm_po_h — mapping/impix/erp/PurchaseOrderHeader.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - PurchaseDocumentNumber
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: PurchaseDocumentNumber
+    quote: true
+    tests:
+    - not_null
+- name: PurchaseOrderLine
+  description: PurchaseOrderLine ← erp.tb_mm_po_d — mapping/impix/erp/PurchaseOrderLine.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - PurchaseDocumentNumber
+      - PurchaseDocumentSequence
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: PurchaseDocumentNumber
+    quote: true
+    tests:
+    - not_null
+  - name: PurchaseDocumentSequence
+    quote: true
+    tests:
+    - not_null
+  - name: _src__PurchaseOrderLineStatusCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: PO_STAT
+- name: RoutingHeader
+  description: RoutingHeader ← erp.tb_pp_rout_h — mapping/impix/erp/RoutingHeader.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - RoutingID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: RoutingID
+    quote: true
+    tests:
+    - not_null
+- name: RoutingLine
+  description: RoutingLine ← erp.tb_pp_rout_d — mapping/impix/erp/RoutingLine.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - RoutingID
+      - OperationSequence
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: RoutingID
+    quote: true
+    tests:
+    - not_null
+  - name: OperationSequence
+    quote: true
+    tests:
+    - not_null
+- name: SalesOrderHeader
+  description: SalesOrderHeader ← erp.tb_sd_so_h — mapping/impix/erp/SalesOrderHeader.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - SalesDocumentNumber
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: SalesDocumentNumber
+    quote: true
+    tests:
+    - not_null
+  - name: _src__SalesOrderType
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: SO_TP
+  - name: _src__SalesStatus
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: SO_STAT
+- name: SalesOrderLine
+  description: SalesOrderLine ← erp.tb_sd_so_d — mapping/impix/erp/SalesOrderLine.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - SalesDocumentNumber
+      - SalesDocumentSequence
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: SalesDocumentNumber
+    quote: true
+    tests:
+    - not_null
+  - name: SalesDocumentSequence
+    quote: true
+    tests:
+    - not_null
+- name: SalesPlan
+  description: SalesPlan ← erp.tb_sd_plan — mapping/impix/erp/SalesPlan.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - SalesPlanID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: SalesPlanID
+    quote: true
+    tests:
+    - not_null
+  - name: SalesPlanType
+    quote: true
+    tests:
+    - not_null
+  - name: _src__SalesPlanType
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: PLAN_TP
+- name: Site
+  description: Site ← erp.tb_cm_bizarea — mapping/impix/erp/Site.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - SiteID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+- name: StandardCost
+  description: StandardCost ← erp.tb_co_std_cost — mapping/impix/erp/StandardCost.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - StandardCostID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: StandardCostID
+    quote: true
+    tests:
+    - not_null
+  - name: ItemID
+    quote: true
+    tests:
+    - not_null
+  - name: CostPeriodStartDate
+    quote: true
+    tests:
+    - not_null
+  - name: StandardCostAmount
+    quote: true
+    tests:
+    - not_null
+  - name: _src__CurrencyCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: CURR
+- name: VendorPartyMaster
+  description: VendorPartyMaster ← erp.tb_mm_vend — mapping/impix/erp/VendorPartyMaster.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - VendorID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: VendorID
+    quote: true
+    tests:
+    - not_null
+- name: WarehouseLocationHeader
+  description: WarehouseLocationHeader ← erp.tb_mm_wh — mapping/impix/erp/WarehouseLocationHeader.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - WarehouseID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: WarehouseID
+    quote: true
+    tests:
+    - not_null
+  - name: _src__WarehouseType
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: WH_TP
+- name: Alarm
+  description: Alarm ← mes.tb_alarm — mapping/impix/mes/Alarm.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - AlarmID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: AlarmID
+    quote: true
+    tests:
+    - not_null
+  - name: _src__ErrorCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: ALM_CD
+  - name: _src__AlarmSeverityCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: ALM_LVL
+- name: Equipment
+  description: Equipment ← mes.tm_eqp — mapping/impix/mes/Equipment.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - EquipmentID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: EquipmentID
+    quote: true
+    tests:
+    - not_null
+  - name: _src__EquipmentType
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: EQP_KIND
+  - name: _src__EquipmentLargeClass
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: EQP_GRP
+- name: EquipmentParameter
+  description: EquipmentParameter ← mes.tm_param — mapping/impix/mes/EquipmentParameter.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - ParameterID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: ParameterID
+    quote: true
+    tests:
+    - not_null
+  - name: _src__ParameterType
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: PARAM_KIND
+  - name: _src__ParameterGrade
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: PARAM_GRADE
+- name: EquipmentState
+  description: EquipmentState ← mes.tb_eqp_stat — mapping/impix/mes/EquipmentState.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - EquipmentStateID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: EquipmentStateID
+    quote: true
+    tests:
+    - not_null
+  - name: StateStartDateTime
+    quote: true
+    tests:
+    - not_null
+  - name: _src__EquipmentState
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: EQP_STAT
+  - name: _src__ErrorCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: ERR_CD
+  - name: _src__EquipmentControlMode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: CTRL_MODE
+  - name: _src__EquipmentOperationMode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: OPER_MODE
+- name: Lot
+  description: Lot ← mes.tb_lot — mapping/impix/mes/Lot.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - LotID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: LotID
+    quote: true
+    tests:
+    - not_null
+  - name: LotOriginType
+    quote: true
+    tests:
+    - not_null
+  - name: _src__LotType
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: LOT_TP
+  - name: _src__LotState
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: LOT_STAT
+- name: Operation
+  description: Operation ← mes.tm_proc — mapping/impix/mes/Operation.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - OperationID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: OperationID
+    quote: true
+    tests:
+    - not_null
+  - name: _src__OperationType
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: PROC_TP
+- name: OperationEnd
+  description: OperationEnd ← mes.tb_trk_out — mapping/impix/mes/OperationEnd.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - OperationEndID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: OperationEndID
+    quote: true
+    tests:
+    - not_null
+- name: OperationEquipment
+  description: OperationEquipment ← mes.tm_eqp — mapping/impix/mes/OperationEquipment.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - OperationID
+      - EquipmentID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: EquipmentID
+    quote: true
+    tests:
+    - not_null
+  - name: OperationID
+    quote: true
+    tests:
+    - not_null
+- name: OperationStart
+  description: OperationStart ← mes.tb_trk_in — mapping/impix/mes/OperationStart.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - OperationStartID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: OperationStartID
+    quote: true
+    tests:
+    - not_null
+- name: ProductionPerformance
+  description: ProductionPerformance ← mes.tb_trk_out — mapping/impix/mes/ProductionPerformance.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - ProductionPerformanceID
+      - ProductionPerformanceSequence
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: ProductionPerformanceID
+    quote: true
+    tests:
+    - not_null
+  - name: ProductionPerformanceSequence
+    quote: true
+    tests:
+    - not_null
+  - name: _src__InspectionResult
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: QC_JUDGE
+- name: ProductionPerformanceEquipment
+  description: ProductionPerformanceEquipment ← mes.tb_trk_out — mapping/impix/mes/ProductionPerformanceEquipment.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - ProductionPerformanceID
+      - ProductionPerformanceSequence
+      - EquipmentID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: ProductionPerformanceID
+    quote: true
+    tests:
+    - not_null
+  - name: ProductionPerformanceSequence
+    quote: true
+    tests:
+    - not_null
+  - name: EquipmentID
+    quote: true
+    tests:
+    - not_null
+- name: ProductionPerformanceItem
+  description: ProductionPerformanceItem ← mes.tb_lot_link — mapping/impix/mes/ProductionPerformanceItem.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - ProductionPerformanceID
+      - ProductionPerformanceSequence
+      - ItemID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: ProductionPerformanceID
+    quote: true
+    tests:
+    - not_null
+  - name: ProductionPerformanceSequence
+    quote: true
+    tests:
+    - not_null
+  - name: ItemID
+    quote: true
+    tests:
+    - not_null
+- name: ProductionPerformanceQuality
+  description: ProductionPerformanceQuality ← mes.tb_qc_defect — mapping/impix/mes/ProductionPerformanceQuality.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - ProductionPerformanceID
+      - ProductionPerformanceSequence
+      - DefectTypeCode
+      - DefectTypeDetailCode
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: ProductionPerformanceID
+    quote: true
+    tests:
+    - not_null
+  - name: ProductionPerformanceSequence
+    quote: true
+    tests:
+    - not_null
+  - name: DefectTypeCode
+    quote: true
+    tests:
+    - not_null
+  - name: DefectTypeDetailCode
+    quote: true
+    tests:
+    - not_null
+  - name: _src__DefectTypeCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: DEFECT_CD:TYPE
+  - name: _src__DefectTypeDetailCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: DEFECT_CD
+- name: TraceParameter
+  description: TraceParameter ← mes.tb_param_val — mapping/impix/mes/TraceParameter.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - TraceParameterID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: TraceParameterID
+    quote: true
+    tests:
+    - not_null
+- name: CorrectiveActionRequest
+  description: CorrectiveActionRequest ← qms.qm_vend_ncr — mapping/impix/qms/CorrectiveActionRequest.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - CorrectiveActionRequestID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: CorrectiveActionRequestID
+    quote: true
+    tests:
+    - not_null
+  - name: DetectionLocationType
+    quote: true
+    tests:
+    - not_null
+  - name: _src__DetectionLocationType
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: FOUND_AT
+  - name: _src__DefectTypeCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: IQC_DEFECT:TYPE
+  - name: _src__DefectTypeDetailCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: IQC_DEFECT
+- name: CorrectiveActionResult
+  description: CorrectiveActionResult ← qms.qm_vend_ncr — mapping/impix/qms/CorrectiveActionResult.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - CorrectiveActionResultID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: CorrectiveActionResultID
+    quote: true
+    tests:
+    - not_null
+- name: CustomerComplaint
+  description: CustomerComplaint ← qms.qm_claim — mapping/impix/qms/CustomerComplaint.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - CustomerComplaintID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: CustomerComplaintID
+    quote: true
+    tests:
+    - not_null
+  - name: CustomerComplaintType
+    quote: true
+    tests:
+    - not_null
+  - name: ResponseDueDate
+    quote: true
+    tests:
+    - not_null
+  - name: CustomerID
+    quote: true
+    tests:
+    - not_null
+  - name: _src__CustomerComplaintType
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: CLAIM_TP
+  - name: _src__DefectTypeCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: CLAIM_DEFECT:TYPE
+  - name: _src__DefectTypeDetailCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: CLAIM_DEFECT
+  - name: _src__CustomerComplaintStatusCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: CLAIM_STAT
+- name: GoodsIssue_scrap
+  description: GoodsIssue ← qms.qm_scrap — mapping/impix/qms/GoodsIssue_scrap.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - GoodsIssueID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: GoodsIssueID
+    quote: true
+    tests:
+    - not_null
+  - name: InventoryTransactionDate
+    quote: true
+    tests:
+    - not_null
+- name: QualityCost
+  description: QualityCost ← qms.qm_qcost — mapping/impix/qms/QualityCost.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - QualityCostID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: QualityCostID
+    quote: true
+    tests:
+    - not_null
+  - name: CostPeriodStartDate
+    quote: true
+    tests:
+    - not_null
+  - name: QualityCostClass
+    quote: true
+    tests:
+    - not_null
+  - name: QualityCostItem
+    quote: true
+    tests:
+    - not_null
+  - name: QualityCostAmount
+    quote: true
+    tests:
+    - not_null
+  - name: _src__QualityCostClass
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: COST_CLS
+  - name: _src__QualityCostItem
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: COST_ITM
+- name: Return
+  description: Return ← qms.qm_claim — mapping/impix/qms/Return.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - ReturnID
+      - ReturnSequence
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: ReturnID
+    quote: true
+    tests:
+    - not_null
+  - name: ReturnSequence
+    quote: true
+    tests:
+    - not_null
+- name: SupplierInspectionResult
+  description: SupplierInspectionResult ← qms.qm_iqc — mapping/impix/qms/SupplierInspectionResult.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - InspectionResultID
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: InspectionResultID
+    quote: true
+    tests:
+    - not_null
+  - name: _src__InspectionResult
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: IQC_JUDGE
+  - name: _src__DefectTypeCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: IQC_DEFECT:TYPE
+  - name: _src__DefectTypeDetailCode
+    quote: true
+    tests:
+    - ksx_code_mapped:
+        group: IQC_DEFECT
