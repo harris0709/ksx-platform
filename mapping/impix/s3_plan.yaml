@@ -172,6 +172,6 @@ approval:
     - "사업장 RLS: ksx.enable_site_rls()를 원장 테이블에 적용(S9 보안과 함께)"
     - "확장 단위 후보(N·m, cc/min): 원천 단위 문자열 유지(S2 과제)"
   signers:
-    - { role: "데이터 엔지니어(reviewed)", name: "Claude(적재·대사)", date: "2026-10-30", note: "완료 기준 6/7 충족(증분은 다음 단계)" }
+    - { role: "데이터 엔지니어(reviewed)", name: "Claude(적재·대사)", date: "2026-10-30", note: "완료 기준 7/8 충족(증분은 다음 단계)" }
     - { role: "도메인(PI) 컨설턴트(approved)", name: "장홍관", date: "2026-10-30", note: "조건부 승인 — 정제 규칙 원천 검토 완료, 본사 공장 C안" }
     - { role: "고객사 현업 검수자(approved)", name: "장홍관(겸임)", date: "2026-10-30", note: "원천 정정 요청 항목 확인" }

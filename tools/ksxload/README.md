@@ -65,7 +65,7 @@ docker compose --profile tools run --rm s3-tools review     # 정제 규칙 검�
 
 모든 규칙은 S1 품질 이슈 ID(Q…)나 S3에서 새로 발견한 ID(S3-…)를 단다.
 처리 방식은 데이터 엔지니어가 혼자 정하지 않는다. 규칙마다 원천을 현업과 함께 보고(검토 카드 양식 `mapping/_template/S3_정제규칙_검토카드_양식.md`)
-결정을 계획의 `review` 절에 적는다(구현안내서 6.7 보완, `docs/방법론_보완_v1.2.md`). 결과는 `audit.quarantine`에 행 전체(JSON)로 남는다.
+결정을 계획의 `review` 절에 적는다(구현안내서 v1.2 6.7). 결과는 `audit.quarantine`에 행 전체(JSON)로 남는다.
 원천 정정을 요청할 때 이 기록을 근거로 쓴다.
 
 ## 변환 어휘
