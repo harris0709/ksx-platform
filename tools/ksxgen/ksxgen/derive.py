@@ -112,17 +112,17 @@ def age_schema(obda_texts: list[str], graph: str) -> str:
          f"  IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_graph WHERE name = '{graph}') THEN",
          f"    PERFORM ag_catalog.create_graph('{graph}');",
          "  END IF;", "END $$;", "",
-         "CREATE OR REPLACE FUNCTION pg_temp.ksx_label(lbl text, kind text) RETURNS void LANGUAGE plpgsql AS $f$",
-         "BEGIN",
-         "  IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph g ON l.graph = g.graphid",
-         f"                 WHERE g.name = '{graph}' AND l.name = lbl) THEN",
-         f"    IF kind = 'v' THEN PERFORM ag_catalog.create_vlabel('{graph}', lbl);",
-         f"    ELSE PERFORM ag_catalog.create_elabel('{graph}', lbl); END IF;",
-         "  END IF;",
-         "END $f$;", "", "-- 노드 라벨(명사·라인 구조체·확장 명사)"]
-    o += [f"SELECT pg_temp.ksx_label('{x}', 'v');" for x in vl]
-    o += ["", "-- 관계 라벨(객체 관계)"]
-    o += [f"SELECT pg_temp.ksx_label('{x}', 'e');" for x in el]
+         "-- 노드 라벨(명사·라인 구조체·확장 명사)과 관계 라벨(객체 관계) — 없는 것만 만든다",
+         "DO $$", "DECLARE x text;", "BEGIN",
+         "  FOREACH x IN ARRAY ARRAY[" + ", ".join(f"'{x}'" for x in vl) + "] LOOP",
+         "    IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph g ON l.graph = g.graphid",
+         f"                   WHERE g.name = '{graph}' AND l.name = x) THEN PERFORM ag_catalog.create_vlabel('{graph}', x); END IF;",
+         "  END LOOP;",
+         "  FOREACH x IN ARRAY ARRAY[" + ", ".join(f"'{x}'" for x in el) + "] LOOP",
+         "    IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph g ON l.graph = g.graphid",
+         f"                   WHERE g.name = '{graph}' AND l.name = x) THEN PERFORM ag_catalog.create_elabel('{graph}', x); END IF;",
+         "  END LOOP;",
+         "END $$;"]
     o += ["", "-- 노드 속성 인덱스(iri·식별 속성 조회)"]
     o += [f'CREATE INDEX IF NOT EXISTS "ix_{x}_props" ON {graph}."{x}" USING gin (properties);' for x in vl]
     return "\n".join(o) + "\n"

@@ -10,169 +10,19 @@ DO $$ BEGIN
   END IF;
 END $$;
 
-CREATE OR REPLACE FUNCTION pg_temp.ksx_label(lbl text, kind text) RETURNS void LANGUAGE plpgsql AS $f$
+-- 노드 라벨(명사·라인 구조체·확장 명사)과 관계 라벨(객체 관계) — 없는 것만 만든다
+DO $$
+DECLARE x text;
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph g ON l.graph = g.graphid
-                 WHERE g.name = 'ksx_graph' AND l.name = lbl) THEN
-    IF kind = 'v' THEN PERFORM ag_catalog.create_vlabel('ksx_graph', lbl);
-    ELSE PERFORM ag_catalog.create_elabel('ksx_graph', lbl); END IF;
-  END IF;
-END $f$;
-
--- 노드 라벨(명사·라인 구조체·확장 명사)
-SELECT pg_temp.ksx_label('Site', 'v');
-SELECT pg_temp.ksx_label('Plant', 'v');
-SELECT pg_temp.ksx_label('Department', 'v');
-SELECT pg_temp.ksx_label('Personnel', 'v');
-SELECT pg_temp.ksx_label('CustomerPartyMaster', 'v');
-SELECT pg_temp.ksx_label('VendorPartyMaster', 'v');
-SELECT pg_temp.ksx_label('CommonCodeMaster', 'v');
-SELECT pg_temp.ksx_label('WorkCalendar', 'v');
-SELECT pg_temp.ksx_label('UOMGroup', 'v');
-SELECT pg_temp.ksx_label('UOMGroupLine', 'v');
-SELECT pg_temp.ksx_label('ItemMaster', 'v');
-SELECT pg_temp.ksx_label('BOM', 'v');
-SELECT pg_temp.ksx_label('BOMLine', 'v');
-SELECT pg_temp.ksx_label('Lot', 'v');
-SELECT pg_temp.ksx_label('Routing', 'v');
-SELECT pg_temp.ksx_label('RoutingLine', 'v');
-SELECT pg_temp.ksx_label('Operation', 'v');
-SELECT pg_temp.ksx_label('Equipment', 'v');
-SELECT pg_temp.ksx_label('OperationEquipment', 'v');
-SELECT pg_temp.ksx_label('Carrier', 'v');
-SELECT pg_temp.ksx_label('StockerInventory', 'v');
-SELECT pg_temp.ksx_label('WarehouseLocation', 'v');
-SELECT pg_temp.ksx_label('WarehouseLocationLine', 'v');
-SELECT pg_temp.ksx_label('Batch', 'v');
-SELECT pg_temp.ksx_label('Line', 'v');
-SELECT pg_temp.ksx_label('Enterprise', 'v');
-SELECT pg_temp.ksx_label('ProjectMaster', 'v');
-SELECT pg_temp.ksx_label('EngineeringChangeOrder', 'v');
-SELECT pg_temp.ksx_label('SalesOrder', 'v');
-SELECT pg_temp.ksx_label('SalesOrderLine', 'v');
-SELECT pg_temp.ksx_label('SalesPlan', 'v');
-SELECT pg_temp.ksx_label('BasePrice', 'v');
-SELECT pg_temp.ksx_label('PurchaseRequisition', 'v');
-SELECT pg_temp.ksx_label('PurchaseOrder', 'v');
-SELECT pg_temp.ksx_label('PurchaseOrderLine', 'v');
-SELECT pg_temp.ksx_label('MaterialArrival', 'v');
-SELECT pg_temp.ksx_label('GoodsReceipt', 'v');
-SELECT pg_temp.ksx_label('GoodsIssue', 'v');
-SELECT pg_temp.ksx_label('ProductionPlanning', 'v');
-SELECT pg_temp.ksx_label('ProductionOrder', 'v');
-SELECT pg_temp.ksx_label('OperationStart', 'v');
-SELECT pg_temp.ksx_label('OperationEnd', 'v');
-SELECT pg_temp.ksx_label('TransferCommand', 'v');
-SELECT pg_temp.ksx_label('TransferStart', 'v');
-SELECT pg_temp.ksx_label('TransferEnd', 'v');
-SELECT pg_temp.ksx_label('InTransitLocation', 'v');
-SELECT pg_temp.ksx_label('EquipmentState', 'v');
-SELECT pg_temp.ksx_label('Alarm', 'v');
-SELECT pg_temp.ksx_label('SupplierInspectionPlan', 'v');
-SELECT pg_temp.ksx_label('SupplierInspectionApplication', 'v');
-SELECT pg_temp.ksx_label('SupplierInspectionResult', 'v');
-SELECT pg_temp.ksx_label('CorrectiveActionRequest', 'v');
-SELECT pg_temp.ksx_label('CorrectiveActionPlan', 'v');
-SELECT pg_temp.ksx_label('CorrectiveActionResult', 'v');
-SELECT pg_temp.ksx_label('ProductPacking', 'v');
-SELECT pg_temp.ksx_label('EquipmentParameter', 'v');
-SELECT pg_temp.ksx_label('TraceParameter', 'v');
-SELECT pg_temp.ksx_label('ProductionPerformance', 'v');
-SELECT pg_temp.ksx_label('ProductionPerformanceItem', 'v');
-SELECT pg_temp.ksx_label('ProductionPerformancePersonnel', 'v');
-SELECT pg_temp.ksx_label('ProductionPerformanceEquipment', 'v');
-SELECT pg_temp.ksx_label('ProductionPerformanceQuality', 'v');
-SELECT pg_temp.ksx_label('Inventory', 'v');
-SELECT pg_temp.ksx_label('AvailableInventory', 'v');
-SELECT pg_temp.ksx_label('StockTransfer', 'v');
-SELECT pg_temp.ksx_label('InventoryCount', 'v');
-SELECT pg_temp.ksx_label('ProductIncoming', 'v');
-SELECT pg_temp.ksx_label('ProductReleaseRequest', 'v');
-SELECT pg_temp.ksx_label('ProductReleaseRequestLine', 'v');
-SELECT pg_temp.ksx_label('ProductRelease', 'v');
-SELECT pg_temp.ksx_label('Delivery', 'v');
-SELECT pg_temp.ksx_label('DeliveryLine', 'v');
-SELECT pg_temp.ksx_label('Return', 'v');
-SELECT pg_temp.ksx_label('ProductTraceParameterOnCustomer', 'v');
-SELECT pg_temp.ksx_label('AfterSalesServiceRequest', 'v');
-SELECT pg_temp.ksx_label('AfterSalesServiceRequestResult', 'v');
-SELECT pg_temp.ksx_label('StandardCost', 'v');
-SELECT pg_temp.ksx_label('CustomerComplaint', 'v');
-SELECT pg_temp.ksx_label('QualityCost', 'v');
-SELECT pg_temp.ksx_label('InventorySnapshot', 'v');
-SELECT pg_temp.ksx_label('LotInventory', 'v');
-
--- 관계 라벨(객체 관계)
-SELECT pg_temp.ksx_label('refEnterprise', 'e');
-SELECT pg_temp.ksx_label('refCreator', 'e');
-SELECT pg_temp.ksx_label('refModifier', 'e');
-SELECT pg_temp.ksx_label('refSite', 'e');
-SELECT pg_temp.ksx_label('refPlant', 'e');
-SELECT pg_temp.ksx_label('refParentDepartment', 'e');
-SELECT pg_temp.ksx_label('refDepartment', 'e');
-SELECT pg_temp.ksx_label('refCommonCodeMaster', 'e');
-SELECT pg_temp.ksx_label('hasLine', 'e');
-SELECT pg_temp.ksx_label('lineOf', 'e');
-SELECT pg_temp.ksx_label('refMainCustomer', 'e');
-SELECT pg_temp.ksx_label('refMainVendor', 'e');
-SELECT pg_temp.ksx_label('refReceiptWarehouse', 'e');
-SELECT pg_temp.ksx_label('refIssueWarehouse', 'e');
-SELECT pg_temp.ksx_label('refReplacementItem', 'e');
-SELECT pg_temp.ksx_label('refItem', 'e');
-SELECT pg_temp.ksx_label('refRouting', 'e');
-SELECT pg_temp.ksx_label('refChildItem', 'e');
-SELECT pg_temp.ksx_label('refParentLot', 'e');
-SELECT pg_temp.ksx_label('refChildLot', 'e');
-SELECT pg_temp.ksx_label('refCarrier', 'e');
-SELECT pg_temp.ksx_label('refProductionOrder', 'e');
-SELECT pg_temp.ksx_label('refCurrentOperation', 'e');
-SELECT pg_temp.ksx_label('refNextOperation', 'e');
-SELECT pg_temp.ksx_label('refPersonnel', 'e');
-SELECT pg_temp.ksx_label('refOperation', 'e');
-SELECT pg_temp.ksx_label('refParentEquipment', 'e');
-SELECT pg_temp.ksx_label('refDepartmentInCharge', 'e');
-SELECT pg_temp.ksx_label('refPersonInCharge', 'e');
-SELECT pg_temp.ksx_label('refEquipment', 'e');
-SELECT pg_temp.ksx_label('refLot', 'e');
-SELECT pg_temp.ksx_label('refAlternateStocker', 'e');
-SELECT pg_temp.ksx_label('refParentBatch', 'e');
-SELECT pg_temp.ksx_label('refBOM', 'e');
-SELECT pg_temp.ksx_label('refParentLine', 'e');
-SELECT pg_temp.ksx_label('refCalendar', 'e');
-SELECT pg_temp.ksx_label('refParentEnterprise', 'e');
-SELECT pg_temp.ksx_label('refResponsibleDepartment', 'e');
-SELECT pg_temp.ksx_label('refSalesOrderLine', 'e');
-SELECT pg_temp.ksx_label('refDivision', 'e');
-SELECT pg_temp.ksx_label('refCustomer', 'e');
-SELECT pg_temp.ksx_label('refVendor', 'e');
-SELECT pg_temp.ksx_label('refRequesterDepartment', 'e');
-SELECT pg_temp.ksx_label('refRequesterPersonnel', 'e');
-SELECT pg_temp.ksx_label('refPurchaseOrderLine', 'e');
-SELECT pg_temp.ksx_label('refWarehouse', 'e');
-SELECT pg_temp.ksx_label('refLine', 'e');
-SELECT pg_temp.ksx_label('refTransferCommand', 'e');
-SELECT pg_temp.ksx_label('refLastProcessedLot', 'e');
-SELECT pg_temp.ksx_label('refLastProcessedOperation', 'e');
-SELECT pg_temp.ksx_label('refProject', 'e');
-SELECT pg_temp.ksx_label('refBatch', 'e');
-SELECT pg_temp.ksx_label('refInspectionPlan', 'e');
-SELECT pg_temp.ksx_label('refApplicationPersonnel', 'e');
-SELECT pg_temp.ksx_label('refInspectionApplication', 'e');
-SELECT pg_temp.ksx_label('refCorrectiveActionRequestIssuer', 'e');
-SELECT pg_temp.ksx_label('refCorrectiveActionRequest', 'e');
-SELECT pg_temp.ksx_label('refCorrectiveActionPlan', 'e');
-SELECT pg_temp.ksx_label('refCorrectiveActionConfirmor', 'e');
-SELECT pg_temp.ksx_label('refParameter', 'e');
-SELECT pg_temp.ksx_label('refRoutingToRoutingLine', 'e');
-SELECT pg_temp.ksx_label('refProductionPerformance', 'e');
-SELECT pg_temp.ksx_label('refReplacementChildItem', 'e');
-SELECT pg_temp.ksx_label('refWarehouseToWarehouseLocationLine', 'e');
-SELECT pg_temp.ksx_label('refProductReleaseRequest', 'e');
-SELECT pg_temp.ksx_label('refProductRelease', 'e');
-SELECT pg_temp.ksx_label('refAfterSalesServiceRequest', 'e');
-SELECT pg_temp.ksx_label('refCauseOperation', 'e');
-SELECT pg_temp.ksx_label('refGoodsReceipt', 'e');
-SELECT pg_temp.ksx_label('refInspectionResult', 'e');
+  FOREACH x IN ARRAY ARRAY['Site', 'Plant', 'Department', 'Personnel', 'CustomerPartyMaster', 'VendorPartyMaster', 'CommonCodeMaster', 'WorkCalendar', 'UOMGroup', 'UOMGroupLine', 'ItemMaster', 'BOM', 'BOMLine', 'Lot', 'Routing', 'RoutingLine', 'Operation', 'Equipment', 'OperationEquipment', 'Carrier', 'StockerInventory', 'WarehouseLocation', 'WarehouseLocationLine', 'Batch', 'Line', 'Enterprise', 'ProjectMaster', 'EngineeringChangeOrder', 'SalesOrder', 'SalesOrderLine', 'SalesPlan', 'BasePrice', 'PurchaseRequisition', 'PurchaseOrder', 'PurchaseOrderLine', 'MaterialArrival', 'GoodsReceipt', 'GoodsIssue', 'ProductionPlanning', 'ProductionOrder', 'OperationStart', 'OperationEnd', 'TransferCommand', 'TransferStart', 'TransferEnd', 'InTransitLocation', 'EquipmentState', 'Alarm', 'SupplierInspectionPlan', 'SupplierInspectionApplication', 'SupplierInspectionResult', 'CorrectiveActionRequest', 'CorrectiveActionPlan', 'CorrectiveActionResult', 'ProductPacking', 'EquipmentParameter', 'TraceParameter', 'ProductionPerformance', 'ProductionPerformanceItem', 'ProductionPerformancePersonnel', 'ProductionPerformanceEquipment', 'ProductionPerformanceQuality', 'Inventory', 'AvailableInventory', 'StockTransfer', 'InventoryCount', 'ProductIncoming', 'ProductReleaseRequest', 'ProductReleaseRequestLine', 'ProductRelease', 'Delivery', 'DeliveryLine', 'Return', 'ProductTraceParameterOnCustomer', 'AfterSalesServiceRequest', 'AfterSalesServiceRequestResult', 'StandardCost', 'CustomerComplaint', 'QualityCost', 'InventorySnapshot', 'LotInventory'] LOOP
+    IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph g ON l.graph = g.graphid
+                   WHERE g.name = 'ksx_graph' AND l.name = x) THEN PERFORM ag_catalog.create_vlabel('ksx_graph', x); END IF;
+  END LOOP;
+  FOREACH x IN ARRAY ARRAY['refEnterprise', 'refCreator', 'refModifier', 'refSite', 'refPlant', 'refParentDepartment', 'refDepartment', 'refCommonCodeMaster', 'hasLine', 'lineOf', 'refMainCustomer', 'refMainVendor', 'refReceiptWarehouse', 'refIssueWarehouse', 'refReplacementItem', 'refItem', 'refRouting', 'refChildItem', 'refParentLot', 'refChildLot', 'refCarrier', 'refProductionOrder', 'refCurrentOperation', 'refNextOperation', 'refPersonnel', 'refOperation', 'refParentEquipment', 'refDepartmentInCharge', 'refPersonInCharge', 'refEquipment', 'refLot', 'refAlternateStocker', 'refParentBatch', 'refBOM', 'refParentLine', 'refCalendar', 'refParentEnterprise', 'refResponsibleDepartment', 'refSalesOrderLine', 'refDivision', 'refCustomer', 'refVendor', 'refRequesterDepartment', 'refRequesterPersonnel', 'refPurchaseOrderLine', 'refWarehouse', 'refLine', 'refTransferCommand', 'refLastProcessedLot', 'refLastProcessedOperation', 'refProject', 'refBatch', 'refInspectionPlan', 'refApplicationPersonnel', 'refInspectionApplication', 'refCorrectiveActionRequestIssuer', 'refCorrectiveActionRequest', 'refCorrectiveActionPlan', 'refCorrectiveActionConfirmor', 'refParameter', 'refRoutingToRoutingLine', 'refProductionPerformance', 'refReplacementChildItem', 'refWarehouseToWarehouseLocationLine', 'refProductReleaseRequest', 'refProductRelease', 'refAfterSalesServiceRequest', 'refCauseOperation', 'refGoodsReceipt', 'refInspectionResult'] LOOP
+    IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph g ON l.graph = g.graphid
+                   WHERE g.name = 'ksx_graph' AND l.name = x) THEN PERFORM ag_catalog.create_elabel('ksx_graph', x); END IF;
+  END LOOP;
+END $$;
 
 -- 노드 속성 인덱스(iri·식별 속성 조회)
 CREATE INDEX IF NOT EXISTS "ix_Site_props" ON ksx_graph."Site" USING gin (properties);
