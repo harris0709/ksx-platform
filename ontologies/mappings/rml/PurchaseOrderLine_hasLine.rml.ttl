@@ -6,11 +6,11 @@
 @prefix map: <urn:ksx:map:> .
 
 map:PurchaseOrderLine_hasLine a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"PurchaseDocumentNumber\" AS purchasedocumentnumber, \"PurchaseDocumentSequence\" AS purchasedocumentsequence FROM ksx.\"PurchaseOrderLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"PurchaseDocumentNumber\"::text AS purchasedocumentnumber, \"PurchaseDocumentSequence\"::text AS purchasedocumentsequence FROM ksx.\"PurchaseOrderLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/PurchaseOrder/{purchasedocumentnumber}" ] ;
     rr:predicateObjectMap [ rr:predicate ksx:hasLine ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/PurchaseOrder/{purchasedocumentnumber}/line/{purchasedocumentsequence}" ] ] .
 
 map:PurchaseOrderLine_hasLine_1 a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"PurchaseDocumentNumber\" AS purchasedocumentnumber, \"PurchaseDocumentSequence\" AS purchasedocumentsequence FROM ksx.\"PurchaseOrderLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"PurchaseDocumentNumber\"::text AS purchasedocumentnumber, \"PurchaseDocumentSequence\"::text AS purchasedocumentsequence FROM ksx.\"PurchaseOrderLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/PurchaseOrder/{purchasedocumentnumber}/line/{purchasedocumentsequence}" ] ;
     rr:predicateObjectMap [ rr:predicate ksx:lineOf ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/PurchaseOrder/{purchasedocumentnumber}" ] ] .

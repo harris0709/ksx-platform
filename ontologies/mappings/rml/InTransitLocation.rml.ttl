@@ -6,7 +6,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:InTransitLocation a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"InTransitLocationID\" AS intransitlocationid, \"TransferCommandID\" AS transfercommandid, \"LotID\" AS lotid, \"LotName\" AS lotname, \"LotDescription\" AS lotdescription, \"CarrierID\" AS carrierid, \"CurrentLocation\" AS currentlocation FROM ksx.\"InTransitLocation\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"InTransitLocationID\"::text AS intransitlocationid, \"TransferCommandID\"::text AS transfercommandid, \"LotID\"::text AS lotid, \"LotName\" AS lotname, \"LotDescription\" AS lotdescription, \"CarrierID\"::text AS carrierid, \"CurrentLocation\" AS currentlocation FROM ksx.\"InTransitLocation\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/InTransitLocation/{intransitlocationid}" ; rr:class ksx:InTransitLocation ] ;
     rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;

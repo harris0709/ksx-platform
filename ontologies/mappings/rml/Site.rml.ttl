@@ -6,7 +6,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:Site a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"SiteID\" AS siteid, \"SiteName\" AS sitename, \"BusinessRegistrationNumber\" AS businessregistrationnumber, \"DialNumber\" AS dialnumber, \"PostalCode\" AS postalcode, \"BaseAddress\" AS baseaddress, \"DetailAddress\" AS detailaddress, \"UseIndicator\" AS useindicator FROM ksx.\"Site\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"SiteID\"::text AS siteid, \"SiteName\" AS sitename, \"BusinessRegistrationNumber\" AS businessregistrationnumber, \"DialNumber\" AS dialnumber, \"PostalCode\" AS postalcode, \"BaseAddress\" AS baseaddress, \"DetailAddress\" AS detailaddress, \"UseIndicator\" AS useindicator FROM ksx.\"Site\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Site/{siteid}" ; rr:class ksx:Site ] ;
     rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:creatorID ; rr:objectMap [ rr:column "creatorid" ] ] ;

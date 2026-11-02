@@ -6,7 +6,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:Personnel a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"PersonnelID\" AS personnelid, \"PersonnelName\" AS personnelname, \"DepartmentID\" AS departmentid, \"EmploymentStatusType\" AS employmentstatustype, \"PersonInChargeEmail\" AS personinchargeemail, \"PersonInChargeDialNumber\" AS personinchargedialnumber FROM ksx.\"Personnel\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"PersonnelID\"::text AS personnelid, \"PersonnelName\" AS personnelname, \"DepartmentID\"::text AS departmentid, \"EmploymentStatusType\"::text AS employmentstatustype, \"PersonInChargeEmail\" AS personinchargeemail, \"PersonInChargeDialNumber\" AS personinchargedialnumber FROM ksx.\"Personnel\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{personnelid}" ; rr:class ksx:Personnel ] ;
     rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;

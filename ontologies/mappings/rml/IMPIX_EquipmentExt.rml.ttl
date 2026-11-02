@@ -7,6 +7,6 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_EquipmentExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"EquipmentID\" AS equipmentid, \"StandardUnitsPerMinute\" AS standardunitsperminute FROM ext.\"EquipmentExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"EquipmentID\"::text AS equipmentid, \"StandardUnitsPerMinute\" AS standardunitsperminute FROM ext.\"EquipmentExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Equipment/{equipmentid}" ] ;
     rr:predicateObjectMap [ rr:predicate impix:standardUnitsPerMinute ; rr:objectMap [ rr:column "standardunitsperminute" ; rr:datatype xsd:decimal ] ] .

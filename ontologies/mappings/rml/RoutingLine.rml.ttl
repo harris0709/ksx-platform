@@ -6,7 +6,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:RoutingLine a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"RoutingID\" AS routingid, \"OperationSequence\" AS operationsequence, \"OperationID\" AS operationid, \"LastOperationIndicator\" AS lastoperationindicator, \"SetupTime\" AS setuptime, \"RunTime\" AS runtime, \"MoveTime\" AS movetime FROM ksx.\"RoutingLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"RoutingID\"::text AS routingid, \"OperationSequence\"::text AS operationsequence, \"OperationID\"::text AS operationid, \"LastOperationIndicator\" AS lastoperationindicator, \"SetupTime\" AS setuptime, \"RunTime\" AS runtime, \"MoveTime\" AS movetime FROM ksx.\"RoutingLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Routing/{routingid}/line/{operationsequence}" ; rr:class ksx:RoutingLine ] ;
     rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;

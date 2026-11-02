@@ -7,7 +7,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_ProductIncomingExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"ProductIncomingID\" AS productincomingid, \"ProductIncomingSequence\" AS productincomingsequence, \"ProductionOrderID\" AS productionorderid, \"ProductionOrderSequence\" AS productionordersequence FROM ext.\"ProductIncomingExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"ProductIncomingID\"::text AS productincomingid, \"ProductIncomingSequence\"::text AS productincomingsequence, \"ProductionOrderID\"::text AS productionorderid, \"ProductionOrderSequence\"::text AS productionordersequence FROM ext.\"ProductIncomingExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ProductIncoming/{productincomingid}_{productincomingsequence}" ] ;
     rr:predicateObjectMap [ rr:predicate ksx:productionOrderID ; rr:objectMap [ rr:column "productionorderid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:productionOrderSequence ; rr:objectMap [ rr:column "productionordersequence" ; rr:datatype xsd:integer ] ] ;

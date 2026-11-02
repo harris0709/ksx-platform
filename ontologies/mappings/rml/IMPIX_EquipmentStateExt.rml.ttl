@@ -7,7 +7,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_EquipmentStateExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"EquipmentStateID\" AS equipmentstateid, \"StateStartDateTime\" AS statestartdatetime, \"StateEndDateTime\" AS stateenddatetime, \"EquipmentIdleReasonCode\" AS equipmentidlereasoncode FROM ext.\"EquipmentStateExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"EquipmentStateID\"::text AS equipmentstateid, \"StateStartDateTime\" AS statestartdatetime, \"StateEndDateTime\" AS stateenddatetime, \"EquipmentIdleReasonCode\"::text AS equipmentidlereasoncode FROM ext.\"EquipmentStateExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/EquipmentState/{equipmentstateid}" ] ;
     rr:predicateObjectMap [ rr:predicate impix:stateStartDateTime ; rr:objectMap [ rr:column "statestartdatetime" ; rr:datatype xsd:dateTime ] ] ;
     rr:predicateObjectMap [ rr:predicate impix:stateEndDateTime ; rr:objectMap [ rr:column "stateenddatetime" ; rr:datatype xsd:dateTime ] ] ;

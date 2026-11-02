@@ -7,7 +7,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_ProductionPerformanceExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"ProductionPerformanceID\" AS productionperformanceid, \"ProductionPerformanceSequence\" AS productionperformancesequence, \"InspectionResult\" AS inspectionresult, \"InspectionQuantity\" AS inspectionquantity FROM ext.\"ProductionPerformanceExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"ProductionPerformanceID\"::text AS productionperformanceid, \"ProductionPerformanceSequence\"::text AS productionperformancesequence, \"InspectionResult\"::text AS inspectionresult, \"InspectionQuantity\" AS inspectionquantity FROM ext.\"ProductionPerformanceExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ProductionPerformance/{productionperformanceid}_{productionperformancesequence}" ] ;
     rr:predicateObjectMap [ rr:predicate ksx:inspectionResult ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/InspectionResult/{inspectionresult}" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:inspectionQuantity ; rr:objectMap [ rr:column "inspectionquantity" ; rr:datatype xsd:decimal ] ] .

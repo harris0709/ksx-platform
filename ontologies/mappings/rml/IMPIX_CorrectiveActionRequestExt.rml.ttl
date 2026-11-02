@@ -7,7 +7,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_CorrectiveActionRequestExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"CorrectiveActionRequestID\" AS correctiveactionrequestid, \"DetectionLocationType\" AS detectionlocationtype, \"DefectQuantity\" AS defectquantity, \"DefectTypeCode\" AS defecttypecode, \"DefectTypeDetailCode\" AS defecttypedetailcode, \"CorrectiveActionDueDate\" AS correctiveactionduedate, \"OccurrenceDate\" AS occurrencedate, \"InspectionResultID\" AS inspectionresultid FROM ext.\"CorrectiveActionRequestExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"CorrectiveActionRequestID\"::text AS correctiveactionrequestid, \"DetectionLocationType\"::text AS detectionlocationtype, \"DefectQuantity\" AS defectquantity, \"DefectTypeCode\"::text AS defecttypecode, \"DefectTypeDetailCode\"::text AS defecttypedetailcode, \"CorrectiveActionDueDate\" AS correctiveactionduedate, \"OccurrenceDate\" AS occurrencedate, \"InspectionResultID\"::text AS inspectionresultid FROM ext.\"CorrectiveActionRequestExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/CorrectiveActionRequest/{correctiveactionrequestid}" ] ;
     rr:predicateObjectMap [ rr:predicate impix:detectionLocationType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/DetectionLocationType/{detectionlocationtype}" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:defectQuantity ; rr:objectMap [ rr:column "defectquantity" ; rr:datatype xsd:decimal ] ] ;

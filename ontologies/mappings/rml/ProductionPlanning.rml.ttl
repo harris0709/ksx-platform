@@ -6,7 +6,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:ProductionPlanning a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"ProductionPlanID\" AS productionplanid, \"ItemID\" AS itemid, \"ProductionPlanQuantity\" AS productionplanquantity, \"ScheduleStartDateTime\" AS schedulestartdatetime, \"ScheduleEndDateTime\" AS scheduleenddatetime FROM ksx.\"ProductionPlanning\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"ProductionPlanID\"::text AS productionplanid, \"ItemID\"::text AS itemid, \"ProductionPlanQuantity\" AS productionplanquantity, \"ScheduleStartDateTime\" AS schedulestartdatetime, \"ScheduleEndDateTime\" AS scheduleenddatetime FROM ksx.\"ProductionPlanning\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ProductionPlanning/{productionplanid}" ; rr:class ksx:ProductionPlanning ] ;
     rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;

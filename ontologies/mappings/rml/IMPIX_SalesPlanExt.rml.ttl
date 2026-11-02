@@ -7,7 +7,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_SalesPlanExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SalesPlanID\" AS salesplanid, \"SalesPlanType\" AS salesplantype, \"CustomerID\" AS customerid, \"SalesPlanVersion\" AS salesplanversion FROM ext.\"SalesPlanExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SalesPlanID\"::text AS salesplanid, \"SalesPlanType\"::text AS salesplantype, \"CustomerID\"::text AS customerid, \"SalesPlanVersion\" AS salesplanversion FROM ext.\"SalesPlanExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/SalesPlan/{salesplanid}" ] ;
     rr:predicateObjectMap [ rr:predicate impix:salesPlanType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/SalesPlanType/{salesplantype}" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:customerID ; rr:objectMap [ rr:column "customerid" ] ] ;

@@ -6,7 +6,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:BOMHeader a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"BOMID\" AS bomid, \"BOMRevisionNumber\" AS bomrevisionnumber, \"BOMType\" AS bomtype, \"ItemID\" AS itemid, \"BOMQuantity\" AS bomquantity, \"ItemUOMCode\" AS itemuomcode, \"RoutingID\" AS routingid FROM ksx.\"BOMHeader\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"BOMID\"::text AS bomid, \"BOMRevisionNumber\"::text AS bomrevisionnumber, \"BOMType\"::text AS bomtype, \"ItemID\"::text AS itemid, \"BOMQuantity\" AS bomquantity, \"ItemUOMCode\"::text AS itemuomcode, \"RoutingID\"::text AS routingid FROM ksx.\"BOMHeader\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/BOM/{bomid}_{bomrevisionnumber}" ; rr:class ksx:BOM ] ;
     rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;

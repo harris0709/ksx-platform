@@ -6,7 +6,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:BasePrice a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"ItemID\" AS itemid, \"CurrencyCode\" AS currencycode, \"UnitPrice\" AS unitprice, \"PaymentTermsCode\" AS paymenttermscode, \"UseIndicator\" AS useindicator FROM ksx.\"BasePrice\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"ItemID\"::text AS itemid, \"CurrencyCode\"::text AS currencycode, \"UnitPrice\" AS unitprice, \"PaymentTermsCode\"::text AS paymenttermscode, \"UseIndicator\" AS useindicator FROM ksx.\"BasePrice\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/BasePrice/{itemid}_{currencycode}" ; rr:class ksx:BasePrice ] ;
     rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;

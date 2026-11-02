@@ -6,7 +6,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:CommonCodeMaster a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"CommonCodeID\" AS commoncodeid, \"CommonCodeName\" AS commoncodename, \"CommonCodeGroup\" AS commoncodegroup, \"ParentCommonCodeGroup\" AS parentcommoncodegroup, \"ParentCommonCodeID\" AS parentcommoncodeid, \"CommonCodeSequence\" AS commoncodesequence, \"UseIndicator\" AS useindicator FROM ksx.\"CommonCodeMaster\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"CommonCodeID\"::text AS commoncodeid, \"CommonCodeName\" AS commoncodename, \"CommonCodeGroup\"::text AS commoncodegroup, \"ParentCommonCodeGroup\"::text AS parentcommoncodegroup, \"ParentCommonCodeID\"::text AS parentcommoncodeid, \"CommonCodeSequence\" AS commoncodesequence, \"UseIndicator\" AS useindicator FROM ksx.\"CommonCodeMaster\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/CommonCodeMaster/{commoncodegroup}_{commoncodeid}" ; rr:class ksx:CommonCodeMaster ] ;
     rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;

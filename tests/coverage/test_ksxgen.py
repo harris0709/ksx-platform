@@ -122,6 +122,7 @@ def _rml_triples(texts):
     for t in texts:
         for tm in t.split(" a rr:TriplesMap ;")[1:]:
             src = re.search(r'rr:sqlQuery "((?:[^"\\]|\\.)*)"', tm).group(1).replace('\\"', '"')
+            src = src.replace("::text", "")   # 물질화 매핑은 IRI 템플릿 컬럼을 문자로 읽는다
             subj = re.search(r'rr:subjectMap \[ rr:template "([^"]+)"', tm).group(1)
             for c in re.findall(r"rr:class (\S+)", tm.split("rr:predicateObjectMap")[0]):
                 out.add((src, subj, "a", c.rstrip(" ];")))

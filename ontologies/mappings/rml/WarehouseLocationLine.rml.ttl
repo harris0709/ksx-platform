@@ -6,7 +6,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:WarehouseLocationLine a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"WarehouseID\" AS warehouseid, \"WarehouseSection\" AS warehousesection, \"WarehouseSectionName\" AS warehousesectionname FROM ksx.\"WarehouseLocationLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"WarehouseID\"::text AS warehouseid, \"WarehouseSection\"::text AS warehousesection, \"WarehouseSectionName\" AS warehousesectionname FROM ksx.\"WarehouseLocationLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/WarehouseLocation/{warehouseid}/line/{warehousesection}" ; rr:class ksx:WarehouseLocationLine ] ;
     rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;

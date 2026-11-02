@@ -61,6 +61,11 @@ def rml(obda_text: str) -> dict[str, str]:
     head += "@prefix rr: <http://www.w3.org/ns/r2rml#> .\n@prefix map: <urn:ksx:map:> .\n\n"
     for mid, stmts, src in maps:
         out = [f"# {mid} — ksxgen 생성물(OBDA {mid}와 같은 트리플). 직접 수정 금지", head.rstrip("\n"), ""]
+        # IRI 템플릿에 쓰는 컬럼은 문자로 읽는다(숫자 키가 NULL이면 실행기가 실수 변환에 실패하는 문제 회피, 값은 같음)
+        tcols = {c for subj, pos in stmts for t in [subj] + [o for p, o in pos if not o.startswith("{")]
+                 for c in re.findall(r"\{([a-z0-9_]+)\}", t)}
+        src = re.sub(r'("[A-Za-z0-9_]+") AS ([a-z0-9_]+)',
+                     lambda m: f"{m.group(1)}::text AS {m.group(2)}" if m.group(2) in tcols else m.group(0), src)
         for i, (subj, pos) in enumerate(stmts):
             name = f"map:{mid}" + (f"_{i}" if i else "")
             classes = [o for p, o in pos if p == "a"]

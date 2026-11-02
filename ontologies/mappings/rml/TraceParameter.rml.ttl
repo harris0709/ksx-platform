@@ -6,7 +6,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:TraceParameter a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"TraceParameterID\" AS traceparameterid, \"EquipmentID\" AS equipmentid, \"ParameterID\" AS parameterid, \"EventDateTime\" AS eventdatetime, \"ParameterUOMCode\" AS parameteruomcode, \"ParameterValue\" AS parametervalue, \"ValidationResultCode\" AS validationresultcode FROM ksx.\"TraceParameter\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"TraceParameterID\"::text AS traceparameterid, \"EquipmentID\"::text AS equipmentid, \"ParameterID\"::text AS parameterid, \"EventDateTime\" AS eventdatetime, \"ParameterUOMCode\"::text AS parameteruomcode, \"ParameterValue\" AS parametervalue, \"ValidationResultCode\"::text AS validationresultcode FROM ksx.\"TraceParameter\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/TraceParameter/{traceparameterid}" ; rr:class ksx:TraceParameter ] ;
     rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;

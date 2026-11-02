@@ -7,6 +7,6 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_ProductionOrderExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"ProductionOrderID\" AS productionorderid, \"ProductionOrderSequence\" AS productionordersequence, \"ProductionOrderStatusCode\" AS productionorderstatuscode FROM ext.\"ProductionOrderExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"ProductionOrderID\"::text AS productionorderid, \"ProductionOrderSequence\"::text AS productionordersequence, \"ProductionOrderStatusCode\"::text AS productionorderstatuscode FROM ext.\"ProductionOrderExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ProductionOrder/{productionorderid}_{productionordersequence}" ] ;
     rr:predicateObjectMap [ rr:predicate impix:productionOrderStatusCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/ProductionOrderStatusCode/{productionorderstatuscode}" ] ] .

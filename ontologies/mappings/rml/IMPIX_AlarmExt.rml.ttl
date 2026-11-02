@@ -7,6 +7,6 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_AlarmExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"AlarmID\" AS alarmid, \"AlarmSeverityCode\" AS alarmseveritycode FROM ext.\"AlarmExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"AlarmID\"::text AS alarmid, \"AlarmSeverityCode\"::text AS alarmseveritycode FROM ext.\"AlarmExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Alarm/{alarmid}" ] ;
     rr:predicateObjectMap [ rr:predicate impix:alarmSeverityCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/AlarmSeverityCode/{alarmseveritycode}" ] ] .

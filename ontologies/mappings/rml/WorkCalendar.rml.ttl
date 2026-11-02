@@ -6,7 +6,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:WorkCalendar a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"CalendarID\" AS calendarid, \"CalendarType\" AS calendartype, \"CalendarDate\" AS calendardate, \"DayOfWeek\" AS dayofweek, \"WeekOfYear\" AS weekofyear, \"DayOfYear\" AS dayofyear, \"ScheduleType\" AS scheduletype FROM ksx.\"WorkCalendar\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"CalendarID\"::text AS calendarid, \"CalendarType\"::text AS calendartype, \"CalendarDate\" AS calendardate, \"DayOfWeek\"::text AS dayofweek, \"WeekOfYear\" AS weekofyear, \"DayOfYear\" AS dayofyear, \"ScheduleType\"::text AS scheduletype FROM ksx.\"WorkCalendar\"" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/WorkCalendar/{calendarid}" ; rr:class ksx:WorkCalendar ] ;
     rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
