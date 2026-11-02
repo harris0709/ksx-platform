@@ -122,9 +122,8 @@ jobs:
       - name: S4 물질화 매핑을 적재된 원장에 실행(Morph-KGC) — 가상화 매핑(OBDA)과 트리플 수 비교
         run: |
           pip install -q morph-kgc psycopg2-binary sqlalchemy
-          python -c "import morph_kgc.materializer as m, inspect; src = inspect.getsource(m); i = src.find('astype(float).astype(int)'); print(src[i-1500:i+200])"
           M=$(ls ontologies/mappings/rml/*.rml.ttl | paste -sd, -)
-          printf '[CONFIGURATION]\noutput_file=/tmp/mkgc.nt\n[ksx]\nmappings=%s\ndb_url=postgresql+psycopg2://postgres:ci@localhost:5432/ksx\n' "$M" > /tmp/mkgc.ini
+          printf '[CONFIGURATION]\noutput_file=/tmp/mkgc.nt\nna_values=,None,NULL,null,NaN,nan,<NA>\n[ksx]\nmappings=%s\ndb_url=postgresql+psycopg2://postgres:ci@localhost:5432/ksx\n' "$M" > /tmp/mkgc.ini
           python -m morph_kgc /tmp/mkgc.ini
           for o in ksx9101 impix_ext; do python tests/e2e/obda_exec.py ontologies/mappings/$o.obda "-h localhost -U postgres -d ksx"; done | sort -u > /tmp/obda.nt
           a=$(sort -u /tmp/mkgc.nt | wc -l); b=$(wc -l < /tmp/obda.nt)
