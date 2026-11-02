@@ -1,0 +1,204 @@
+{
+ "noun": "impix:CustomerComplaint",
+ "ko": "고객클레임",
+ "clause": "기업 확장",
+ "table": "IMPIX 확장 명사",
+ "area": "품질관리(확장)",
+ "definition": "고객이 제기한 제품 부적합(입고검사 부적합·라인 중단·필드 반송)과 대책 회신·종결 이력을 의미한다.",
+ "layer": "impix",
+ "identity": [
+  "CustomerComplaintID"
+ ],
+ "struct": null,
+ "physical": {
+  "ext.CustomerComplaint": {
+   "uk": [
+    "EnterpriseID",
+    "CustomerComplaintID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "CustomerComplaintID",
+   "ko": "고객클레임식별자",
+   "type": "ID",
+   "in": "CustomerComplaint",
+   "property": "impix:customerComplaintID"
+  },
+  {
+   "en": "CustomerID",
+   "ko": "고객사식별자",
+   "type": "IDREF",
+   "in": "CustomerComplaint",
+   "property": "ksx:customerID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "CustomerComplaint",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "CustomerComplaint",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "CustomerComplaintType",
+   "ko": "고객클레임유형",
+   "type": "enum",
+   "in": "CustomerComplaint",
+   "property": "impix:customerComplaintType"
+  },
+  {
+   "en": "OccurrenceDate",
+   "ko": "발생일",
+   "type": "date",
+   "in": "CustomerComplaint",
+   "property": "impix:occurrenceDate"
+  },
+  {
+   "en": "ComplaintReceiptDate",
+   "ko": "접수일",
+   "type": "date",
+   "in": "CustomerComplaint",
+   "property": "impix:complaintReceiptDate"
+  },
+  {
+   "en": "DefectTypeCode",
+   "ko": "불량유형코드",
+   "type": "enum",
+   "in": "CustomerComplaint",
+   "property": "ksx:defectTypeCode"
+  },
+  {
+   "en": "DefectTypeDetailCode",
+   "ko": "불량유형상세코드",
+   "type": "enum",
+   "in": "CustomerComplaint",
+   "property": "ksx:defectTypeDetailCode"
+  },
+  {
+   "en": "ComplaintQuantity",
+   "ko": "클레임수량",
+   "type": "float",
+   "in": "CustomerComplaint",
+   "property": "impix:complaintQuantity"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "CustomerComplaint",
+   "property": "ksx:itemUOMCode"
+  },
+  {
+   "en": "ResponseDueDate",
+   "ko": "대책회신기한",
+   "type": "date",
+   "in": "CustomerComplaint",
+   "property": "impix:responseDueDate"
+  },
+  {
+   "en": "ResponseDate",
+   "ko": "대책회신일",
+   "type": "date",
+   "in": "CustomerComplaint",
+   "property": "impix:responseDate"
+  },
+  {
+   "en": "CloseDate",
+   "ko": "종결일",
+   "type": "date",
+   "in": "CustomerComplaint",
+   "property": "impix:closeDate"
+  },
+  {
+   "en": "CustomerComplaintStatusCode",
+   "ko": "고객클레임상태코드",
+   "type": "enum",
+   "in": "CustomerComplaint",
+   "property": "impix:customerComplaintStatusCode"
+  },
+  {
+   "en": "ComplaintAmount",
+   "ko": "클레임금액",
+   "type": "float",
+   "in": "CustomerComplaint",
+   "property": "impix:complaintAmount"
+  },
+  {
+   "en": "CurrencyCode",
+   "ko": "환종코드",
+   "type": "enum",
+   "in": "CustomerComplaint",
+   "property": "ksx:currencyCode"
+  },
+  {
+   "en": "CauseOperationID",
+   "ko": "원인공정식별자",
+   "type": "IDREF",
+   "in": "CustomerComplaint",
+   "property": "impix:causeOperationID"
+  },
+  {
+   "en": "ComplaintDescription",
+   "ko": "클레임내용",
+   "type": "string",
+   "in": "CustomerComplaint",
+   "property": "impix:complaintDescription"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, CustomerID",
+   "target": "CustomerPartyMaster",
+   "property": "ksx:refCustomer",
+   "in": "CustomerComplaint"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "CustomerComplaint"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "CustomerComplaint"
+  },
+  {
+   "attr": "EnterpriseID, CauseOperationID",
+   "target": "Operation",
+   "property": "impix:refCauseOperation",
+   "in": "CustomerComplaint"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "CustomerComplaintType",
+   "group": "CustomerComplaintType"
+  },
+  {
+   "attr": "DefectTypeCode",
+   "group": "DefectTypeCode"
+  },
+  {
+   "attr": "DefectTypeDetailCode",
+   "group": "DefectTypeDetailCode"
+  },
+  {
+   "attr": "CustomerComplaintStatusCode",
+   "group": "CustomerComplaintStatusCode"
+  },
+  {
+   "attr": "CurrencyCode",
+   "group": "CurrencyCode"
+  }
+ ]
+}

@@ -63,3 +63,14 @@ def iri_template(t: Table, model: Model, colmap: dict[str, str] | None = None) -
 
 def is_base(col: str) -> bool:
     return col in BASE_COLS
+
+
+def sql_col(col: str, dtype: str) -> str:
+    """OBDA·R2RML 원천 SELECT 항목. 기간(interval)은 xsd:duration 어휘형(ISO 8601, P…T…S)으로 바꾼다
+    — PostgreSQL 기본 출력('3 days')은 xsd:duration 값이 아니다."""
+    q = f'"{col}"'
+    if dtype == "duration":
+        return (f"CASE WHEN {q} IS NULL THEN NULL ELSE 'P' || extract(year FROM {q})::int || 'Y' || extract(month FROM {q})::int"
+                f" || 'M' || extract(day FROM {q})::int || 'DT' || extract(hour FROM {q})::int || 'H' || extract(minute FROM {q})::int"
+                f" || 'M' || trim_scale(extract(second FROM {q})) || 'S' END AS {alias(col)}")
+    return f"{q} AS {alias(col)}"

@@ -1,0 +1,12 @@
+# IMPIX_CustomerPartyMasterExt — ksxgen 생성물(OBDA IMPIX_CustomerPartyMasterExt와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix impix: <https://ontology.impix.co.kr/ext/impix/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:IMPIX_CustomerPartyMasterExt a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"CustomerID\"::text AS customerid, \"CustomerGroupCode\"::text AS customergroupcode FROM ext.\"CustomerPartyMasterExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/CustomerPartyMaster/{customerid}" ] ;
+    rr:predicateObjectMap [ rr:predicate impix:customerGroupCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/CustomerGroupCode/{customergroupcode}" ] ] .

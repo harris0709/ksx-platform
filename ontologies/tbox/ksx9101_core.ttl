@@ -28,6 +28,13 @@ ksx:conversionFactor a owl:DatatypeProperty ; rdfs:label "기준단위 환산계
 ksx:hasLine a owl:ObjectProperty ; rdfs:label "라인"@ko ; rdfs:range ksx:StructLine ; owl:inverseOf ksx:lineOf .
 ksx:lineOf a owl:ObjectProperty, owl:FunctionalProperty ; rdfs:label "소속 헤더"@ko .
 
+### 외부 어휘 선언(OWL 2 DL: 쓰는 어휘는 모두 선언)
+skos:Concept a owl:Class .
+skos:definition a owl:AnnotationProperty .
+dct:source a owl:AnnotationProperty .
+xsd:date a rdfs:Datatype .
+xsd:duration a rdfs:Datatype .
+
 ### 클래스(명사·라인 구조체)
 ksx:Site a owl:Class ; rdfs:subClassOf ksx:Noun ;
     rdfs:label "사업장"@ko, "Site"@en ;

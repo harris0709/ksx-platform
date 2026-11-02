@@ -1,0 +1,43 @@
+# ProjectMaster — ksxgen 생성물(OBDA ProjectMaster와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:ProjectMaster a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"ProjectID\"::text AS projectid, \"ProjectName\" AS projectname, \"ProjectStatusCode\"::text AS projectstatuscode, \"ResponsibleDepartmentID\"::text AS responsibledepartmentid, \"PersonInChargeID\"::text AS personinchargeid, \"ProjectContractDate\" AS projectcontractdate, \"ExpectedStartDate\" AS expectedstartdate, \"ExpectedEndDate\" AS expectedenddate, \"ActualStartDate\" AS actualstartdate, \"ActualEndDate\" AS actualenddate, \"SalesDocumentNumber\"::text AS salesdocumentnumber, \"SalesDocumentSequence\"::text AS salesdocumentsequence, \"ItemID\"::text AS itemid, \"UseIndicator\" AS useindicator, \"DivisionID\"::text AS divisionid FROM ksx.\"ProjectMaster\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ProjectMaster/{projectid}" ; rr:class ksx:ProjectMaster ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:plantID ; rr:objectMap [ rr:column "plantid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creatorID ; rr:objectMap [ rr:column "creatorid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creationDateTime ; rr:objectMap [ rr:column "creationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modifierID ; rr:objectMap [ rr:column "modifierid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modificationDateTime ; rr:objectMap [ rr:column "modificationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:note ; rr:objectMap [ rr:column "note" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:projectID ; rr:objectMap [ rr:column "projectid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:projectName ; rr:objectMap [ rr:column "projectname" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:projectStatusCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/ProjectStatusCode/{projectstatuscode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:responsibleDepartmentID ; rr:objectMap [ rr:column "responsibledepartmentid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:personInChargeID ; rr:objectMap [ rr:column "personinchargeid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:projectContractDate ; rr:objectMap [ rr:column "projectcontractdate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:expectedStartDate ; rr:objectMap [ rr:column "expectedstartdate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:expectedEndDate ; rr:objectMap [ rr:column "expectedenddate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:actualStartDate ; rr:objectMap [ rr:column "actualstartdate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:actualEndDate ; rr:objectMap [ rr:column "actualenddate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:salesDocumentNumber ; rr:objectMap [ rr:column "salesdocumentnumber" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:salesDocumentSequence ; rr:objectMap [ rr:column "salesdocumentsequence" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemID ; rr:objectMap [ rr:column "itemid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:useIndicator ; rr:objectMap [ rr:column "useindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:divisionID ; rr:objectMap [ rr:column "divisionid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refEnterprise ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Enterprise/{enterpriseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refSite ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Site/{siteid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPlant ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Plant/{plantid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCreator ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{creatorid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refModifier ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{modifierid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refResponsibleDepartment ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Department/{responsibledepartmentid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPersonInCharge ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{personinchargeid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refSalesOrderLine ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/SalesOrder/{salesdocumentnumber}/line/{salesdocumentsequence}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refItem ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ItemMaster/{itemid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refDivision ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Department/{divisionid}" ] ] .

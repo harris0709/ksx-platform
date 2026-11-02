@@ -1,0 +1,36 @@
+# TransferEnd — ksxgen 생성물(OBDA TransferEnd와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:TransferEnd a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"TransferEndID\"::text AS transferendid, \"TransferCommandID\"::text AS transfercommandid, \"LotID\"::text AS lotid, \"LotName\" AS lotname, \"LotDescription\" AS lotdescription, \"CarrierID\"::text AS carrierid, \"TransferEndDateTime\" AS transferenddatetime, \"DestinationID\" AS destinationid, \"DestinationType\"::text AS destinationtype, \"DestinationName\" AS destinationname FROM ksx.\"TransferEnd\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/TransferEnd/{transferendid}" ; rr:class ksx:TransferEnd ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:plantID ; rr:objectMap [ rr:column "plantid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creatorID ; rr:objectMap [ rr:column "creatorid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creationDateTime ; rr:objectMap [ rr:column "creationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modifierID ; rr:objectMap [ rr:column "modifierid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modificationDateTime ; rr:objectMap [ rr:column "modificationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:note ; rr:objectMap [ rr:column "note" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:transferEndID ; rr:objectMap [ rr:column "transferendid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:transferCommandID ; rr:objectMap [ rr:column "transfercommandid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lotID ; rr:objectMap [ rr:column "lotid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lotName ; rr:objectMap [ rr:column "lotname" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lotDescription ; rr:objectMap [ rr:column "lotdescription" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:carrierID ; rr:objectMap [ rr:column "carrierid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:transferEndDateTime ; rr:objectMap [ rr:column "transferenddatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:destinationID ; rr:objectMap [ rr:column "destinationid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:destinationType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/LocationType/{destinationtype}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:destinationName ; rr:objectMap [ rr:column "destinationname" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refEnterprise ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Enterprise/{enterpriseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refSite ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Site/{siteid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPlant ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Plant/{plantid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCreator ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{creatorid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refModifier ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{modifierid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refTransferCommand ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/TransferCommand/{transfercommandid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refLot ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Lot/{lotid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCarrier ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Carrier/{carrierid}" ] ] .

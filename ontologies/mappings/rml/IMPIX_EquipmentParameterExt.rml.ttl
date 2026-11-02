@@ -1,0 +1,13 @@
+# IMPIX_EquipmentParameterExt — ksxgen 생성물(OBDA IMPIX_EquipmentParameterExt와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix impix: <https://ontology.impix.co.kr/ext/impix/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:IMPIX_EquipmentParameterExt a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"ParameterID\"::text AS parameterid, \"LCL\" AS lcl, \"UCL\" AS ucl FROM ext.\"EquipmentParameterExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/EquipmentParameter/{parameterid}" ] ;
+    rr:predicateObjectMap [ rr:predicate impix:lcl ; rr:objectMap [ rr:column "lcl" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:ucl ; rr:objectMap [ rr:column "ucl" ; rr:datatype xsd:decimal ] ] .

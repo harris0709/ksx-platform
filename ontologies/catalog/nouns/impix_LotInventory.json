@@ -1,0 +1,90 @@
+{
+ "noun": "impix:LotInventory",
+ "ko": "로트별재고",
+ "clause": "기업 확장",
+ "table": "IMPIX 확장 명사",
+ "area": "재고관리(확장)",
+ "definition": "창고·품목의 현재고를 로트와 입고일 단위로 나눈 재고를 의미한다. 재고 경과일(장기 체화)·선입선출 판단의 근거가 된다.",
+ "layer": "impix",
+ "identity": [
+  "WarehouseID",
+  "ItemID",
+  "LotID"
+ ],
+ "struct": null,
+ "physical": {
+  "ext.LotInventory": {
+   "uk": [
+    "EnterpriseID",
+    "WarehouseID",
+    "ItemID",
+    "LotID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "WarehouseID",
+   "ko": "창고식별자",
+   "type": "IDREF",
+   "in": "LotInventory",
+   "property": "ksx:warehouseID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "LotInventory",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "LotID",
+   "ko": "로트식별자",
+   "type": "IDREF",
+   "in": "LotInventory",
+   "property": "ksx:lotID"
+  },
+  {
+   "en": "GoodsReceiptDate",
+   "ko": "입고처리일",
+   "type": "date",
+   "in": "LotInventory",
+   "property": "ksx:goodsReceiptDate"
+  },
+  {
+   "en": "InventoryQuantity",
+   "ko": "현재고수량",
+   "type": "float",
+   "in": "LotInventory",
+   "property": "ksx:inventoryQuantity"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "LotInventory",
+   "property": "ksx:itemUOMCode"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, WarehouseID",
+   "target": "WarehouseLocation",
+   "property": "ksx:refWarehouse",
+   "in": "LotInventory"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "LotInventory"
+  },
+  {
+   "attr": "EnterpriseID, LotID",
+   "target": "Lot",
+   "property": "ksx:refLot",
+   "in": "LotInventory"
+  }
+ ],
+ "codes": []
+}

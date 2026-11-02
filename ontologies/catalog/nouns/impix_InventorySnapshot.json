@@ -1,0 +1,77 @@
+{
+ "noun": "impix:InventorySnapshot",
+ "ko": "일별재고",
+ "clause": "기업 확장",
+ "table": "IMPIX 확장 명사",
+ "area": "재고관리(확장)",
+ "definition": "기준일 마감 시점의 창고·품목별 재고수량을 의미한다. 표준 재고(Inventory)는 현재고만 정의하므로 기준일 이력을 별도로 둔다.",
+ "layer": "impix",
+ "identity": [
+  "InventorySnapshotDate",
+  "WarehouseID",
+  "ItemID"
+ ],
+ "struct": null,
+ "physical": {
+  "ext.InventorySnapshot": {
+   "uk": [
+    "EnterpriseID",
+    "InventorySnapshotDate",
+    "WarehouseID",
+    "ItemID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "InventorySnapshotDate",
+   "ko": "재고기준일",
+   "type": "date",
+   "in": "InventorySnapshot",
+   "property": "impix:inventorySnapshotDate"
+  },
+  {
+   "en": "WarehouseID",
+   "ko": "창고식별자",
+   "type": "IDREF",
+   "in": "InventorySnapshot",
+   "property": "ksx:warehouseID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "InventorySnapshot",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "InventoryQuantity",
+   "ko": "현재고수량",
+   "type": "float",
+   "in": "InventorySnapshot",
+   "property": "ksx:inventoryQuantity"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "InventorySnapshot",
+   "property": "ksx:itemUOMCode"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, WarehouseID",
+   "target": "WarehouseLocation",
+   "property": "ksx:refWarehouse",
+   "in": "InventorySnapshot"
+  },
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "InventorySnapshot"
+  }
+ ],
+ "codes": []
+}

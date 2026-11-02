@@ -1,0 +1,163 @@
+{
+ "server": "ksx-ledger",
+ "generatedBy": "ksxgen",
+ "tools": [
+  {
+   "name": "sql_query",
+   "description": "표준 원장 읽기 전용 SQL(SELECT). catalog/sql_schema.md의 테이블·FK만 사용. 출력은 {rows, provenance, scope, truncated}. 회사·사업장·공장은 입력으로 받지 않고 토큰 클레임에서 주입한다(구현안내서 12.2).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "sql": {
+      "type": "string",
+      "maxLength": 8000
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 200
+     }
+    },
+    "required": [
+     "sql"
+    ],
+    "additionalProperties": false
+   }
+  },
+  {
+   "name": "get_struct",
+   "description": "헤더·라인 구조체 명사 1건을 헤더와 라인 전체로 돌려준다. 출력은 {rows, provenance, scope, truncated}. 회사·사업장·공장은 입력으로 받지 않고 토큰 클레임에서 주입한다(구현안내서 12.2).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "noun": {
+      "type": "string",
+      "enum": [
+       "BOM",
+       "Delivery",
+       "ProductReleaseRequest",
+       "PurchaseOrder",
+       "Routing",
+       "SalesOrder",
+       "UOMGroup",
+       "WarehouseLocation"
+      ]
+     },
+     "key": {
+      "type": "object",
+      "additionalProperties": {
+       "type": "string"
+      },
+      "description": "헤더 식별 속성(UK, EnterpriseID 제외) → 값"
+     }
+    },
+    "required": [
+     "noun",
+     "key"
+    ],
+    "additionalProperties": false
+   }
+  },
+  {
+   "name": "get_bom_tree",
+   "description": "품목의 자재명세서를 다단으로 펼친다. 출력은 {rows, provenance, scope, truncated}. 회사·사업장·공장은 입력으로 받지 않고 토큰 클레임에서 주입한다(구현안내서 12.2).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "itemID": {
+      "type": "string"
+     },
+     "depth": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 10
+     }
+    },
+    "required": [
+     "itemID"
+    ],
+    "additionalProperties": false
+   }
+  }
+ ],
+ "tables": [
+  "AfterSalesServiceRequest",
+  "AfterSalesServiceRequestResult",
+  "Alarm",
+  "AvailableInventory",
+  "BOMHeader",
+  "BOMLine",
+  "BasePrice",
+  "Batch",
+  "Carrier",
+  "CommonCodeMaster",
+  "CorrectiveActionPlan",
+  "CorrectiveActionRequest",
+  "CorrectiveActionResult",
+  "CustomerPartyMaster",
+  "DeliveryHeader",
+  "DeliveryLine",
+  "Department",
+  "EngineeringChangeOrder",
+  "Enterprise",
+  "Equipment",
+  "EquipmentParameter",
+  "EquipmentState",
+  "GoodsIssue",
+  "GoodsReceipt",
+  "InTransitLocation",
+  "Inventory",
+  "InventoryCount",
+  "ItemMaster",
+  "Line",
+  "Lot",
+  "MaterialArrival",
+  "Operation",
+  "OperationEnd",
+  "OperationEquipment",
+  "OperationStart",
+  "Personnel",
+  "Plant",
+  "ProductIncoming",
+  "ProductPacking",
+  "ProductRelease",
+  "ProductReleaseRequestHeader",
+  "ProductReleaseRequestLine",
+  "ProductTraceParameterOnCustomer",
+  "ProductionOrder",
+  "ProductionPerformance",
+  "ProductionPerformanceEquipment",
+  "ProductionPerformanceItem",
+  "ProductionPerformancePersonnel",
+  "ProductionPerformanceQuality",
+  "ProductionPlanning",
+  "ProjectMaster",
+  "PurchaseOrderHeader",
+  "PurchaseOrderLine",
+  "PurchaseRequisition",
+  "Return",
+  "RoutingHeader",
+  "RoutingLine",
+  "SalesOrderHeader",
+  "SalesOrderLine",
+  "SalesPlan",
+  "Site",
+  "StockTransfer",
+  "StockerInventory",
+  "SupplierInspectionApplication",
+  "SupplierInspectionPlan",
+  "SupplierInspectionResult",
+  "TraceParameter",
+  "TransferCommand",
+  "TransferEnd",
+  "TransferStart",
+  "UOMGroupHeader",
+  "UOMGroupLine",
+  "VendorPartyMaster",
+  "WarehouseLocationHeader",
+  "WarehouseLocationLine",
+  "WorkCalendar"
+ ]
+}

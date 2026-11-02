@@ -1,0 +1,15 @@
+# IMPIX_GoodsIssueExt — ksxgen 생성물(OBDA IMPIX_GoodsIssueExt와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix impix: <https://ontology.impix.co.kr/ext/impix/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:IMPIX_GoodsIssueExt a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"GoodsIssueID\"::text AS goodsissueid, \"InventoryTransactionDate\" AS inventorytransactiondate, \"ProductionOrderID\"::text AS productionorderid, \"ProductionOrderSequence\"::text AS productionordersequence FROM ext.\"GoodsIssueExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/GoodsIssue/{goodsissueid}" ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:inventoryTransactionDate ; rr:objectMap [ rr:column "inventorytransactiondate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productionOrderID ; rr:objectMap [ rr:column "productionorderid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productionOrderSequence ; rr:objectMap [ rr:column "productionordersequence" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refProductionOrder ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ProductionOrder/{productionorderid}_{productionordersequence}" ] ] .

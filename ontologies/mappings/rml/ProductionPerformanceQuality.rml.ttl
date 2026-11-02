@@ -1,0 +1,46 @@
+# ProductionPerformanceQuality — ksxgen 생성물(OBDA ProductionPerformanceQuality와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:ProductionPerformanceQuality a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"ProductionPerformanceID\"::text AS productionperformanceid, \"ProductionPerformanceSequence\"::text AS productionperformancesequence, \"ProductionOrderID\"::text AS productionorderid, \"ProductionOrderSequence\"::text AS productionordersequence, \"ItemID\"::text AS itemid, \"ItemUOMCode\"::text AS itemuomcode, \"OperationID\"::text AS operationid, \"RoutingID\"::text AS routingid, \"OperationSequence\"::text AS operationsequence, \"ExecutionStartDateTime\" AS executionstartdatetime, \"ExecutionEndDateTime\" AS executionenddatetime, \"LotID\"::text AS lotid, \"BatchID\"::text AS batchid, \"DefectTypeQuantity\" AS defecttypequantity, \"DefectTypeCode\"::text AS defecttypecode, \"DefectTypeDetailCode\"::text AS defecttypedetailcode FROM ksx.\"ProductionPerformanceQuality\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ProductionPerformanceQuality/{productionperformanceid}_{productionperformancesequence}_{defecttypecode}_{defecttypedetailcode}" ; rr:class ksx:ProductionPerformanceQuality ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:plantID ; rr:objectMap [ rr:column "plantid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creatorID ; rr:objectMap [ rr:column "creatorid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creationDateTime ; rr:objectMap [ rr:column "creationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modifierID ; rr:objectMap [ rr:column "modifierid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modificationDateTime ; rr:objectMap [ rr:column "modificationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:note ; rr:objectMap [ rr:column "note" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productionPerformanceID ; rr:objectMap [ rr:column "productionperformanceid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productionPerformanceSequence ; rr:objectMap [ rr:column "productionperformancesequence" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productionOrderID ; rr:objectMap [ rr:column "productionorderid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productionOrderSequence ; rr:objectMap [ rr:column "productionordersequence" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemID ; rr:objectMap [ rr:column "itemid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemUOMCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/uom/{itemuomcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:operationID ; rr:objectMap [ rr:column "operationid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:routingID ; rr:objectMap [ rr:column "routingid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:operationSequence ; rr:objectMap [ rr:column "operationsequence" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:executionStartDateTime ; rr:objectMap [ rr:column "executionstartdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:executionEndDateTime ; rr:objectMap [ rr:column "executionenddatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lotID ; rr:objectMap [ rr:column "lotid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:batchID ; rr:objectMap [ rr:column "batchid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:defectTypeQuantity ; rr:objectMap [ rr:column "defecttypequantity" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:defectTypeCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/DefectTypeCode/{defecttypecode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:defectTypeDetailCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/DefectTypeDetailCode/{defecttypedetailcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refEnterprise ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Enterprise/{enterpriseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refSite ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Site/{siteid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPlant ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Plant/{plantid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCreator ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{creatorid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refModifier ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{modifierid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refProductionPerformance ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ProductionPerformance/{productionperformanceid}_{productionperformancesequence}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refProductionOrder ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ProductionOrder/{productionorderid}_{productionordersequence}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refItem ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ItemMaster/{itemid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refOperation ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Operation/{operationid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refRoutingToRoutingLine ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Routing/{routingid}/line/{operationsequence}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refLot ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Lot/{lotid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refBatch ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Batch/{batchid}" ] ] .

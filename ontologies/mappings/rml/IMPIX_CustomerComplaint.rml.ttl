@@ -1,0 +1,47 @@
+# IMPIX_CustomerComplaint — ksxgen 생성물(OBDA IMPIX_CustomerComplaint와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix impix: <https://ontology.impix.co.kr/ext/impix/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:IMPIX_CustomerComplaint a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"CustomerComplaintID\"::text AS customercomplaintid, \"CustomerID\"::text AS customerid, \"ItemID\"::text AS itemid, \"LotID\"::text AS lotid, \"CustomerComplaintType\"::text AS customercomplainttype, \"OccurrenceDate\" AS occurrencedate, \"ComplaintReceiptDate\" AS complaintreceiptdate, \"DefectTypeCode\"::text AS defecttypecode, \"DefectTypeDetailCode\"::text AS defecttypedetailcode, \"ComplaintQuantity\" AS complaintquantity, \"ItemUOMCode\"::text AS itemuomcode, \"ResponseDueDate\" AS responseduedate, \"ResponseDate\" AS responsedate, \"CloseDate\" AS closedate, \"CustomerComplaintStatusCode\"::text AS customercomplaintstatuscode, \"ComplaintAmount\" AS complaintamount, \"CurrencyCode\"::text AS currencycode, \"CauseOperationID\"::text AS causeoperationid, \"ComplaintDescription\" AS complaintdescription FROM ext.\"CustomerComplaint\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/CustomerComplaint/{customercomplaintid}" ; rr:class impix:CustomerComplaint ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:plantID ; rr:objectMap [ rr:column "plantid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creatorID ; rr:objectMap [ rr:column "creatorid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creationDateTime ; rr:objectMap [ rr:column "creationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modifierID ; rr:objectMap [ rr:column "modifierid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modificationDateTime ; rr:objectMap [ rr:column "modificationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:note ; rr:objectMap [ rr:column "note" ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:customerComplaintID ; rr:objectMap [ rr:column "customercomplaintid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:customerID ; rr:objectMap [ rr:column "customerid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemID ; rr:objectMap [ rr:column "itemid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lotID ; rr:objectMap [ rr:column "lotid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:customerComplaintType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/CustomerComplaintType/{customercomplainttype}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:occurrenceDate ; rr:objectMap [ rr:column "occurrencedate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:complaintReceiptDate ; rr:objectMap [ rr:column "complaintreceiptdate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:defectTypeCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/DefectTypeCode/{defecttypecode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:defectTypeDetailCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/DefectTypeDetailCode/{defecttypedetailcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:complaintQuantity ; rr:objectMap [ rr:column "complaintquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemUOMCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/uom/{itemuomcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:responseDueDate ; rr:objectMap [ rr:column "responseduedate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:responseDate ; rr:objectMap [ rr:column "responsedate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:closeDate ; rr:objectMap [ rr:column "closedate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:customerComplaintStatusCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/CustomerComplaintStatusCode/{customercomplaintstatuscode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:complaintAmount ; rr:objectMap [ rr:column "complaintamount" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:currencyCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/CurrencyCode/{currencycode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:causeOperationID ; rr:objectMap [ rr:column "causeoperationid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:complaintDescription ; rr:objectMap [ rr:column "complaintdescription" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refEnterprise ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Enterprise/{enterpriseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refSite ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Site/{siteid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPlant ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Plant/{plantid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCreator ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{creatorid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refModifier ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{modifierid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCustomer ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/CustomerPartyMaster/{customerid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refItem ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ItemMaster/{itemid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refLot ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Lot/{lotid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:refCauseOperation ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Operation/{causeoperationid}" ] ] .

@@ -1,0 +1,6 @@
+# A-009 자동 전이 규칙(ksxgen 생성물): 회사 상위회사식별자 참조를 끝까지 따라간다
+PREFIX ksx: <https://ontology.impix.co.kr/ksx9101/1.0/>
+PREFIX inf: <https://ontology.impix.co.kr/inference/>
+PREFIX ksxq: <https://ontology.impix.co.kr/quality/>
+CONSTRUCT { ?x inf:refParentEnterpriseClosure ?y }
+WHERE { ?x a ksx:Enterprise ; ksx:refParentEnterprise+ ?y . FILTER (?x != ?y) FILTER NOT EXISTS { ?x ksxq:violates ?v } }

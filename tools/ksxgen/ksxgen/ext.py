@@ -13,7 +13,7 @@ import openpyxl
 
 from . import extform as F
 from .model import Code, CodeGroup, Column, Model, Relation, Table, _rows, _s
-from .naming import XSD, alias, iri_template, lower_camel, strip_id
+from .naming import XSD, alias, iri_template, lower_camel, sql_col, strip_id
 from .vocab import Vocab
 from .emit import PREFIXES, lit
 
@@ -604,7 +604,7 @@ def obda(ext: Ext, core: Model, colprop, refs, cfg) -> str:
     for et in ext.tables.values():
         t = et.t
         cols = [c for c in t.columns if not c.pk]
-        src = f'SELECT {", ".join(chr(34) + c.en + chr(34) + " AS " + alias(c.en) for c in cols)} FROM {ext.schema}."{t.en}"'
+        src = f'SELECT {", ".join(sql_col(c.en, c.dtype) for c in cols)} FROM {ext.schema}."{t.en}"'
         if et.ext_type == "확장 속성":
             me, trip = iri_template(core.tables[et.target], core), []
         else:
@@ -673,6 +673,34 @@ def report(ext: Ext, core: Model, props, colprop, issues) -> str:
     return "\n".join(md) + "\n"
 
 
+def noun_cards(ext: Ext, core: Model, colprop, refs) -> dict[str, str]:
+    """확장 명사 카드(catalog/nouns) — Core 카드와 같은 형식, layer = 기업 코드."""
+    import json
+    cards = {}
+    for et in ext.tables.values():
+        if et.ext_type != "확장 명사":
+            continue
+        t = et.t
+        card = {"noun": f"{ext.prefix}:{t.en}", "ko": t.ko, "clause": "기업 확장", "table": f"{ext.ent} 확장 명사", "area": t.area,
+                "definition": t.definition, "layer": ext.ent.lower(), "identity": [c for c in t.uk if c != "EnterpriseID"],
+                "struct": None, "physical": {f"{ext.schema}.{t.en}": {"uk": t.uk}},
+                "attributes": [], "references": [], "codes": []}
+        for c in t.columns:
+            p = colprop.get((t.en, c.en))
+            if p is None or c.kind == "기본":
+                continue
+            card["attributes"].append({"en": c.en, "ko": c.ko, "type": c.dtype, "in": t.en, "property": p.name})
+            if c.code_group:
+                card["codes"].append({"attr": c.en, "group": c.code_group})
+        for r, p, _ in refs.get(t.en, []):
+            if r.kind == "기본 속성":
+                continue
+            parent = core.tables[r.parent].cls if r.parent in core.tables else f"{ext.prefix}:{r.parent}"
+            card["references"].append({"attr": ", ".join(r.fk_cols), "target": parent, "property": p.name, "in": t.en})
+        cards[f"{ext.prefix}_{t.en}.json"] = json.dumps(card, ensure_ascii=False, indent=1)
+    return cards
+
+
 def build(ext_dir: str, core: Model, v: Vocab, cfg: dict, out: str, quiet=False) -> bool:
     from .emit import _w
     ecfg = ext_config(ext_dir)
@@ -696,6 +724,8 @@ def build(ext_dir: str, core: Model, v: Vocab, cfg: dict, out: str, quiet=False)
     _w(os.path.join(out, "mappings", f"{ent}_ext.obda"), obda(ext, core, colprop, refs, cfg))
     _w(os.path.join(out, "ddl", f"ext_{ent}.sql"), ddl_sql(ext, core, cfg.get("schema", "ksx")))
     _w(os.path.join(out, "vocab", f"{ent}_codelist.ttl"), codelist(ext, cfg))
+    for fn, txt in noun_cards(ext, core, colprop, refs).items():
+        _w(os.path.join(out, "catalog", "nouns", fn), txt)
     if not quiet:
         print(f"ksxgen --ext {ext_dir}: 확장 명사 {sum(1 for e in ext.tables.values() if e.ext_type == '확장 명사')} · "
               f"확장 속성 테이블 {sum(1 for e in ext.tables.values() if e.ext_type == '확장 속성')} · "

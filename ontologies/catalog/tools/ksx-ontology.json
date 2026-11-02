@@ -1,0 +1,189 @@
+{
+ "server": "ksx-ontology",
+ "generatedBy": "ksxgen",
+ "tools": [
+  {
+   "name": "get_noun_card",
+   "description": "명사 카드(정의·식별·속성·참조·코드)를 돌려준다. 출력은 {rows, provenance, scope, truncated}. 회사·사업장·공장은 입력으로 받지 않고 토큰 클레임에서 주입한다(구현안내서 12.2).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "noun": {
+      "type": "string",
+      "enum": [
+       "AfterSalesServiceRequest",
+       "AfterSalesServiceRequestResult",
+       "Alarm",
+       "AvailableInventory",
+       "BOM",
+       "BasePrice",
+       "Batch",
+       "Carrier",
+       "CommonCodeMaster",
+       "CorrectiveActionPlan",
+       "CorrectiveActionRequest",
+       "CorrectiveActionResult",
+       "CustomerPartyMaster",
+       "Delivery",
+       "Department",
+       "EngineeringChangeOrder",
+       "Enterprise",
+       "Equipment",
+       "EquipmentParameter",
+       "EquipmentState",
+       "GoodsIssue",
+       "GoodsReceipt",
+       "InTransitLocation",
+       "Inventory",
+       "InventoryCount",
+       "ItemMaster",
+       "Line",
+       "Lot",
+       "MaterialArrival",
+       "Operation",
+       "OperationEnd",
+       "OperationEquipment",
+       "OperationStart",
+       "Personnel",
+       "Plant",
+       "ProductIncoming",
+       "ProductPacking",
+       "ProductRelease",
+       "ProductReleaseRequest",
+       "ProductTraceParameterOnCustomer",
+       "ProductionOrder",
+       "ProductionPerformance",
+       "ProductionPerformanceEquipment",
+       "ProductionPerformanceItem",
+       "ProductionPerformancePersonnel",
+       "ProductionPerformanceQuality",
+       "ProductionPlanning",
+       "ProjectMaster",
+       "PurchaseOrder",
+       "PurchaseRequisition",
+       "Return",
+       "Routing",
+       "SalesOrder",
+       "SalesPlan",
+       "Site",
+       "StockTransfer",
+       "StockerInventory",
+       "SupplierInspectionApplication",
+       "SupplierInspectionPlan",
+       "SupplierInspectionResult",
+       "TraceParameter",
+       "TransferCommand",
+       "TransferEnd",
+       "TransferStart",
+       "UOMGroup",
+       "VendorPartyMaster",
+       "WarehouseLocation",
+       "WorkCalendar",
+       "impix:CustomerComplaint",
+       "impix:InventorySnapshot",
+       "impix:LotInventory",
+       "impix:QualityCost",
+       "impix:StandardCost"
+      ]
+     }
+    },
+    "required": [
+     "noun"
+    ],
+    "additionalProperties": false
+   }
+  },
+  {
+   "name": "sparql_query",
+   "description": "읽기 전용 SPARQL(SELECT·ASK). 구문·어휘·LIMIT 검사 후 허용된 Named Graph에서 실행. 출력은 {rows, provenance, scope, truncated}. 회사·사업장·공장은 입력으로 받지 않고 토큰 클레임에서 주입한다(구현안내서 12.2).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "query": {
+      "type": "string",
+      "maxLength": 8000
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 200
+     }
+    },
+    "required": [
+     "query"
+    ],
+    "additionalProperties": false
+   }
+  },
+  {
+   "name": "get_lot_genealogy",
+   "description": "로트 계보(모로트·자로트, 투입 로트)를 깊이 제한으로 펼친다. 출력은 {rows, provenance, scope, truncated}. 회사·사업장·공장은 입력으로 받지 않고 토큰 클레임에서 주입한다(구현안내서 12.2).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "lotID": {
+      "type": "string"
+     },
+     "direction": {
+      "type": "string",
+      "enum": [
+       "up",
+       "down",
+       "both"
+      ],
+      "default": "up"
+     },
+     "depth": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 5
+     }
+    },
+    "required": [
+     "lotID"
+    ],
+    "additionalProperties": false
+   }
+  },
+  {
+   "name": "find_affected_orders",
+   "description": "로트·생산실적에서 영향받는 생산지시·수주를 찾는다(추론 R-010). 출력은 {rows, provenance, scope, truncated}. 회사·사업장·공장은 입력으로 받지 않고 토큰 클레임에서 주입한다(구현안내서 12.2).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "lotID": {
+      "type": "string"
+     },
+     "productionPerformanceID": {
+      "type": "string"
+     }
+    },
+    "required": [],
+    "additionalProperties": false
+   }
+  },
+  {
+   "name": "explain_inference",
+   "description": "추론 결과 트리플의 근거(규칙 ID·입력 트리플)를 설명한다. 출력은 {rows, provenance, scope, truncated}. 회사·사업장·공장은 입력으로 받지 않고 토큰 클레임에서 주입한다(구현안내서 12.2).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "subject": {
+      "type": "string",
+      "format": "iri"
+     },
+     "predicate": {
+      "type": "string",
+      "format": "iri"
+     }
+    },
+    "required": [
+     "subject"
+    ],
+    "additionalProperties": false
+   }
+  }
+ ]
+}

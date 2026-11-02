@@ -1,4 +1,4 @@
-"""생성물 출력(구현 안내서 7.1): T-Box, SHACL, OBDA, DDL, SKOS, 카탈로그, 적재 순서, 커버리지."""
+"""생성물 출력(구현 안내서 7.1): T-Box, SHACL, OBDA, DDL, SKOS(코드·단위), 카탈로그, 적재 순서, 커버리지."""
 from __future__ import annotations
 
 import json
@@ -7,7 +7,7 @@ import re
 from collections import defaultdict
 
 from .model import Model, Table
-from .naming import XSD, alias, iri_template
+from .naming import XSD, alias, iri_template, sql_col
 from .vocab import Vocab
 
 PREFIXES = """@prefix ksx:  <{ns}> .
@@ -50,6 +50,9 @@ def tbox(model: Model, v: Vocab, cfg: dict) -> str:
          "ksx:conversionFactor a owl:DatatypeProperty ; rdfs:label \"기준단위 환산계수\"@ko ; rdfs:range xsd:decimal .",
          "ksx:hasLine a owl:ObjectProperty ; rdfs:label \"라인\"@ko ; rdfs:range ksx:StructLine ; owl:inverseOf ksx:lineOf .",
          "ksx:lineOf a owl:ObjectProperty, owl:FunctionalProperty ; rdfs:label \"소속 헤더\"@ko .", "",
+         "### 외부 어휘 선언(OWL 2 DL: 쓰는 어휘는 모두 선언)",
+         "skos:Concept a owl:Class .", "skos:definition a owl:AnnotationProperty .", "dct:source a owl:AnnotationProperty .",
+         "xsd:date a rdfs:Datatype .", "xsd:duration a rdfs:Datatype .", "",
          "### 클래스(명사·라인 구조체)"]
     phys = defaultdict(list)
     for t in model.tables.values():
@@ -128,7 +131,7 @@ def obda(model: Model, v: Vocab, cfg: dict) -> str:
     schema = cfg["schema"]
     for t in model.tables.values():
         cols = [c for c in t.columns if not c.pk]
-        sel = ", ".join(f'"{c.en}" AS {alias(c.en)}' for c in cols)
+        sel = ", ".join(sql_col(c.en, c.dtype) for c in cols)
         src = f'SELECT {sel} FROM {schema}."{t.en}"'
         me = iri_template(t, model)
         trip = [f"{me} a ksx:{t.cls}"]
@@ -209,7 +212,12 @@ def codelist(model: Model, cfg: dict) -> str:
         if c.desc:
             s += f" ; skos:definition {lit(c.desc, 'ko')}"
         o.append(s + " .")
-    o.append("")
+    return "\n".join(o) + "\n"
+
+
+def uom(model: Model, cfg: dict) -> str:
+    """단위(SKOS) — 단위그룹 = ConceptScheme, 단위 = Concept + 기준단위 환산계수(구현안내서 7.1 #9)."""
+    o = [PREFIXES.format(ns=cfg["ns"]), f"@prefix d: <{cfg['data_ns']}> .", ""]
     for u in model.uoms:
         s = (f"<{cfg['data_ns']}uom/{u.code}> a skos:Concept ; skos:inScheme <{cfg['data_ns']}uom/{u.group}> ;"
              f" skos:notation {lit(u.code)} ; skos:prefLabel {lit(u.name, 'ko')}")

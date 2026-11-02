@@ -348,6 +348,20 @@ services:
       impix-src:
         condition: service_healthy
 
+  # ---------------------------------------------------------------
+  # [S4] 온톨로지 일관성 검사(ROBOT + HermiT) — profile: tools
+  #   docker compose --profile tools run --rm robot reason --reasoner hermit \
+  #       --input ontologies/tbox/impix_ext.ttl --output /tmp/reasoned.ttl
+  #   (확장의 owl:imports Core는 ontologies/tbox/catalog-v001.xml로 로컬 파일을 읽는다)
+  # ---------------------------------------------------------------
+  robot:
+    profiles: ["tools"]
+    image: obolibrary/robot:${ROBOT_IMAGE_TAG:-v1.9.7}
+    working_dir: /repo
+    entrypoint: ["robot"]
+    volumes:
+      - ../..:/repo
+
 volumes:
   pg-data:
   kafka-data:

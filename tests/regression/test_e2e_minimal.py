@@ -41,6 +41,7 @@ def test_e2e_minimal():
     data = rdflib.Graph()
     data.parse(data=buf.getvalue(), format="nt")
     data.parse(os.path.join(ROOT, "ontologies/vocab/codelist.ttl"))
+    data.parse(os.path.join(ROOT, "ontologies/vocab/uom.ttl"))
     shapes = rdflib.Graph().parse(os.path.join(ROOT, "ontologies/shapes/ksx9101_conformance.ttl"))
     ok, _, txt = pyshacl.validate(data, shacl_graph=shapes, inference="none")
     assert ok, txt[:1500]

@@ -1,0 +1,16 @@
+# DeliveryLine_hasLine — ksxgen 생성물(OBDA DeliveryLine_hasLine와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:DeliveryLine_hasLine a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"DeliveryID\"::text AS deliveryid, \"DeliveryLineSequence\"::text AS deliverylinesequence, \"EnterpriseID\"::text AS enterpriseid FROM ksx.\"DeliveryLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Delivery/{deliveryid}" ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:hasLine ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Delivery/{deliveryid}/line/{deliverylinesequence}" ] ] .
+
+map:DeliveryLine_hasLine_1 a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"DeliveryID\"::text AS deliveryid, \"DeliveryLineSequence\"::text AS deliverylinesequence, \"EnterpriseID\"::text AS enterpriseid FROM ksx.\"DeliveryLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Delivery/{deliveryid}/line/{deliverylinesequence}" ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lineOf ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Delivery/{deliveryid}" ] ] .

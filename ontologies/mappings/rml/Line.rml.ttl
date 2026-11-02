@@ -1,0 +1,49 @@
+# Line — ksxgen 생성물(OBDA Line와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:Line a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"LineID\"::text AS lineid, \"LineName\" AS linename, \"LineDescription\" AS linedescription, \"LineType\"::text AS linetype, \"ProductionMethodType\"::text AS productionmethodtype, \"ParentLineID\"::text AS parentlineid, \"DepartmentInChargeID\"::text AS departmentinchargeid, \"PersonInChargeID\"::text AS personinchargeid, \"CalendarID\"::text AS calendarid, \"IssueWarehouseID\"::text AS issuewarehouseid, \"ReceiptWarehouseID\"::text AS receiptwarehouseid, \"StandardCapacity\" AS standardcapacity, \"CapacityUOMCode\"::text AS capacityuomcode, CASE WHEN \"StandardCycleTime\" IS NULL THEN NULL ELSE 'P' || extract(year FROM \"StandardCycleTime\")::int || 'Y' || extract(month FROM \"StandardCycleTime\")::int || 'M' || extract(day FROM \"StandardCycleTime\")::int || 'DT' || extract(hour FROM \"StandardCycleTime\")::int || 'H' || extract(minute FROM \"StandardCycleTime\")::int || 'M' || trim_scale(extract(second FROM \"StandardCycleTime\")) || 'S' END AS standardcycletime, \"ShiftCount\" AS shiftcount, \"StandardHeadcount\" AS standardheadcount, \"Location\" AS location, \"UseIndicator\" AS useindicator, \"ValidStartDate\" AS validstartdate, \"ValidEndDate\" AS validenddate FROM ksx.\"Line\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Line/{lineid}" ; rr:class ksx:Line ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:plantID ; rr:objectMap [ rr:column "plantid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creatorID ; rr:objectMap [ rr:column "creatorid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creationDateTime ; rr:objectMap [ rr:column "creationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modifierID ; rr:objectMap [ rr:column "modifierid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modificationDateTime ; rr:objectMap [ rr:column "modificationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:note ; rr:objectMap [ rr:column "note" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lineID ; rr:objectMap [ rr:column "lineid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lineName ; rr:objectMap [ rr:column "linename" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lineDescription ; rr:objectMap [ rr:column "linedescription" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lineType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/LineType/{linetype}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productionMethodType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/ProductionMethodType/{productionmethodtype}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:parentLineID ; rr:objectMap [ rr:column "parentlineid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:departmentInChargeID ; rr:objectMap [ rr:column "departmentinchargeid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:personInChargeID ; rr:objectMap [ rr:column "personinchargeid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:calendarID ; rr:objectMap [ rr:column "calendarid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:issueWarehouseID ; rr:objectMap [ rr:column "issuewarehouseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:receiptWarehouseID ; rr:objectMap [ rr:column "receiptwarehouseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:standardCapacity ; rr:objectMap [ rr:column "standardcapacity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:capacityUOMCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/uom/{capacityuomcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:standardCycleTime ; rr:objectMap [ rr:column "standardcycletime" ; rr:datatype xsd:duration ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:shiftCount ; rr:objectMap [ rr:column "shiftcount" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:standardHeadcount ; rr:objectMap [ rr:column "standardheadcount" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:location ; rr:objectMap [ rr:column "location" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:useIndicator ; rr:objectMap [ rr:column "useindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:validStartDate ; rr:objectMap [ rr:column "validstartdate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:validEndDate ; rr:objectMap [ rr:column "validenddate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refEnterprise ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Enterprise/{enterpriseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refSite ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Site/{siteid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPlant ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Plant/{plantid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCreator ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{creatorid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refModifier ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{modifierid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refParentLine ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Line/{parentlineid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refDepartmentInCharge ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Department/{departmentinchargeid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPersonInCharge ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{personinchargeid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCalendar ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/WorkCalendar/{calendarid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refIssueWarehouse ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/WarehouseLocation/{issuewarehouseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refReceiptWarehouse ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/WarehouseLocation/{receiptwarehouseid}" ] ] .
