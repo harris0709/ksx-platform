@@ -13,7 +13,7 @@ import openpyxl
 
 from . import extform as F
 from .model import Code, CodeGroup, Column, Model, Relation, Table, _rows, _s
-from .naming import XSD, alias, iri_template, lower_camel, strip_id
+from .naming import XSD, alias, iri_template, lower_camel, sql_col, strip_id
 from .vocab import Vocab
 from .emit import PREFIXES, lit
 
@@ -604,7 +604,7 @@ def obda(ext: Ext, core: Model, colprop, refs, cfg) -> str:
     for et in ext.tables.values():
         t = et.t
         cols = [c for c in t.columns if not c.pk]
-        src = f'SELECT {", ".join(chr(34) + c.en + chr(34) + " AS " + alias(c.en) for c in cols)} FROM {ext.schema}."{t.en}"'
+        src = f'SELECT {", ".join(sql_col(c.en, c.dtype) for c in cols)} FROM {ext.schema}."{t.en}"'
         if et.ext_type == "확장 속성":
             me, trip = iri_template(core.tables[et.target], core), []
         else:

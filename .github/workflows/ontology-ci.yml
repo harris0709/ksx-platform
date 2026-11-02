@@ -123,12 +123,11 @@ jobs:
         run: |
           pip install -q morph-kgc psycopg2-binary sqlalchemy
           M=$(ls ontologies/mappings/rml/*.rml.ttl | paste -sd, -)
-          printf '[CONFIGURATION]\noutput_file=/tmp/mkgc.nt\nna_values=,None,NULL,null,NaN,nan,<NA>\n[ksx]\nmappings=%s\ndb_url=postgresql+psycopg2://postgres:ci@localhost:5432/ksx\n' "$M" > /tmp/mkgc.ini
+          printf '[CONFIGURATION]\noutput_file=/tmp/mkgc.nt\nna_values=,None,NULL,null,NaN,nan,<NA>,NaT\n[ksx]\nmappings=%s\ndb_url=postgresql+psycopg2://postgres:ci@localhost:5432/ksx\n' "$M" > /tmp/mkgc.ini
           python -m morph_kgc /tmp/mkgc.ini
           for o in ksx9101 impix_ext; do python tests/e2e/obda_exec.py ontologies/mappings/$o.obda "-h localhost -U postgres -d ksx"; done | sort -u > /tmp/obda.nt
           a=$(sort -u /tmp/mkgc.nt | wc -l); b=$(wc -l < /tmp/obda.nt)
           echo "Morph-KGC $a · OBDA $b"; echo "::notice::S4 물질화 트리플 Morph-KGC $a · OBDA $b"
           awk '{print $2}' /tmp/mkgc.nt | sort | uniq -c | sort -k2 > /tmp/p1; awk '{print $2}' /tmp/obda.nt | sort | uniq -c | sort -k2 > /tmp/p2
           diff /tmp/p1 /tmp/p2 | head -20
-          for p in productionLeadTime creationDateTime; do grep "/$p>" /tmp/mkgc.nt | sort | head -4; grep "/$p>" /tmp/obda.nt | sort | head -4; done
           test "$a" = "$b"

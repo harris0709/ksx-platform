@@ -7,7 +7,7 @@ import re
 from collections import defaultdict
 
 from .model import Model, Table
-from .naming import XSD, alias, iri_template
+from .naming import XSD, alias, iri_template, sql_col
 from .vocab import Vocab
 
 PREFIXES = """@prefix ksx:  <{ns}> .
@@ -131,7 +131,7 @@ def obda(model: Model, v: Vocab, cfg: dict) -> str:
     schema = cfg["schema"]
     for t in model.tables.values():
         cols = [c for c in t.columns if not c.pk]
-        sel = ", ".join(f'"{c.en}" AS {alias(c.en)}' for c in cols)
+        sel = ", ".join(sql_col(c.en, c.dtype) for c in cols)
         src = f'SELECT {sel} FROM {schema}."{t.en}"'
         me = iri_template(t, model)
         trip = [f"{me} a ksx:{t.cls}"]
