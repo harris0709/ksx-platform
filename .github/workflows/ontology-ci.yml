@@ -121,7 +121,7 @@ jobs:
         run: python -m ksxload review --out /tmp/review.xlsx | tee review.txt && grep -q "미결정 0" review.txt
       - name: S4 물질화 매핑을 적재된 원장에 실행(Morph-KGC) — 가상화 매핑(OBDA)과 트리플 수 비교
         run: |
-          pip install -q morph-kgc psycopg2-binary
+          pip install -q morph-kgc psycopg2-binary sqlalchemy
           M=$(ls ontologies/mappings/rml/*.rml.ttl | paste -sd, -)
           printf '[CONFIGURATION]\noutput_file=/tmp/mkgc.nt\nna_values=\n[ksx]\nmappings=%s\ndb_url=postgresql+psycopg2://postgres:ci@localhost:5432/ksx\n' "$M" > /tmp/mkgc.ini
           python -m morph_kgc /tmp/mkgc.ini
