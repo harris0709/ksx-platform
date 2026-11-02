@@ -1,0 +1,44 @@
+# AfterSalesServiceRequestResult — ksxgen 생성물(OBDA AfterSalesServiceRequestResult와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:AfterSalesServiceRequestResult a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"ItemID\" AS itemid, \"ItemName\" AS itemname, \"RequestNumber\" AS requestnumber, \"TransferSequence\" AS transfersequence, \"RegisterSequence\" AS registersequence, \"RepairSequence\" AS repairsequence, \"SerialNumber\" AS serialnumber, \"FaultLargeClass\" AS faultlargeclass, \"FaultSmallClass\" AS faultsmallclass, \"ErrorCode\" AS errorcode, \"InstallationDate\" AS installationdate, \"ProcessingDate\" AS processingdate, \"EndIndicator\" AS endindicator, \"WorkType\" AS worktype, \"ChildItemID\" AS childitemid, \"ChildItemName\" AS childitemname, \"ItemSpecification\" AS itemspecification, \"RepairType\" AS repairtype FROM ksx.\"AfterSalesServiceRequestResult\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/AfterSalesServiceRequestResult/{requestnumber}_{transfersequence}_{registersequence}_{repairsequence}" ; rr:class ksx:AfterSalesServiceRequestResult ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:plantID ; rr:objectMap [ rr:column "plantid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creatorID ; rr:objectMap [ rr:column "creatorid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creationDateTime ; rr:objectMap [ rr:column "creationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modifierID ; rr:objectMap [ rr:column "modifierid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modificationDateTime ; rr:objectMap [ rr:column "modificationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:note ; rr:objectMap [ rr:column "note" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemID ; rr:objectMap [ rr:column "itemid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemName ; rr:objectMap [ rr:column "itemname" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:requestNumber ; rr:objectMap [ rr:column "requestnumber" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:transferSequence ; rr:objectMap [ rr:column "transfersequence" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:registerSequence ; rr:objectMap [ rr:column "registersequence" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:repairSequence ; rr:objectMap [ rr:column "repairsequence" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:serialNumber ; rr:objectMap [ rr:column "serialnumber" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:faultLargeClass ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/FaultLargeClass/{faultlargeclass}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:faultSmallClass ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/FaultSmallClass/{faultsmallclass}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:errorCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/TransferErrorCode/{errorcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:installationDate ; rr:objectMap [ rr:column "installationdate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:processingDate ; rr:objectMap [ rr:column "processingdate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:endIndicator ; rr:objectMap [ rr:column "endindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:workType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/WorkType/{worktype}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:childItemID ; rr:objectMap [ rr:column "childitemid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:childItemName ; rr:objectMap [ rr:column "childitemname" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemSpecification ; rr:objectMap [ rr:column "itemspecification" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:repairType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/RepairType/{repairtype}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refEnterprise ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Enterprise/{enterpriseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refSite ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Site/{siteid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPlant ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Plant/{plantid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCreator ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{creatorid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refModifier ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{modifierid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refItem ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ItemMaster/{itemid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refAfterSalesServiceRequest ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/AfterSalesServiceRequest/{requestnumber}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refChildItem ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ItemMaster/{childitemid}" ] ] .

@@ -1,0 +1,94 @@
+{
+ "noun": "impix:QualityCost",
+ "ko": "품질비용",
+ "clause": "기업 확장",
+ "table": "IMPIX 확장 명사",
+ "area": "품질관리(확장)",
+ "definition": "원가 기간별 품질비용(Q-COST)을 예방·평가·내부실패·외부실패 구분과 비용 항목으로 집계한 값을 의미한다.",
+ "layer": "impix",
+ "identity": [
+  "QualityCostID"
+ ],
+ "struct": null,
+ "physical": {
+  "ext.QualityCost": {
+   "uk": [
+    "EnterpriseID",
+    "QualityCostID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "QualityCostID",
+   "ko": "품질비용식별자",
+   "type": "ID",
+   "in": "QualityCost",
+   "property": "impix:qualityCostID"
+  },
+  {
+   "en": "CostPeriodStartDate",
+   "ko": "원가기간시작일",
+   "type": "date",
+   "in": "QualityCost",
+   "property": "impix:costPeriodStartDate"
+  },
+  {
+   "en": "CostPeriodEndDate",
+   "ko": "원가기간종료일",
+   "type": "date",
+   "in": "QualityCost",
+   "property": "impix:costPeriodEndDate"
+  },
+  {
+   "en": "QualityCostClass",
+   "ko": "품질비용구분",
+   "type": "enum",
+   "in": "QualityCost",
+   "property": "impix:qualityCostClass"
+  },
+  {
+   "en": "QualityCostItem",
+   "ko": "품질비용항목",
+   "type": "enum",
+   "in": "QualityCost",
+   "property": "impix:qualityCostItem"
+  },
+  {
+   "en": "QualityCostAmount",
+   "ko": "품질비용금액",
+   "type": "float",
+   "in": "QualityCost",
+   "property": "impix:qualityCostAmount"
+  },
+  {
+   "en": "CurrencyCode",
+   "ko": "환종코드",
+   "type": "enum",
+   "in": "QualityCost",
+   "property": "ksx:currencyCode"
+  },
+  {
+   "en": "SourceDocumentReference",
+   "ko": "근거문서",
+   "type": "string",
+   "in": "QualityCost",
+   "property": "impix:sourceDocumentReference"
+  }
+ ],
+ "references": [],
+ "codes": [
+  {
+   "attr": "QualityCostClass",
+   "group": "QualityCostClass"
+  },
+  {
+   "attr": "QualityCostItem",
+   "group": "QualityCostItem"
+  },
+  {
+   "attr": "CurrencyCode",
+   "group": "CurrencyCode"
+  }
+ ]
+}

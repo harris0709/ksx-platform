@@ -5,10 +5,12 @@
   python -m ksxgen build --std standards --ext extensions/impix --out ontologies   # + 기업 확장
   python -m ksxgen ext-template --out extensions/{기업}/확장정의서.xlsx          # 빈 확장 정의서 양식
   python -m ksxgen ext-sync extensions/{기업}/확장정의서.xlsx --std standards     # 파생 행·시트 채움 + 검사
+  python -m ksxgen verify --out ontologies                                       # 문법·DL 선언·일관성(OWL RL)·셰이프·매핑 검증
 """
 from __future__ import annotations
 
 import argparse
+import glob
 import hashlib
 import os
 import sys
@@ -56,6 +58,7 @@ def build(std: str, out: str, cfg: dict, quiet: bool = False, exts: list[str] | 
     w(os.path.join(out, "mappings", "ksx9101.obda"), emit.obda(m, v, cfg))
     w(os.path.join(out, "ddl", "ksx.sql"), emit.ddl(m, v, cfg))
     w(os.path.join(out, "vocab", "codelist.ttl"), emit.codelist(m, cfg))
+    w(os.path.join(out, "vocab", "uom.ttl"), emit.uom(m, cfg))
     emit.catalog(m, v, out)
     order, cyc = emit.load_order(m)
     w(os.path.join(out, "load_order.txt"), "# FK 위상 정렬 적재 순서 (ksxgen 생성물)\n" + "\n".join(order) + "\n"
@@ -69,7 +72,32 @@ def build(std: str, out: str, cfg: dict, quiet: bool = False, exts: list[str] | 
     for d in exts or []:
         from . import ext as X
         ok = X.build(d, m, v, cfg, out, quiet) and ok
+    ok = derived(m, v, cfg, out, quiet) and ok
     return ok
+
+
+def derived(m, v, cfg: dict, out: str, quiet: bool) -> bool:
+    """OBDA·모델에서 파생: 물질화 매핑, 속성 그래프 스키마, 도구 스키마, 자동 전이 규칙(구현안내서 7.1)."""
+    from . import derive
+    w = emit._w
+    obdas = [os.path.join(out, "mappings", "ksx9101.obda")] + sorted(
+        p for p in glob.glob(os.path.join(out, "mappings", "*_ext.obda")))
+    texts = [open(p, encoding="utf-8").read() for p in obdas]
+    n = 0
+    for t in texts:
+        for fn, txt in derive.rml(t).items():
+            w(os.path.join(out, "mappings", "rml", fn), txt)
+            n += 1
+    w(os.path.join(out, "tbox", "catalog-v001.xml"), derive.import_catalog(out))
+    w(os.path.join(out, "graph", "age_schema.sql"), derive.age_schema(texts, cfg.get("graph", "ksx_graph")))
+    for fn, txt in derive.tools(out, m).items():
+        w(os.path.join(out, "catalog", "tools", fn), txt)
+    rules = derive.auto_rules(m, v)
+    for fn, txt in rules.items():
+        w(os.path.join(out, "rules", fn), txt)
+    if not quiet:
+        print(f"ksxgen 파생: 물질화 매핑 {n} · 속성 그래프 스키마 · 도구 스키마 2 · 자동 전이 규칙 {len(rules)} · 단위 vocab/uom.ttl")
+    return True
 
 
 def _digest(root: str) -> dict[str, str]:
@@ -86,7 +114,7 @@ def _digest(root: str) -> dict[str, str]:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="ksxgen", description="KS X 9101 표준 컴파일러")
-    ap.add_argument("cmd", choices=["build", "check", "ext-template", "ext-sync"])
+    ap.add_argument("cmd", choices=["build", "check", "verify", "ext-template", "ext-sync"])
     ap.add_argument("path", nargs="?", help="ext-sync: 확장 정의서 파일")
     ap.add_argument("--ext", action="append", default=[], help="기업 확장 폴더(extensions/{기업}), 여러 번 지정 가능")
     ap.add_argument("--std", default="standards")
@@ -112,6 +140,9 @@ def main(argv=None) -> int:
         return 1 if ne else 0
     if a.cmd == "build":
         return 0 if build(a.std, a.out, cfg, exts=a.ext) else 1
+    if a.cmd == "verify":
+        from .verify import verify
+        return 0 if verify(a.out) else 1
     with tempfile.TemporaryDirectory() as tmp:
         ok = build(a.std, tmp, cfg, quiet=True, exts=a.ext)
         new, cur = _digest(tmp), _digest(a.out)

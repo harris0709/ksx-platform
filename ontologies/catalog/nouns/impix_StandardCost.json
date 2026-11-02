@@ -1,0 +1,120 @@
+{
+ "noun": "impix:StandardCost",
+ "ko": "표준원가",
+ "clause": "기업 확장",
+ "table": "IMPIX 확장 명사",
+ "area": "원가관리(확장)",
+ "definition": "품목(필요 시 공정 단계)의 원가 기간별 표준원가와 원가 요소를 의미한다. 재공·불량·재고 금액 환산의 기준이 된다.",
+ "layer": "impix",
+ "identity": [
+  "StandardCostID"
+ ],
+ "struct": null,
+ "physical": {
+  "ext.StandardCost": {
+   "uk": [
+    "EnterpriseID",
+    "StandardCostID"
+   ]
+  }
+ },
+ "attributes": [
+  {
+   "en": "StandardCostID",
+   "ko": "표준원가식별자",
+   "type": "ID",
+   "in": "StandardCost",
+   "property": "impix:standardCostID"
+  },
+  {
+   "en": "ItemID",
+   "ko": "품목식별자",
+   "type": "IDREF",
+   "in": "StandardCost",
+   "property": "ksx:itemID"
+  },
+  {
+   "en": "OperationID",
+   "ko": "공정식별자",
+   "type": "IDREF",
+   "in": "StandardCost",
+   "property": "ksx:operationID"
+  },
+  {
+   "en": "CostPeriodStartDate",
+   "ko": "원가기간시작일",
+   "type": "date",
+   "in": "StandardCost",
+   "property": "impix:costPeriodStartDate"
+  },
+  {
+   "en": "CostPeriodEndDate",
+   "ko": "원가기간종료일",
+   "type": "date",
+   "in": "StandardCost",
+   "property": "impix:costPeriodEndDate"
+  },
+  {
+   "en": "StandardCostAmount",
+   "ko": "표준원가",
+   "type": "float",
+   "in": "StandardCost",
+   "property": "impix:standardCostAmount"
+  },
+  {
+   "en": "MaterialCostAmount",
+   "ko": "재료비",
+   "type": "float",
+   "in": "StandardCost",
+   "property": "impix:materialCostAmount"
+  },
+  {
+   "en": "LaborCostAmount",
+   "ko": "노무비",
+   "type": "float",
+   "in": "StandardCost",
+   "property": "impix:laborCostAmount"
+  },
+  {
+   "en": "OverheadCostAmount",
+   "ko": "경비",
+   "type": "float",
+   "in": "StandardCost",
+   "property": "impix:overheadCostAmount"
+  },
+  {
+   "en": "CurrencyCode",
+   "ko": "환종코드",
+   "type": "enum",
+   "in": "StandardCost",
+   "property": "ksx:currencyCode"
+  },
+  {
+   "en": "ItemUOMCode",
+   "ko": "기준단위코드",
+   "type": "enum",
+   "in": "StandardCost",
+   "property": "ksx:itemUOMCode"
+  }
+ ],
+ "references": [
+  {
+   "attr": "EnterpriseID, ItemID",
+   "target": "ItemMaster",
+   "property": "ksx:refItem",
+   "in": "StandardCost"
+  },
+  {
+   "attr": "EnterpriseID, OperationID",
+   "target": "Operation",
+   "property": "ksx:refOperation",
+   "in": "StandardCost"
+  }
+ ],
+ "codes": [
+  {
+   "attr": "CurrencyCode",
+   "group": "CurrencyCode"
+  }
+ ]
+}

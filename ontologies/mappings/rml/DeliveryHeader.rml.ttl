@@ -1,0 +1,48 @@
+# DeliveryHeader — ksxgen 생성물(OBDA DeliveryHeader와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:DeliveryHeader a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"DeliveryID\" AS deliveryid, \"DeliveryDateTime\" AS deliverydatetime, \"CustomerID\" AS customerid, \"PackingList\" AS packinglist, \"PackingType\" AS packingtype, \"TransportationMethodCode\" AS transportationmethodcode, \"DepartmentInChargeID\" AS departmentinchargeid, \"DepartmentInChargeName\" AS departmentinchargename, \"PersonInChargeID\" AS personinchargeid, \"PersonInChargeName\" AS personinchargename, \"PersonInChargeDialNumber\" AS personinchargedialnumber, \"TransportationCompany\" AS transportationcompany, \"PersonInChargeNameOfTransportation\" AS personinchargenameoftransportation, \"PersonInChargeDialNumberOfTransportation\" AS personinchargedialnumberoftransportation, \"Recipient\" AS recipient, \"RecipientDialNumber\" AS recipientdialnumber, \"RecipientEmail\" AS recipientemail, \"ShippingPoint\" AS shippingpoint, \"ShipToAddress\" AS shiptoaddress, \"PreferredReceiptDate\" AS preferredreceiptdate, \"DeliveryNote\" AS deliverynote, \"DeliveryConfirmationDocument\" AS deliveryconfirmationdocument FROM ksx.\"DeliveryHeader\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Delivery/{deliveryid}" ; rr:class ksx:Delivery ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:plantID ; rr:objectMap [ rr:column "plantid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creatorID ; rr:objectMap [ rr:column "creatorid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creationDateTime ; rr:objectMap [ rr:column "creationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modifierID ; rr:objectMap [ rr:column "modifierid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modificationDateTime ; rr:objectMap [ rr:column "modificationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:note ; rr:objectMap [ rr:column "note" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:deliveryID ; rr:objectMap [ rr:column "deliveryid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:deliveryDateTime ; rr:objectMap [ rr:column "deliverydatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:customerID ; rr:objectMap [ rr:column "customerid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:packingList ; rr:objectMap [ rr:column "packinglist" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:packingType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/PackingType/{packingtype}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:transportationMethodCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/TransportationMethodCode/{transportationmethodcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:departmentInChargeID ; rr:objectMap [ rr:column "departmentinchargeid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:departmentInChargeName ; rr:objectMap [ rr:column "departmentinchargename" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:personInChargeID ; rr:objectMap [ rr:column "personinchargeid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:personInChargeName ; rr:objectMap [ rr:column "personinchargename" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:personInChargeDialNumber ; rr:objectMap [ rr:column "personinchargedialnumber" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:transportationCompany ; rr:objectMap [ rr:column "transportationcompany" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:personInChargeNameOfTransportation ; rr:objectMap [ rr:column "personinchargenameoftransportation" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:personInChargeDialNumberOfTransportation ; rr:objectMap [ rr:column "personinchargedialnumberoftransportation" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:recipient ; rr:objectMap [ rr:column "recipient" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:recipientDialNumber ; rr:objectMap [ rr:column "recipientdialnumber" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:recipientEmail ; rr:objectMap [ rr:column "recipientemail" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:shippingPoint ; rr:objectMap [ rr:column "shippingpoint" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:shipToAddress ; rr:objectMap [ rr:column "shiptoaddress" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:preferredReceiptDate ; rr:objectMap [ rr:column "preferredreceiptdate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:deliveryNote ; rr:objectMap [ rr:column "deliverynote" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:deliveryConfirmationDocument ; rr:objectMap [ rr:column "deliveryconfirmationdocument" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refEnterprise ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Enterprise/{enterpriseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refSite ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Site/{siteid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPlant ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Plant/{plantid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCreator ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{creatorid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refModifier ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{modifierid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCustomer ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/CustomerPartyMaster/{customerid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refDepartmentInCharge ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Department/{departmentinchargeid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPersonInCharge ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{personinchargeid}" ] ] .

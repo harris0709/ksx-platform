@@ -1,0 +1,27 @@
+# Site — ksxgen 생성물(OBDA Site와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:Site a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"SiteID\" AS siteid, \"SiteName\" AS sitename, \"BusinessRegistrationNumber\" AS businessregistrationnumber, \"DialNumber\" AS dialnumber, \"PostalCode\" AS postalcode, \"BaseAddress\" AS baseaddress, \"DetailAddress\" AS detailaddress, \"UseIndicator\" AS useindicator FROM ksx.\"Site\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Site/{siteid}" ; rr:class ksx:Site ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creatorID ; rr:objectMap [ rr:column "creatorid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creationDateTime ; rr:objectMap [ rr:column "creationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modifierID ; rr:objectMap [ rr:column "modifierid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modificationDateTime ; rr:objectMap [ rr:column "modificationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:note ; rr:objectMap [ rr:column "note" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:siteName ; rr:objectMap [ rr:column "sitename" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:businessRegistrationNumber ; rr:objectMap [ rr:column "businessregistrationnumber" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:dialNumber ; rr:objectMap [ rr:column "dialnumber" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:postalCode ; rr:objectMap [ rr:column "postalcode" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:baseAddress ; rr:objectMap [ rr:column "baseaddress" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:detailAddress ; rr:objectMap [ rr:column "detailaddress" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:useIndicator ; rr:objectMap [ rr:column "useindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refEnterprise ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Enterprise/{enterpriseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCreator ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{creatorid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refModifier ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{modifierid}" ] ] .

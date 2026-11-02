@@ -1,0 +1,68 @@
+# ItemMaster — ksxgen 생성물(OBDA ItemMaster와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:ItemMaster a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"ItemID\" AS itemid, \"ItemName\" AS itemname, \"ItemType\" AS itemtype, \"PhantomIndicator\" AS phantomindicator, \"ItemLargeClass\" AS itemlargeclass, \"ItemMediumClass\" AS itemmediumclass, \"ItemSmallClass\" AS itemsmallclass, \"ModelName\" AS modelname, \"ItemSpecification\" AS itemspecification, \"ItemDetailSpecification\" AS itemdetailspecification, \"UseIndicator\" AS useindicator, \"CountryOfOrigin\" AS countryoforigin, \"PlaceOfOrigin\" AS placeoforigin, \"ItemUOMCode\" AS itemuomcode, \"Weight\" AS weight, \"NetWeight\" AS netweight, \"WeightUOMCode\" AS weightuomcode, \"Volume\" AS volume, \"VolumeUOMCode\" AS volumeuomcode, \"Length\" AS length, \"Width\" AS width, \"Height\" AS height, \"DimensionUOMCode\" AS dimensionuomcode, \"ValidEndDate\" AS validenddate, \"DrawingNumber\" AS drawingnumber, \"LotControlIndicator\" AS lotcontrolindicator, \"PurchaseLeadTime\" AS purchaseleadtime, \"ProductionLeadTime\" AS productionleadtime, \"LotSize\" AS lotsize, \"MainCustomerID\" AS maincustomerid, \"MainVendorID\" AS mainvendorid, \"SafetyStock\" AS safetystock, \"MaximumStockLevel\" AS maximumstocklevel, \"ReceiptWarehouseID\" AS receiptwarehouseid, \"IssueWarehouseID\" AS issuewarehouseid, \"ABCClass\" AS abcclass, \"ReplacementItemID\" AS replacementitemid, \"IncomingInspectionIndicator\" AS incominginspectionindicator, \"FinalInspectionIndicator\" AS finalinspectionindicator, \"OutgoingInspectionIndicator\" AS outgoinginspectionindicator FROM ksx.\"ItemMaster\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ItemMaster/{itemid}" ; rr:class ksx:ItemMaster ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:plantID ; rr:objectMap [ rr:column "plantid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creatorID ; rr:objectMap [ rr:column "creatorid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creationDateTime ; rr:objectMap [ rr:column "creationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modifierID ; rr:objectMap [ rr:column "modifierid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modificationDateTime ; rr:objectMap [ rr:column "modificationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:note ; rr:objectMap [ rr:column "note" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemID ; rr:objectMap [ rr:column "itemid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemName ; rr:objectMap [ rr:column "itemname" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/ItemType/{itemtype}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:phantomIndicator ; rr:objectMap [ rr:column "phantomindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemLargeClass ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/ItemLargeClass/{itemlargeclass}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemMediumClass ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/ItemMediumClass/{itemmediumclass}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemSmallClass ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/ItemSmallClass/{itemsmallclass}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modelName ; rr:objectMap [ rr:column "modelname" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemSpecification ; rr:objectMap [ rr:column "itemspecification" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemDetailSpecification ; rr:objectMap [ rr:column "itemdetailspecification" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:useIndicator ; rr:objectMap [ rr:column "useindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:countryOfOrigin ; rr:objectMap [ rr:column "countryoforigin" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:placeOfOrigin ; rr:objectMap [ rr:column "placeoforigin" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemUOMCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/uom/{itemuomcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:weight ; rr:objectMap [ rr:column "weight" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:netWeight ; rr:objectMap [ rr:column "netweight" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:weightUOMCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/uom/{weightuomcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:volume ; rr:objectMap [ rr:column "volume" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:volumeUOMCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/uom/{volumeuomcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:length ; rr:objectMap [ rr:column "length" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:width ; rr:objectMap [ rr:column "width" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:height ; rr:objectMap [ rr:column "height" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:dimensionUOMCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/uom/{dimensionuomcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:validEndDate ; rr:objectMap [ rr:column "validenddate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:drawingNumber ; rr:objectMap [ rr:column "drawingnumber" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lotControlIndicator ; rr:objectMap [ rr:column "lotcontrolindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:purchaseLeadTime ; rr:objectMap [ rr:column "purchaseleadtime" ; rr:datatype xsd:duration ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productionLeadTime ; rr:objectMap [ rr:column "productionleadtime" ; rr:datatype xsd:duration ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lotSize ; rr:objectMap [ rr:column "lotsize" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:mainCustomerID ; rr:objectMap [ rr:column "maincustomerid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:mainVendorID ; rr:objectMap [ rr:column "mainvendorid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:safetyStock ; rr:objectMap [ rr:column "safetystock" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:maximumStockLevel ; rr:objectMap [ rr:column "maximumstocklevel" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:receiptWarehouseID ; rr:objectMap [ rr:column "receiptwarehouseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:issueWarehouseID ; rr:objectMap [ rr:column "issuewarehouseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:abcClass ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/ABCClass/{abcclass}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:replacementItemID ; rr:objectMap [ rr:column "replacementitemid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:incomingInspectionIndicator ; rr:objectMap [ rr:column "incominginspectionindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:finalInspectionIndicator ; rr:objectMap [ rr:column "finalinspectionindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:outgoingInspectionIndicator ; rr:objectMap [ rr:column "outgoinginspectionindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refEnterprise ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Enterprise/{enterpriseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refSite ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Site/{siteid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPlant ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Plant/{plantid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCreator ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{creatorid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refModifier ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{modifierid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refMainCustomer ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/CustomerPartyMaster/{maincustomerid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refMainVendor ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/VendorPartyMaster/{mainvendorid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refReceiptWarehouse ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/WarehouseLocation/{receiptwarehouseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refIssueWarehouse ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/WarehouseLocation/{issuewarehouseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refReplacementItem ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ItemMaster/{replacementitemid}" ] ] .

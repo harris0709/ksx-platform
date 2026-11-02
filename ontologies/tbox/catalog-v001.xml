@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- ksxgen 생성물: 온톨로지 IRI → 로컬 파일(ROBOT·Protégé용) -->
+<catalog prefer="public" xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+  <uri name="https://ontology.impix.co.kr/ext/impix/1.0" uri="impix_ext.ttl"/>
+  <uri name="https://ontology.impix.co.kr/ksx9101/1.0" uri="ksx9101_core.ttl"/>
+</catalog>

@@ -1,0 +1,6 @@
+# A-008 자동 전이 규칙(ksxgen 생성물): 배치 모배치식별자 참조를 끝까지 따라간다
+PREFIX ksx: <https://ontology.impix.co.kr/ksx9101/1.0/>
+PREFIX inf: <https://ontology.impix.co.kr/inference/>
+PREFIX ksxq: <https://ontology.impix.co.kr/quality/>
+CONSTRUCT { ?x inf:refParentBatchClosure ?y }
+WHERE { ?x a ksx:Batch ; ksx:refParentBatch+ ?y . FILTER (?x != ?y) FILTER NOT EXISTS { ?x ksxq:violates ?v } }

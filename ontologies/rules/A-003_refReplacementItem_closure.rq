@@ -1,0 +1,6 @@
+# A-003 자동 전이 규칙(ksxgen 생성물): 품목마스터 대체품목식별자 참조를 끝까지 따라간다
+PREFIX ksx: <https://ontology.impix.co.kr/ksx9101/1.0/>
+PREFIX inf: <https://ontology.impix.co.kr/inference/>
+PREFIX ksxq: <https://ontology.impix.co.kr/quality/>
+CONSTRUCT { ?x inf:refReplacementItemClosure ?y }
+WHERE { ?x a ksx:ItemMaster ; ksx:refReplacementItem+ ?y . FILTER (?x != ?y) FILTER NOT EXISTS { ?x ksxq:violates ?v } }

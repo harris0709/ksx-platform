@@ -1,0 +1,48 @@
+# PurchaseOrderLine — ksxgen 생성물(OBDA PurchaseOrderLine와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:PurchaseOrderLine a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"PurchaseDocumentNumber\" AS purchasedocumentnumber, \"PurchaseDocumentSequence\" AS purchasedocumentsequence, \"ItemPurchaseType\" AS itempurchasetype, \"ItemID\" AS itemid, \"ItemName\" AS itemname, \"PurchaseOrderLineStatusCode\" AS purchaseorderlinestatuscode, \"TaxCode\" AS taxcode, \"ItemUOMCode\" AS itemuomcode, \"PurchaseOrderUOMCode\" AS purchaseorderuomcode, \"ConversionUnitQuantity\" AS conversionunitquantity, \"ItemUnitQuantity\" AS itemunitquantity, \"PurchaseOrderQuantity\" AS purchaseorderquantity, \"PurchaseGoodsReceiptQuantity\" AS purchasegoodsreceiptquantity, \"PurchaseTransactionUnitPrice\" AS purchasetransactionunitprice, \"PurchaseTransactionPrice\" AS purchasetransactionprice, \"PurchaseOrderUnitPrice\" AS purchaseorderunitprice, \"PurchaseOrderPrice\" AS purchaseorderprice, \"VATPrice\" AS vatprice, \"ExpectedDeliveryDate\" AS expecteddeliverydate, \"IncomingInspectionIndicator\" AS incominginspectionindicator, \"AccountCode\" AS accountcode, \"VATTransactionUnitPrice\" AS vattransactionunitprice, \"VATTransactionPrice\" AS vattransactionprice, \"VATCarryingAmount\" AS vatcarryingamount FROM ksx.\"PurchaseOrderLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/PurchaseOrder/{purchasedocumentnumber}/line/{purchasedocumentsequence}" ; rr:class ksx:PurchaseOrderLine ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:plantID ; rr:objectMap [ rr:column "plantid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creatorID ; rr:objectMap [ rr:column "creatorid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creationDateTime ; rr:objectMap [ rr:column "creationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modifierID ; rr:objectMap [ rr:column "modifierid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modificationDateTime ; rr:objectMap [ rr:column "modificationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:note ; rr:objectMap [ rr:column "note" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:purchaseDocumentNumber ; rr:objectMap [ rr:column "purchasedocumentnumber" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:purchaseDocumentSequence ; rr:objectMap [ rr:column "purchasedocumentsequence" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemPurchaseType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/ItemPurchaseType/{itempurchasetype}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemID ; rr:objectMap [ rr:column "itemid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemName ; rr:objectMap [ rr:column "itemname" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:purchaseOrderLineStatusCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/PurchaseOrderLineStatusCode/{purchaseorderlinestatuscode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:taxCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/TaxCode/{taxcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemUOMCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/uom/{itemuomcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:purchaseOrderUOMCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/uom/{purchaseorderuomcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:conversionUnitQuantity ; rr:objectMap [ rr:column "conversionunitquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemUnitQuantity ; rr:objectMap [ rr:column "itemunitquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:purchaseOrderQuantity ; rr:objectMap [ rr:column "purchaseorderquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:purchaseGoodsReceiptQuantity ; rr:objectMap [ rr:column "purchasegoodsreceiptquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:purchaseTransactionUnitPrice ; rr:objectMap [ rr:column "purchasetransactionunitprice" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:purchaseTransactionPrice ; rr:objectMap [ rr:column "purchasetransactionprice" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:purchaseOrderUnitPrice ; rr:objectMap [ rr:column "purchaseorderunitprice" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:purchaseOrderPrice ; rr:objectMap [ rr:column "purchaseorderprice" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:vatPrice ; rr:objectMap [ rr:column "vatprice" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:expectedDeliveryDate ; rr:objectMap [ rr:column "expecteddeliverydate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:incomingInspectionIndicator ; rr:objectMap [ rr:column "incominginspectionindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:accountCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/AccountCode/{accountcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:vatTransactionUnitPrice ; rr:objectMap [ rr:column "vattransactionunitprice" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:vatTransactionPrice ; rr:objectMap [ rr:column "vattransactionprice" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:vatCarryingAmount ; rr:objectMap [ rr:column "vatcarryingamount" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refEnterprise ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Enterprise/{enterpriseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refSite ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Site/{siteid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPlant ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Plant/{plantid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCreator ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{creatorid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refModifier ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{modifierid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refItem ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ItemMaster/{itemid}" ] ] .

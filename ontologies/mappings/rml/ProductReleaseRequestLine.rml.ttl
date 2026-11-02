@@ -1,0 +1,46 @@
+# ProductReleaseRequestLine — ksxgen 생성물(OBDA ProductReleaseRequestLine와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:ProductReleaseRequestLine a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"ProductReleaseRequestID\" AS productreleaserequestid, \"ProductReleaseRequestSequence\" AS productreleaserequestsequence, \"LineID\" AS lineid, \"ItemID\" AS itemid, \"ItemName\" AS itemname, \"ProductReleaseRequestQuantity\" AS productreleaserequestquantity, \"ProductReleaseQuantity\" AS productreleasequantity, \"SalesQuantity\" AS salesquantity, \"ItemUOMCode\" AS itemuomcode, \"SellingUOMCode\" AS sellinguomcode, \"ItemUnitQuantity\" AS itemunitquantity, \"ProductReleaseUnitQuantity\" AS productreleaseunitquantity, \"SalesUnitQuantity\" AS salesunitquantity, \"WarehouseID\" AS warehouseid, \"RequestedDeliveryDate\" AS requesteddeliverydate, \"SalesDocumentNumber\" AS salesdocumentnumber, \"SalesDocumentSequence\" AS salesdocumentsequence, \"ProductReleaseDate\" AS productreleasedate, \"DeliveryDate\" AS deliverydate FROM ksx.\"ProductReleaseRequestLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ProductReleaseRequest/{productreleaserequestid}/line/{productreleaserequestsequence}" ; rr:class ksx:ProductReleaseRequestLine ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:plantID ; rr:objectMap [ rr:column "plantid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creatorID ; rr:objectMap [ rr:column "creatorid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creationDateTime ; rr:objectMap [ rr:column "creationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modifierID ; rr:objectMap [ rr:column "modifierid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modificationDateTime ; rr:objectMap [ rr:column "modificationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:note ; rr:objectMap [ rr:column "note" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productReleaseRequestID ; rr:objectMap [ rr:column "productreleaserequestid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productReleaseRequestSequence ; rr:objectMap [ rr:column "productreleaserequestsequence" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lineID ; rr:objectMap [ rr:column "lineid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemID ; rr:objectMap [ rr:column "itemid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemName ; rr:objectMap [ rr:column "itemname" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productReleaseRequestQuantity ; rr:objectMap [ rr:column "productreleaserequestquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productReleaseQuantity ; rr:objectMap [ rr:column "productreleasequantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:salesQuantity ; rr:objectMap [ rr:column "salesquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemUOMCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/uom/{itemuomcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:sellingUOMCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/uom/{sellinguomcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemUnitQuantity ; rr:objectMap [ rr:column "itemunitquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productReleaseUnitQuantity ; rr:objectMap [ rr:column "productreleaseunitquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:salesUnitQuantity ; rr:objectMap [ rr:column "salesunitquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:warehouseID ; rr:objectMap [ rr:column "warehouseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:requestedDeliveryDate ; rr:objectMap [ rr:column "requesteddeliverydate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:salesDocumentNumber ; rr:objectMap [ rr:column "salesdocumentnumber" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:salesDocumentSequence ; rr:objectMap [ rr:column "salesdocumentsequence" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productReleaseDate ; rr:objectMap [ rr:column "productreleasedate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:deliveryDate ; rr:objectMap [ rr:column "deliverydate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refEnterprise ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Enterprise/{enterpriseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refSite ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Site/{siteid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPlant ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Plant/{plantid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCreator ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{creatorid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refModifier ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{modifierid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refLine ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Line/{lineid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refItem ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ItemMaster/{itemid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refWarehouse ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/WarehouseLocation/{warehouseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refSalesOrderLine ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/SalesOrder/{salesdocumentnumber}/line/{salesdocumentsequence}" ] ] .

@@ -1,0 +1,57 @@
+# Lot — ksxgen 생성물(OBDA Lot와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:Lot a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"LotID\" AS lotid, \"LotName\" AS lotname, \"LotDescription\" AS lotdescription, \"ParentLotID\" AS parentlotid, \"ChildLotID\" AS childlotid, \"LotType\" AS lottype, \"ItemID\" AS itemid, \"CarrierID\" AS carrierid, \"ProductionOrderID\" AS productionorderid, \"ProductionOrderSequence\" AS productionordersequence, \"ScheduledDueDate\" AS scheduledduedate, \"LotPriority\" AS lotpriority, \"CurrentOperationID\" AS currentoperationid, \"NextOperationID\" AS nextoperationid, \"LotState\" AS lotstate, \"HoldIndicator\" AS holdindicator, \"HotIndicator\" AS hotindicator, \"ReworkIndicator\" AS reworkindicator, \"LotCreatedQuantity\" AS lotcreatedquantity, \"ProducedQuantity\" AS producedquantity, \"DefectQuantity\" AS defectquantity, \"ReworkQuantity\" AS reworkquantity, \"ReworkCount\" AS reworkcount, \"TotalReworkCount\" AS totalreworkcount, \"LotStartedDateTime\" AS lotstarteddatetime, \"PersonnelID\" AS personnelid FROM ksx.\"Lot\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Lot/{lotid}" ; rr:class ksx:Lot ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:plantID ; rr:objectMap [ rr:column "plantid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creatorID ; rr:objectMap [ rr:column "creatorid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creationDateTime ; rr:objectMap [ rr:column "creationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modifierID ; rr:objectMap [ rr:column "modifierid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modificationDateTime ; rr:objectMap [ rr:column "modificationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:note ; rr:objectMap [ rr:column "note" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lotID ; rr:objectMap [ rr:column "lotid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lotName ; rr:objectMap [ rr:column "lotname" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lotDescription ; rr:objectMap [ rr:column "lotdescription" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:parentLotID ; rr:objectMap [ rr:column "parentlotid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:childLotID ; rr:objectMap [ rr:column "childlotid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lotType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/LotType/{lottype}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemID ; rr:objectMap [ rr:column "itemid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:carrierID ; rr:objectMap [ rr:column "carrierid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productionOrderID ; rr:objectMap [ rr:column "productionorderid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:productionOrderSequence ; rr:objectMap [ rr:column "productionordersequence" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:scheduledDueDate ; rr:objectMap [ rr:column "scheduledduedate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lotPriority ; rr:objectMap [ rr:column "lotpriority" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:currentOperationID ; rr:objectMap [ rr:column "currentoperationid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:nextOperationID ; rr:objectMap [ rr:column "nextoperationid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lotState ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/LotState/{lotstate}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:holdIndicator ; rr:objectMap [ rr:column "holdindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:hotIndicator ; rr:objectMap [ rr:column "hotindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:reworkIndicator ; rr:objectMap [ rr:column "reworkindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lotCreatedQuantity ; rr:objectMap [ rr:column "lotcreatedquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:producedQuantity ; rr:objectMap [ rr:column "producedquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:defectQuantity ; rr:objectMap [ rr:column "defectquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:reworkQuantity ; rr:objectMap [ rr:column "reworkquantity" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:reworkCount ; rr:objectMap [ rr:column "reworkcount" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:totalReworkCount ; rr:objectMap [ rr:column "totalreworkcount" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:lotStartedDateTime ; rr:objectMap [ rr:column "lotstarteddatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:personnelID ; rr:objectMap [ rr:column "personnelid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refEnterprise ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Enterprise/{enterpriseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refSite ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Site/{siteid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPlant ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Plant/{plantid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCreator ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{creatorid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refModifier ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{modifierid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refParentLot ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Lot/{parentlotid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refChildLot ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Lot/{childlotid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refItem ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ItemMaster/{itemid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCarrier ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Carrier/{carrierid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refProductionOrder ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ProductionOrder/{productionorderid}_{productionordersequence}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCurrentOperation ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Operation/{currentoperationid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refNextOperation ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Operation/{nextoperationid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPersonnel ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{personnelid}" ] ] .

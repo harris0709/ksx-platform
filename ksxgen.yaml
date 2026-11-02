@@ -3,3 +3,4 @@ ns: https://ontology.impix.co.kr/ksx9101/1.0/
 data_ns: https://data.impix.co.kr/
 version: KS X 9101-1:2025 개정안 v1.0
 schema: ksx
+graph: ksx_graph      # 속성 그래프(Apache AGE) 이름 — 관계형 스키마 ksx와 겹치지 않게

@@ -1,0 +1,14 @@
+# IMPIX_EquipmentStateExt — ksxgen 생성물(OBDA IMPIX_EquipmentStateExt와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix impix: <https://ontology.impix.co.kr/ext/impix/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:IMPIX_EquipmentStateExt a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"EquipmentStateID\" AS equipmentstateid, \"StateStartDateTime\" AS statestartdatetime, \"StateEndDateTime\" AS stateenddatetime, \"EquipmentIdleReasonCode\" AS equipmentidlereasoncode FROM ext.\"EquipmentStateExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/EquipmentState/{equipmentstateid}" ] ;
+    rr:predicateObjectMap [ rr:predicate impix:stateStartDateTime ; rr:objectMap [ rr:column "statestartdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:stateEndDateTime ; rr:objectMap [ rr:column "stateenddatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate impix:equipmentIdleReasonCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/EquipmentIdleReasonCode/{equipmentidlereasoncode}" ] ] .

@@ -17,9 +17,24 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - name: 의존성
-        run: pip install openpyxl pyyaml rdflib pyshacl
+        run: pip install openpyxl pyyaml rdflib pyshacl owlrl
       - name: 생성물 최신 여부·커버리지 (ksxgen check)
         run: PYTHONPATH=tools/ksxgen python -m ksxgen check --std standards --ext extensions/impix --out ontologies
+      - name: S4 생성물 검증 (ksxgen verify — 문법·DL 선언·OWL RL 일관성·SHACL-SHACL·매핑)
+        run: PYTHONPATH=tools/ksxgen python -m ksxgen verify --out ontologies
+      - name: S4 DL 추론기 일관성 (ROBOT + HermiT, Core + IMPIX 확장)
+        run: |
+          curl -sSLo robot.jar https://github.com/ontodev/robot/releases/download/v1.9.7/robot.jar
+          java -jar robot.jar reason --reasoner hermit --input ontologies/tbox/impix_ext.ttl --output /tmp/reasoned.ttl
+          java -jar robot.jar validate-profile --profile DL --input ontologies/tbox/ksx9101_core.ttl --output /tmp/dl_core.txt || (head -20 /tmp/dl_core.txt; exit 1)
+      - name: S4 속성 그래프 스키마 (Apache AGE에 두 번 적용 — 다시 실행 가능)
+        run: |
+          docker run -d --name age -e POSTGRES_PASSWORD=ci -p 5434:5432 apache/age:release_PG16_1.5.0
+          for i in $(seq 1 30); do PGPASSWORD=ci psql -h localhost -p 5434 -U postgres -c "select 1" >/dev/null 2>&1 && break; sleep 2; done
+          PGPASSWORD=ci psql -h localhost -p 5434 -U postgres -v ON_ERROR_STOP=1 -q -c "CREATE EXTENSION IF NOT EXISTS age"
+          for n in 1 2; do PGPASSWORD=ci psql -h localhost -p 5434 -U postgres -v ON_ERROR_STOP=1 -q -o /dev/null -f ontologies/graph/age_schema.sql; done
+          PGPASSWORD=ci psql -h localhost -p 5434 -U postgres -At -c "select kind, count(*) from ag_catalog.ag_label l join ag_catalog.ag_graph g on l.graph = g.graphid where g.name = 'ksx_graph' group by 1 order by 1" | tee age.txt
+          grep -q "^v|82$" age.txt && grep -q "^e|71$" age.txt   # 노드 81·관계 70 + AGE 기본 라벨 각 1
       - name: 웹 콘솔 데이터 최신 여부
         run: python tools/build_web.py && git diff --exit-code web/
       - name: 생성기 회귀 시험

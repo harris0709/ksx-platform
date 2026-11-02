@@ -1,0 +1,51 @@
+# GoodsReceipt — ksxgen 생성물(OBDA GoodsReceipt와 같은 트리플). 직접 수정 금지
+@prefix ksx: <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix map: <urn:ksx:map:> .
+
+map:GoodsReceipt a rr:TriplesMap ;
+    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\" AS enterpriseid, \"SiteID\" AS siteid, \"PlantID\" AS plantid, \"CreatorID\" AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\" AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"GoodsReceiptID\" AS goodsreceiptid, \"WarehouseID\" AS warehouseid, \"PersonnelID\" AS personnelid, \"GoodsReceiptSequence\" AS goodsreceiptsequence, \"GoodsReceiptType\" AS goodsreceipttype, \"GoodsReceiptReturnType\" AS goodsreceiptreturntype, \"GoodsReceiptDate\" AS goodsreceiptdate, \"ItemID\" AS itemid, \"ItemName\" AS itemname, \"InventoryTransactionDocumentNumber\" AS inventorytransactiondocumentnumber, \"InventoryTransactionDocumentSequence\" AS inventorytransactiondocumentsequence, \"InventoryTransactionTypeCode\" AS inventorytransactiontypecode, \"InvoiceNumber\" AS invoicenumber, \"InvoiceSequence\" AS invoicesequence, \"InvoiceProcessingIndicator\" AS invoiceprocessingindicator, \"IncomingInspectionIndicator\" AS incominginspectionindicator, \"VendorID\" AS vendorid, \"PurchaseOrderUOMCode\" AS purchaseorderuomcode, \"ItemUnitQuantity\" AS itemunitquantity, \"GoodsReceiptQuantity\" AS goodsreceiptquantity, \"IncomingInspectionAcceptedQuantity\" AS incominginspectionacceptedquantity, \"IncomingInspectionRejectedQuantity\" AS incominginspectionrejectedquantity, \"PurchaseGroupCode\" AS purchasegroupcode, \"ItemUOMCode\" AS itemuomcode FROM ksx.\"GoodsReceipt\"" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/GoodsReceipt/{goodsreceiptid}_{goodsreceiptsequence}" ; rr:class ksx:GoodsReceipt ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:plantID ; rr:objectMap [ rr:column "plantid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creatorID ; rr:objectMap [ rr:column "creatorid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:creationDateTime ; rr:objectMap [ rr:column "creationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modifierID ; rr:objectMap [ rr:column "modifierid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:modificationDateTime ; rr:objectMap [ rr:column "modificationdatetime" ; rr:datatype xsd:dateTime ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:note ; rr:objectMap [ rr:column "note" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:goodsReceiptID ; rr:objectMap [ rr:column "goodsreceiptid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:warehouseID ; rr:objectMap [ rr:column "warehouseid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:personnelID ; rr:objectMap [ rr:column "personnelid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:goodsReceiptSequence ; rr:objectMap [ rr:column "goodsreceiptsequence" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:goodsReceiptType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/GoodsReceiptType/{goodsreceipttype}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:goodsReceiptReturnType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/GoodsReceiptReturnType/{goodsreceiptreturntype}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:goodsReceiptDate ; rr:objectMap [ rr:column "goodsreceiptdate" ; rr:datatype xsd:date ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemID ; rr:objectMap [ rr:column "itemid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemName ; rr:objectMap [ rr:column "itemname" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:inventoryTransactionDocumentNumber ; rr:objectMap [ rr:column "inventorytransactiondocumentnumber" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:inventoryTransactionDocumentSequence ; rr:objectMap [ rr:column "inventorytransactiondocumentsequence" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:inventoryTransactionTypeCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/InventoryTransactionTypeCode/{inventorytransactiontypecode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:invoiceNumber ; rr:objectMap [ rr:column "invoicenumber" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:invoiceSequence ; rr:objectMap [ rr:column "invoicesequence" ; rr:datatype xsd:integer ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:invoiceProcessingIndicator ; rr:objectMap [ rr:column "invoiceprocessingindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:incomingInspectionIndicator ; rr:objectMap [ rr:column "incominginspectionindicator" ; rr:datatype xsd:boolean ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:vendorID ; rr:objectMap [ rr:column "vendorid" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:purchaseOrderUOMCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/uom/{purchaseorderuomcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemUnitQuantity ; rr:objectMap [ rr:column "itemunitquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:goodsReceiptQuantity ; rr:objectMap [ rr:column "goodsreceiptquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:incomingInspectionAcceptedQuantity ; rr:objectMap [ rr:column "incominginspectionacceptedquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:incomingInspectionRejectedQuantity ; rr:objectMap [ rr:column "incominginspectionrejectedquantity" ; rr:datatype xsd:decimal ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:purchaseGroupCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/PurchaseGroupCode/{purchasegroupcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:itemUOMCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/uom/{itemuomcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refEnterprise ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Enterprise/{enterpriseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refSite ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Site/{siteid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPlant ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Plant/{plantid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refCreator ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{creatorid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refModifier ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{modifierid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refWarehouse ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/WarehouseLocation/{warehouseid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refPersonnel ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Personnel/{personnelid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refItem ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ItemMaster/{itemid}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:refVendor ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/VendorPartyMaster/{vendorid}" ] ] .

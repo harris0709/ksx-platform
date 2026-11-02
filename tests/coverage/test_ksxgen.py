@@ -43,6 +43,8 @@ def test_turtle_parses():
         g = rdflib.Graph()
         g.parse(os.path.join(ROOT, "ontologies", f), format="turtle")
         assert len(g) > 1000, f
+    g = rdflib.Graph().parse(os.path.join(ROOT, "ontologies", "vocab", "uom.ttl"), format="turtle")
+    assert len(g) > 200
 
 
 def test_extension_impix():
@@ -99,6 +101,70 @@ def test_extension_turtle_parses():
         g = rdflib.Graph()
         g.parse(os.path.join(ROOT, "ontologies", f), format="turtle")
         assert len(g) > 100, f
+
+
+def _obda_triples(text):
+    """OBDA → (주어 템플릿, 술어, 목적어) 집합(접두어 펼침)."""
+    from ksxgen import derive
+    pfx, maps = derive.parse_obda(text)
+    out = set()
+    for _, stmts, src in maps:
+        for subj, pos in stmts:
+            for p, o in pos:
+                o2 = o if o.startswith("{") or p == "a" else derive._expand(o, pfx)
+                out.add((src, derive._expand(subj, pfx), p, o2))
+    return out
+
+
+def _rml_triples(texts):
+    import re
+    out = set()
+    for t in texts:
+        for tm in t.split(" a rr:TriplesMap ;")[1:]:
+            src = re.search(r'rr:sqlQuery "((?:[^"\\]|\\.)*)"', tm).group(1).replace('\\"', '"')
+            subj = re.search(r'rr:subjectMap \[ rr:template "([^"]+)"', tm).group(1)
+            for c in re.findall(r"rr:class (\S+)", tm.split("rr:predicateObjectMap")[0]):
+                out.add((src, subj, "a", c.rstrip(" ];")))
+            for p, om in re.findall(r"rr:predicate (\S+) ; rr:objectMap \[ (.*?) \] \]", tm):
+                m = re.match(r'rr:column "([^"]+)"(?: ; rr:datatype (\S+))?$', om)
+                o = ("{" + m.group(1) + "}" + ("^^" + m.group(2) if m.group(2) else "")) if m else \
+                    re.match(r'rr:template "([^"]+)"', om).group(1)
+                out.add((src, subj, p, o))
+    return out
+
+
+def test_rml_equals_obda():
+    """물질화 매핑(R2RML)이 가상화 매핑(OBDA)과 같은 트리플 패턴을 만든다 — Core + 확장."""
+    import glob
+    mp = os.path.join(ROOT, "ontologies", "mappings")
+    obda = set()
+    for f in ("ksx9101.obda", "impix_ext.obda"):
+        obda |= _obda_triples(open(os.path.join(mp, f), encoding="utf-8").read())
+    files = sorted(glob.glob(os.path.join(mp, "rml", "*.rml.ttl")))
+    rml = _rml_triples([open(f, encoding="utf-8").read() for f in files])
+    assert len(files) == 84 + 22
+    assert obda == rml, (sorted(obda - rml)[:3], sorted(rml - obda)[:3])
+
+
+def test_derived_outputs():
+    """속성 그래프 스키마·도구 스키마·자동 전이 규칙·단위 분리."""
+    import json
+    import re
+    o = os.path.join(ROOT, "ontologies")
+    age = open(os.path.join(o, "graph", "age_schema.sql"), encoding="utf-8").read()
+    vl = re.findall(r"ksx_label\('(\w+)', 'v'\)", age)
+    el = re.findall(r"ksx_label\('(\w+)', 'e'\)", age)
+    assert len(vl) == 76 + 5 and {"Lot", "BOMLine", "CustomerComplaint"} <= set(vl)
+    assert {"refParentLot", "hasLine", "lineOf", "refItem"} <= set(el) and "lotState" not in el
+    onto = json.load(open(os.path.join(o, "catalog", "tools", "ksx-ontology.json"), encoding="utf-8"))
+    card = next(t for t in onto["tools"] if t["name"] == "get_noun_card")
+    assert len(card["inputSchema"]["properties"]["noun"]["enum"]) == 68 + 5
+    led = json.load(open(os.path.join(o, "catalog", "tools", "ksx-ledger.json"), encoding="utf-8"))
+    assert len(next(t for t in led["tools"] if t["name"] == "get_struct")["inputSchema"]["properties"]["noun"]["enum"]) == 8
+    auto = sorted(f for f in os.listdir(os.path.join(o, "rules")) if f.startswith("A-"))
+    assert len(auto) == 10 and "A-004_refParentLot_closure.rq" in auto
+    cl = open(os.path.join(o, "vocab", "codelist.ttl"), encoding="utf-8").read()
+    assert "/uom/" not in cl and "/uom/EA>" in open(os.path.join(o, "vocab", "uom.ttl"), encoding="utf-8").read()
 
 
 if __name__ == "__main__":
