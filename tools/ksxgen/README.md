@@ -23,7 +23,7 @@ PYTHONPATH=tools/ksxgen python -m ksxgen build --std standards --ext extensions/
 | catalog/tools/*.json | MCP 도구 스키마(ksx-ontology·ksx-ledger, 명사·구조체 열거값) |
 | mappings/rml/*.rml.ttl | 물질화 매핑(R2RML 문법, Morph-KGC) — OBDA에서 파생, 같은 트리플 |
 | graph/age_schema.sql | Apache AGE 속성 그래프 노드·관계 라벨, 인덱스(다시 실행 가능) |
-| rules/A-*.rq | 자동 전이 규칙(자기 참조 관계 닫힘 10종). 업무 규칙 R-*는 사람이 작성 |
+| rules/A-*.rq | 자동 전이 규칙(자기 참조 관계 닫힘 9종). 업무 규칙 R-*는 사람이 작성하며, R-*가 이미 전개하는 관계(`ksx:{관계}+`)는 자동 규칙을 만들지 않는다(`ksxgen.yaml`의 `business_rules`) |
 | tbox/catalog-v001.xml | 온톨로지 IRI → 파일(ROBOT·Protégé가 확장의 owl:imports를 로컬로 읽음) |
 | load_order.txt | FK 위상 정렬 적재 순서 |
 | report/coverage.md, report/verify.md | 커버리지·논리 관계 목록, 검증 결과(`verify`) |

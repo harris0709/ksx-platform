@@ -29,6 +29,7 @@ DEFAULTS = {
 
 def _cfg(path: str | None) -> dict:
     cfg = dict(DEFAULTS)
+    cfg["_dir"] = os.path.dirname(os.path.abspath(path)) if path else os.getcwd()
     if path and os.path.exists(path):
         try:
             import yaml  # 있으면 사용(선택 의존성)
@@ -92,11 +93,17 @@ def derived(m, v, cfg: dict, out: str, quiet: bool) -> bool:
     w(os.path.join(out, "graph", "age_schema.sql"), derive.age_schema(texts, cfg.get("graph", "ksx_graph")))
     for fn, txt in derive.tools(out, m).items():
         w(os.path.join(out, "catalog", "tools", fn), txt)
-    rules = derive.auto_rules(m, v)
+    rdir = os.path.join(cfg.get("_dir", "."), cfg.get("business_rules", "ontologies/rules"))
+    skip = derive.business_closures(rdir)
+    rules = derive.auto_rules(m, v, skip)
+    for old in glob.glob(os.path.join(out, "rules", "A-*.rq")):   # 번호가 바뀌면 이전 생성물이 남지 않게
+        os.remove(old)
     for fn, txt in rules.items():
         w(os.path.join(out, "rules", fn), txt)
     if not quiet:
-        print(f"ksxgen 파생: 물질화 매핑 {n} · 속성 그래프 스키마 · 도구 스키마 2 · 자동 전이 규칙 {len(rules)} · 단위 vocab/uom.ttl")
+        print(f"ksxgen 파생: 물질화 매핑 {n} · 속성 그래프 스키마 · 도구 스키마 2 · 자동 전이 규칙 {len(rules)}"
+              + (f"(업무 규칙이 맡은 {len(skip)} 제외: " + ", ".join(f"{k}←{f}" for k, f in skip.items()) + ")" if skip else "")
+              + " · 단위 vocab/uom.ttl")
     return True
 
 

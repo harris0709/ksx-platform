@@ -163,7 +163,8 @@ def test_derived_outputs():
     led = json.load(open(os.path.join(o, "catalog", "tools", "ksx-ledger.json"), encoding="utf-8"))
     assert len(next(t for t in led["tools"] if t["name"] == "get_struct")["inputSchema"]["properties"]["noun"]["enum"]) == 8
     auto = sorted(f for f in os.listdir(os.path.join(o, "rules")) if f.startswith("A-"))
-    assert len(auto) == 10 and "A-004_refParentLot_closure.rq" in auto
+    assert len(auto) == 9 and not [f for f in auto if "refParentLot" in f]   # D-3: 로트 계보는 R-001(inf:derivedFrom)이 맡음
+    assert "refParentLot" in open(os.path.join(o, "rules", "R-001_lot_genealogy.rq"), encoding="utf-8").read()
     cl = open(os.path.join(o, "vocab", "codelist.ttl"), encoding="utf-8").read()
     assert "/uom/" not in cl and "/uom/EA>" in open(os.path.join(o, "vocab", "uom.ttl"), encoding="utf-8").read()
 

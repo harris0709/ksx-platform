@@ -183,15 +183,29 @@ def import_catalog(out: str) -> str:
 
 
 # ---------------------------------------------------------------- 자동 전이 규칙
-def auto_rules(model: Model, v: Vocab) -> dict[str, str]:
-    """자기 참조 관계(부모 부서·모로트·상위 설비 등)의 닫힘. 업무 규칙(R-*)보다 먼저 실행된다(파일명 순)."""
+def business_closures(rules_dir: str) -> dict[str, str]:
+    """업무 규칙(R-*.rq)이 이미 전개하는 전이 관계 {관계: 규칙 파일} — `ksx:{관계}+` 경로를 찾는다."""
+    found = {}
+    for f in sorted(glob.glob(os.path.join(rules_dir, "R-*.rq"))):
+        body = "\n".join(l for l in open(f, encoding="utf-8") if not l.lstrip().startswith("#"))
+        for p in re.findall(r"ksx:(\w+)\+", body):
+            found.setdefault(p, os.path.basename(f))
+    return found
+
+
+def auto_rules(model: Model, v: Vocab, skip: dict[str, str] | None = None) -> dict[str, str]:
+    """자기 참조 관계(부모 부서·모로트·상위 설비 등)의 닫힘. 업무 규칙(R-*)보다 먼저 실행된다(파일명 순).
+
+    업무 규칙이 이미 전개하는 관계(skip)는 만들지 않는다 — 같은 사실을 두 이름으로 두지 않고 업무 용어를 우선한다
+    (S4 결정 D-3: R-001 inf:derivedFrom이 refParentLot 닫힘을 맡음)."""
+    skip = skip or {}
     head = ("PREFIX ksx: <https://ontology.impix.co.kr/ksx9101/1.0/>\n"
             "PREFIX inf: <https://ontology.impix.co.kr/inference/>\n"
             "PREFIX ksxq: <https://ontology.impix.co.kr/quality/>\n")
     seen, files = [], {}
     for t in model.tables.values():
         for r in v.refs[t.en]:
-            if r.rel.kind != "자기 참조" or r.prop.name in seen:
+            if r.rel.kind != "자기 참조" or r.prop.name in seen or r.prop.name in skip:
                 continue
             seen.append(r.prop.name)
             n = len(seen)
