@@ -58,4 +58,6 @@ PYTHONPATH=tools/ksxgen python -m ksxgen build --std standards --ext extensions/
 ## 남은 과제
 
 - 하위 클래스·현장 용어 별칭·사내 제약(확장 유형 추가)
-- RML(물질화)·속성 그래프 스키마·도구 스키마 생성
+- KPI·시계열·문서 검색·Action 도구 스키마(S9, S4 결정 D-5)
+
+실행 순서와 승인 절차는 `docs/S4_온톨로지생성_실행가이드.docx`를 봅니다.
