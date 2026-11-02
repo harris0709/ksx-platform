@@ -107,7 +107,7 @@ def verify(out: str, quiet: bool = False) -> bool:
     nothing = sorted(str(s) for s in cl.subjects(RDF.type, OWL.Nothing))
     unsat = sorted(str(s) for s in cl.subjects(RDFS.subClassOf, OWL.Nothing) if s != OWL.Nothing)
     check("일관성(OWL RL 닫힘)", not nothing and not unsat,
-          f"닫힘 {len(cl):,}트리플, owl:Nothing 개체 {len(nothing)} · 불만족 클래스 {len(unsat)}")
+          f"owl:Nothing 개체 {len(nothing)} · 불만족 클래스 {len(unsat)}")
 
     # 4. 셰이프 -------------------------------------------------------------
     import pyshacl

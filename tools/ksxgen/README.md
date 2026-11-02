@@ -1,10 +1,11 @@
-# ksxgen — KS X 9101 표준 컴파일러 (v0.1)
+# ksxgen — KS X 9101 표준 컴파일러 (v0.3)
 
 `standards/`의 테이블 정의서·공통코드 워크시트를 읽어 `ontologies/`에 생성물을 씁니다. 의존성은 openpyxl 하나입니다(망분리 환경 대응).
 
 ```bash
 PYTHONPATH=tools/ksxgen python -m ksxgen build --std standards --out ontologies [--config ksxgen.yaml]
 PYTHONPATH=tools/ksxgen python -m ksxgen check --std standards --out ontologies
+PYTHONPATH=tools/ksxgen python -m ksxgen verify --out ontologies     # 문법·DL 선언·일관성(OWL RL)·SHACL-SHACL·매핑(rdflib·pyshacl·owlrl)
 # 기업 확장(Extension)
 PYTHONPATH=tools/ksxgen python -m ksxgen ext-template --out extensions/{기업}/확장정의서.xlsx
 PYTHONPATH=tools/ksxgen python -m ksxgen ext-sync extensions/{기업}/확장정의서.xlsx --std standards
@@ -17,10 +18,15 @@ PYTHONPATH=tools/ksxgen python -m ksxgen build --std standards --ext extensions/
 | shapes/ksx9101_conformance.ttl | 클래스별 SHACL(필수·타입·참조 대상·수량 ≥ 0·헤더 hasLine ≥ 1) |
 | mappings/ksx9101.obda | Ontop 매핑(테이블 76개 + 헤더–라인 연결 8개) |
 | ddl/ksx.sql | PostgreSQL DDL(PK 대리키, UK, 물리 FK 609 — DEFERRABLE) |
-| vocab/codelist.ttl | SKOS 코드 그룹 79 · 코드 568 · 단위 47 |
-| catalog/nouns/*.json, catalog/sql_schema.md | 명사 카드 68, Text-to-SQL 스키마 설명 |
+| vocab/codelist.ttl, vocab/uom.ttl | SKOS 코드 그룹 79 · 코드 568 / 단위 47(환산계수) |
+| catalog/nouns/*.json, catalog/sql_schema.md | 명사 카드 68(+확장 명사), Text-to-SQL 스키마 설명 |
+| catalog/tools/*.json | MCP 도구 스키마(ksx-ontology·ksx-ledger, 명사·구조체 열거값) |
+| mappings/rml/*.rml.ttl | 물질화 매핑(R2RML 문법, Morph-KGC) — OBDA에서 파생, 같은 트리플 |
+| graph/age_schema.sql | Apache AGE 속성 그래프 노드·관계 라벨, 인덱스(다시 실행 가능) |
+| rules/A-*.rq | 자동 전이 규칙(자기 참조 관계 닫힘 10종). 업무 규칙 R-*는 사람이 작성 |
+| tbox/catalog-v001.xml | 온톨로지 IRI → 파일(ROBOT·Protégé가 확장의 owl:imports를 로컬로 읽음) |
 | load_order.txt | FK 위상 정렬 적재 순서 |
-| report/coverage.md | 커버리지·논리 관계 목록 |
+| report/coverage.md, report/verify.md | 커버리지·논리 관계 목록, 검증 결과(`verify`) |
 
 ## 변환 규칙 요약
 

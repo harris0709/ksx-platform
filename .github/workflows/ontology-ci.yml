@@ -21,7 +21,7 @@ jobs:
       - name: 생성물 최신 여부·커버리지 (ksxgen check)
         run: PYTHONPATH=tools/ksxgen python -m ksxgen check --std standards --ext extensions/impix --out ontologies
       - name: S4 생성물 검증 (ksxgen verify — 문법·DL 선언·OWL RL 일관성·SHACL-SHACL·매핑)
-        run: PYTHONPATH=tools/ksxgen python -m ksxgen verify --out ontologies
+        run: PYTHONPATH=tools/ksxgen python -m ksxgen verify --out ontologies && git diff --exit-code ontologies/report/verify.md
       - name: S4 DL 추론기 일관성 (ROBOT + HermiT, Core + IMPIX 확장)
         run: |
           curl -sSLo robot.jar https://github.com/ontodev/robot/releases/download/v1.9.7/robot.jar
@@ -119,7 +119,7 @@ jobs:
         env: { PGPASSWORD: ci-loader }
       - name: ksxload review(정제 규칙 검토서 — 미결정 0)
         run: python -m ksxload review --out /tmp/review.xlsx | tee review.txt && grep -q "미결정 0" review.txt
-      - name: S4 물질화 매핑을 적재된 원장에 실행(Morph-KGC) — 가상화 매핑(OBDA)과 트리플 수 비교
+      - name: S4 물질화 매핑을 적재된 원장에 실행(Morph-KGC) — 가상화 매핑(OBDA)과 트리플이 같아야 함
         run: |
           pip install -q morph-kgc psycopg2-binary sqlalchemy
           M=$(ls ontologies/mappings/rml/*.rml.ttl | paste -sd, -)
@@ -133,3 +133,4 @@ jobs:
           test "$a" = "$b"
           sort -u /tmp/mkgc.nt > /tmp/mkgc.s.nt; n=$(comm -3 /tmp/mkgc.s.nt /tmp/obda.nt | wc -l)
           echo "::notice::S4 물질화·가상화 트리플 내용 차이 $n"; comm -3 /tmp/mkgc.s.nt /tmp/obda.nt | head -6
+          test "$n" = 0
