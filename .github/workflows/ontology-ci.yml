@@ -131,3 +131,5 @@ jobs:
           awk '{print $2}' /tmp/mkgc.nt | sort | uniq -c | sort -k2 > /tmp/p1; awk '{print $2}' /tmp/obda.nt | sort | uniq -c | sort -k2 > /tmp/p2
           diff /tmp/p1 /tmp/p2 | head -20
           test "$a" = "$b"
+          sort -u /tmp/mkgc.nt > /tmp/mkgc.s.nt; n=$(comm -3 /tmp/mkgc.s.nt /tmp/obda.nt | wc -l)
+          echo "::notice::S4 물질화·가상화 트리플 내용 차이 $n"; comm -3 /tmp/mkgc.s.nt /tmp/obda.nt | head -6
