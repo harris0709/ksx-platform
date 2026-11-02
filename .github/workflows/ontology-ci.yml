@@ -130,4 +130,5 @@ jobs:
           echo "Morph-KGC $a · OBDA $b"; echo "::notice::S4 물질화 트리플 Morph-KGC $a · OBDA $b"
           awk '{print $2}' /tmp/mkgc.nt | sort | uniq -c | sort -k2 > /tmp/p1; awk '{print $2}' /tmp/obda.nt | sort | uniq -c | sort -k2 > /tmp/p2
           diff /tmp/p1 /tmp/p2 | head -20
+          for p in productionLeadTime creationDateTime; do grep "/$p>" /tmp/mkgc.nt | sort | head -4; grep "/$p>" /tmp/obda.nt | sort | head -4; done
           test "$a" = "$b"
