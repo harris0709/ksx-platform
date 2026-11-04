@@ -101,16 +101,20 @@ def update(endpoint: str, text: str, timeout=600):
         raise SparqlError(f"{endpoint} {e.code}: {e.read().decode(errors='replace')[:800]}") from e
 
 
-def put_graph(gsp: str, graph: str, path: str, ctype: str, timeout=1800):
-    """Graph Store Protocol PUT — 그래프 단위 교체(다시 실행해도 결과가 같다, 구현안내서 8.5)."""
+def put_graph(gsp: str, graph: str, path: str, ctype: str, timeout=1800, method="PUT"):
+    """Graph Store Protocol PUT — 그래프 단위 교체(다시 실행해도 결과가 같다, 구현안내서 8.5). POST는 추가."""
     size = os.path.getsize(path)
     with open(path, "rb") as f:
-        req = urllib.request.Request(f"{gsp}?graph={urllib.parse.quote(graph, safe='')}", data=f, method="PUT",
+        req = urllib.request.Request(f"{gsp}?graph={urllib.parse.quote(graph, safe='')}", data=f, method=method,
                                      headers={"Content-Type": ctype, "Content-Length": str(size)})
         try:
             urllib.request.urlopen(req, timeout=timeout).read()
         except urllib.error.HTTPError as e:
-            raise SparqlError(f"PUT {graph} {e.code}: {e.read().decode(errors='replace')[:800]}") from e
+            raise SparqlError(f"{method} {graph} {e.code}: {e.read().decode(errors='replace')[:800]}") from e
+
+
+def post_graph(gsp: str, graph: str, path: str, ctype: str, timeout=1800):
+    put_graph(gsp, graph, path, ctype, timeout, method="POST")
 
 
 # ---------------------------------------------------------------- 설정

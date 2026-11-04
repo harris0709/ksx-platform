@@ -2,7 +2,10 @@
 
   1. Morph-KGC로 물질화 매핑 전체를 실행해 N-Quads 한 파일을 만든다(그래프는 매핑의 rr:graphMap이 정함)
   2. 그래프별 N-Triples로 나누고 중복을 없앤다
-  3. 그래프 단위 교체(PUT) — 다시 실행해도 결과가 같다. 이번에 만들지 않은 기업 데이터 그래프는 지운다
+  3. 그래프별 반영 — 다시 실행해도 결과가 같다. 이번에 만들지 않은 기업 데이터 그래프는 지운다
+       · 비어 있는 그래프: 추가(POST)
+       · 지난번 적재본(out/kg/loaded/)과 Fuseki 트리플 수가 같음: 차이만 반영(DELETE DATA·POST) — 대용량 삭제를 피함
+       · 그 밖(적재본 없음·수 불일치·--full): 그래프 단위 교체(PUT)
   4. T-Box·확장 T-Box·셰이프·코드 그래프도 같은 방식으로 교체(구현안내서 8.2 표 21)
   5. 그래프별 트리플 수를 audit.kg_load에 남긴다
 """
@@ -14,9 +17,11 @@ import os
 import re
 import subprocess
 import sys
+import shutil
+import time
 import uuid
 
-from .base import Config, put_graph, psql, sparql, update
+from .base import Config, post_graph, put_graph, psql, sparql, update
 
 AUDIT_SQL = """
 create table if not exists audit.kg_load (
@@ -114,12 +119,70 @@ def vocab_graphs(cfg: Config) -> dict[str, list[str]]:
     return g
 
 
+def count(cfg: Config, g: str) -> int:
+    return int(sparql(cfg.query, f"SELECT (COUNT(*) AS ?n) WHERE {{ GRAPH <{g}> {{ ?s ?p ?o }} }}")[0]["n"])
+
+
+def _lines(path):
+    return sum(1 for _ in open(path, encoding="utf-8"))
+
+
+def _comm(flag: str, a: str, b: str, dst: str) -> int:
+    with open(dst, "w", encoding="utf-8") as f:
+        subprocess.run(["comm", flag, a, b], stdout=f, check=True, env={**os.environ, "LC_ALL": "C"})
+    return _lines(dst)
+
+
+def delete_data(cfg: Config, g: str, path: str, batch=5000):
+    """N-Triples 파일의 트리플을 그래프에서 지운다(DELETE DATA, 묶음 단위)."""
+    buf = []
+
+    def flush():
+        if buf:
+            update(cfg.update, f"DELETE DATA {{ GRAPH <{g}> {{\n" + "".join(buf) + "}} }")
+            buf.clear()
+    for line in open(path, encoding="utf-8"):
+        buf.append(line)
+        if len(buf) >= batch:
+            flush()
+    flush()
+
+
+def load_graph(cfg: Config, g: str, path: str, n: int, full=False) -> tuple[str, dict]:
+    """그래프 하나를 새 파일(path, 정렬·중복 제거된 N-Triples)과 같게 만든다. (방식, 세부)"""
+    key = os.path.basename(path)
+    prev = os.path.join(cfg.out, "loaded", key)
+    os.makedirs(os.path.dirname(prev), exist_ok=True)
+    cur = count(cfg, g)
+    if cur == 0 and not full:
+        post_graph(cfg.gsp, g, path, "application/n-triples")
+        mode, d = "추가", {}
+    elif not full and os.path.exists(prev) and _lines(prev) == cur:
+        add = _comm("-13", prev, path, path + ".add")
+        rem = _comm("-23", prev, path, path + ".del")
+        if rem:
+            delete_data(cfg, g, path + ".del")
+        if add:
+            post_graph(cfg.gsp, g, path + ".add", "application/n-triples")
+        os.remove(path + ".add")
+        os.remove(path + ".del")
+        mode, d = ("변경 없음" if not add and not rem else "차이 반영"), {"added": add, "deleted": rem}
+    else:
+        put_graph(cfg.gsp, g, path, "application/n-triples")
+        mode, d = "전체 교체", {"before": cur}
+    after = count(cfg, g)
+    if after != n:
+        raise RuntimeError(f"{g}: 적재 후 트리플 {after:,} ≠ 물질화 {n:,} ({mode}) — --full로 다시 실행")
+    shutil.copyfile(path, prev)
+    return mode, d
+
+
 def existing_graphs(cfg: Config) -> list[str]:
     r = sparql(cfg.query, "SELECT DISTINCT ?g WHERE { GRAPH ?g { ?s ?p ?o } }")
     return sorted(x["g"] for x in r)
 
 
-def materialize(cfg: Config, out=print, skip_morph=False) -> bool:
+def materialize(cfg: Config, out=print, skip_morph=False, full=False) -> bool:
     os.makedirs(cfg.out, exist_ok=True)
     rid = start_run(cfg, "kg_materialize")
     out(f"S5 물질화 run_id={rid}")
@@ -131,16 +194,22 @@ def materialize(cfg: Config, out=print, skip_morph=False) -> bool:
         parts = split(nq, cfg.out)
         total = sum(n for _, n in parts.values())
         out(f"  트리플 {total:,} → 데이터 그래프 {len(parts)}개")
-        # 데이터 그래프: 그래프 단위 교체
+        # 데이터 그래프
         for g, (path, n) in sorted(parts.items()):
-            put_graph(cfg.gsp, g, path, "application/n-triples")
-            log(cfg, rid, g, "data", n, None, "ok")
-            out(f"  PUT {g}  {n:,}")
+            t0 = time.time()
+            mode, d = load_graph(cfg, g, path, n, full)
+            d.update(mode=mode, seconds=round(time.time() - t0, 1))
+            log(cfg, rid, g, "data", n, n, "ok", d)
+            extra = f" +{d['added']:,} −{d['deleted']:,}" if "added" in d else ""
+            out(f"  {g}  {n:,} — {mode}{extra} ({d['seconds']}초)")
         # 이번 물질화에 없는 기업 데이터 그래프(이전 실행의 사업장 등)는 지운다 — 추론·BOD 그래프는 건드리지 않음
         pre = cfg.data_graph_prefix
         stale = [g for g in existing_graphs(cfg) if (g == pre or g.startswith(pre + "/")) and g not in parts]
         for g in stale:
             update(cfg.update, f"DROP SILENT GRAPH <{g}>")
+            key = os.path.join(cfg.out, "loaded", "data_" + re.sub(r"[^A-Za-z0-9]+", "_", g.split("/graph/", 1)[-1]).strip("_") + ".nt")
+            if os.path.exists(key):
+                os.remove(key)
             log(cfg, rid, g, "data", 0, None, "warn", {"dropped": True})
             out(f"  DROP {g} (이번 물질화에 없음)")
         # 어휘 그래프
@@ -149,10 +218,10 @@ def materialize(cfg: Config, out=print, skip_morph=False) -> bool:
             with open(path, "w", encoding="utf-8") as f:
                 for x in files:
                     f.write(open(x, encoding="utf-8").read() + "\n")
-            put_graph(cfg.gsp, g, path, "text/turtle")
-            n = int(sparql(cfg.query, f"SELECT (COUNT(*) AS ?n) WHERE {{ GRAPH <{g}> {{ ?s ?p ?o }} }}")[0]["n"])
+            put_graph(cfg.gsp, g, path, "text/turtle")      # 어휘 그래프는 작다 — 늘 교체
+            n = count(cfg, g)
             log(cfg, rid, g, "vocab", n, None, "ok", {"files": [os.path.relpath(x, cfg.repo) for x in files]})
-            out(f"  PUT {g}  {n:,} ({', '.join(os.path.basename(x) for x in files)})")
+            out(f"  {g}  {n:,} — 교체 ({', '.join(os.path.basename(x) for x in files)})")
         detail = {"triples": total, "graphs": len(parts), "dropped": stale}
     except Exception as e:  # noqa: BLE001 — 실패도 감사 기록에 남긴다
         ok, detail = False, {"error": str(e)[:2000]}

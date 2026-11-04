@@ -1,6 +1,7 @@
 """ksxkg 명령행 — S5 지식 그래프(A-Box) 구성(구현안내서 8장).
 
   python -m ksxkg materialize --plan mapping/impix/s5_plan.yaml   # 원장 → Morph-KGC → 사업장 Named Graph → Fuseki
+                     [--skip-morph] [--full]                      # 이전 물질화 파일 재사용 / 그래프 단위 교체 강제
   python -m ksxkg check       --plan …                            # 완료 기준: 가상 = SQL, 물질화 = 기대치, 그래프 분리
   python -m ksxkg query       --plan … --endpoint ontop|fuseki "SPARQL"   # 질의 한 건(확인용)
 --plan을 생략하면 환경변수 S5_PLAN(기본 mapping/impix/s5_plan.yaml)을 쓴다.
@@ -22,12 +23,13 @@ def main(argv=None) -> int:
     ap.add_argument("--repo", default=os.getcwd())
     ap.add_argument("--endpoint", choices=["ontop", "fuseki"], default="fuseki", help="query: 질의할 엔드포인트")
     ap.add_argument("--skip-morph", action="store_true", help="materialize: 이전 N-Quads(out/kg/ksx.nq)를 다시 적재만")
+    ap.add_argument("--full", action="store_true", help="materialize: 차이 반영 대신 그래프 단위 교체(PUT)")
     a = ap.parse_args(argv)
     cfg = load_config(a.plan, a.repo)
     try:
         if a.cmd == "materialize":
             from .materialize import materialize
-            return 0 if materialize(cfg, skip_morph=a.skip_morph) else 1
+            return 0 if materialize(cfg, skip_morph=a.skip_morph, full=a.full) else 1
         if a.cmd == "check":
             from .check import check
             return 0 if check(cfg) else 1

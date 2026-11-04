@@ -82,6 +82,7 @@ jobs:
       KSX_BOD_PASSWORD: ci-bod
       KSX_AUDIT_PASSWORD: ci-audit
       PYTHONPATH: tools/ksxload
+      PYTHONUNBUFFERED: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -157,9 +158,21 @@ jobs:
         run: |
           python -m ksxkg check
           cat mapping/impix/S5_검증결과.md
-      - name: S5 다시 적재해도 같은 결과(그래프 단위 교체)
+      - name: S5 다시 실행 — 변경 없음 / 원장 1행 변경은 차이만 반영
+        timeout-minutes: 15
         env: { FUSEKI_URL: "http://localhost:3030/ksx", ONTOP_URL: "http://localhost:8080/sparql", PYTHONPATH: tools/ksxkg }
-        run: python -m ksxkg materialize --skip-morph && python -m ksxkg check
+        run: |
+          python -m ksxkg materialize --skip-morph | tee m2.txt
+          grep -q "IMPIX/HQ/P1  .* — 변경 없음" m2.txt
+          psql -d ksx -c "update ksx.\"Lot\" set \"Note\" = 'S5 차이 반영 시험' where \"LotID\" = (select min(\"LotID\") from ksx.\"Lot\" where \"PlantID\" = 'P1')"
+          python -m ksxkg materialize | tee m3.txt
+          grep -q "IMPIX/HQ/P1  .* — 차이 반영 +1" m3.txt
+          python -m ksxkg check
+      - name: S5 참고 — 큰 그래프 전체 교체(PUT) 소요 시간
+        continue-on-error: true
+        timeout-minutes: 15
+        env: { FUSEKI_URL: "http://localhost:3030/ksx", ONTOP_URL: "http://localhost:8080/sparql", PYTHONPATH: tools/ksxkg }
+        run: python -m ksxkg materialize --skip-morph --full
       - name: S5 실패 시 Fuseki·Ontop 로그
         if: failure()
         run: |
