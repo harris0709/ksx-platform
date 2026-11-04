@@ -168,11 +168,6 @@ jobs:
           python -m ksxkg materialize | tee m3.txt
           grep -q "IMPIX/HQ/P1  .* — 차이 반영 +1" m3.txt
           python -m ksxkg check
-      - name: S5 참고 — 큰 그래프 전체 교체(PUT) 소요 시간
-        continue-on-error: true
-        timeout-minutes: 15
-        env: { FUSEKI_URL: "http://localhost:3030/ksx", ONTOP_URL: "http://localhost:8080/sparql", PYTHONPATH: tools/ksxkg }
-        run: python -m ksxkg materialize --skip-morph --full
       - name: S5 실패 시 Fuseki·Ontop 로그
         if: failure()
         run: |
