@@ -158,7 +158,7 @@ ksxs:CommonCodeMasterShape a sh:NodeShape ; sh:targetClass ksx:CommonCodeMaster 
     sh:property [ sh:path ksx:note ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
     sh:property [ sh:path ksx:commonCodeID ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
     sh:property [ sh:path ksx:commonCodeName ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
-    sh:property [ sh:path ksx:commonCodeGroup ; sh:maxCount 1 ; sh:minCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path ksx:commonCodeGroup ; sh:maxCount 1 ; sh:minCount 1 ; sh:datatype xsd:string ] ;
     sh:property [ sh:path ksx:parentCommonCodeGroup ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
     sh:property [ sh:path ksx:parentCommonCodeID ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
     sh:property [ sh:path ksx:commonCodeSequence ; sh:maxCount 1 ; sh:datatype xsd:integer ] ;

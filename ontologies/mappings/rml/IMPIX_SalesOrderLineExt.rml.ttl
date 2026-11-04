@@ -7,8 +7,8 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_SalesOrderLineExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SalesDocumentNumber\"::text AS salesdocumentnumber, \"SalesDocumentSequence\"::text AS salesdocumentsequence, \"UnitPrice\" AS unitprice, \"CurrencyCode\"::text AS currencycode, \"SalesAmount\" AS salesamount FROM ext.\"SalesOrderLineExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/SalesOrder/{salesdocumentnumber}/line/{salesdocumentsequence}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"SalesDocumentNumber\"::text AS salesdocumentnumber, \"SalesDocumentSequence\"::text AS salesdocumentsequence, \"UnitPrice\" AS unitprice, \"CurrencyCode\"::text AS currencycode, \"SalesAmount\" AS salesamount FROM ext.\"SalesOrderLineExt\") AS q LEFT JOIN ksx.\"SalesOrderLine\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"SalesDocumentNumber\"::text = q.salesdocumentnumber::text AND o.\"SalesDocumentSequence\"::text = q.salesdocumentsequence::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/SalesOrder/{salesdocumentnumber}/line/{salesdocumentsequence}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:unitPrice ; rr:objectMap [ rr:column "unitprice" ; rr:datatype xsd:decimal ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:currencyCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/CurrencyCode/{currencycode}" ] ] ;
     rr:predicateObjectMap [ rr:predicate impix:salesAmount ; rr:objectMap [ rr:column "salesamount" ; rr:datatype xsd:decimal ] ] .

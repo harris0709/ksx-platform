@@ -134,6 +134,18 @@ def verify(out: str, quiet: bool = False) -> bool:
     preds = set(rg.objects(None, RR.predicate))
     check("물질화 매핑(R2RML)", not badm and preds <= known | {RDF.type},
           f"파일 {len(rml)} · TriplesMap {len(tms)} · 술어 {len(preds)}" + (f" — 구조 오류 {badm[:3]}" if badm else ""))
+    # 매핑이 만드는 목적어 종류(IRI·리터럴)가 T-Box 선언(객체·데이터 속성)과 같은가 — Ontop은 다르면 기동을 거부한다
+    kinds = []
+    for pom in rg.objects(None, RR.predicateObjectMap):
+        p = rg.value(pom, RR.predicate)
+        om = rg.value(pom, RR.objectMap)
+        if p is None or om is None or p == RDF.type:
+            continue
+        iri = (om, RR.template, None) in rg or rg.value(om, RR.termType) == RR.IRI
+        if (iri and p in dprops) or (not iri and p in oprops):
+            kinds.append(f"{p.split('/')[-1]}({'IRI' if iri else '리터럴'})")
+    kinds = sorted(set(kinds))
+    check("매핑 목적어 종류 = T-Box 속성 종류", not kinds, ", ".join(kinds[:5]) or "일치")
     return _report(out, rows, fails, quiet)
 
 

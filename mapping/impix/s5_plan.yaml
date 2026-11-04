@@ -1,0 +1,17 @@
+# S5 지식 그래프(A-Box) 구성 계획 — IMPIX (구현안내서 8장)
+#   docker compose --profile tools run --rm s5-tools materialize   # 원장 → 사업장 Named Graph → Fuseki
+#   docker compose --profile tools run --rm s5-tools check         # 완료 기준(표 19) → S5_검증결과.md
+enterprise: IMPIX
+ksxgen: ksxgen.yaml            # 네임스페이스(ns·data_ns) — IRI·그래프 이름의 기준
+ontologies: ontologies         # S4 생성물: 물질화 매핑(mappings/rml), T-Box·셰이프·코드
+
+ledger:                        # 표준 원장(S3)
+  host: "${KSX_DB_HOST:-localhost}"
+  port: "${KSX_DB_PORT:-5432}"
+  dbname: "${KSX_DB_NAME:-ksx}"
+  reader: { user: ksx_reader, password: "${KSX_READER_PASSWORD}" }   # 물질화·검사(읽기 전용)
+  owner:  { user: ksx_owner,  password: "${KSX_OWNER_PASSWORD}" }    # 감사 기록(audit.run·kg_load)
+
+fuseki: "${FUSEKI_URL:-http://localhost:3030/ksx}"       # 물질화 그래프(데이터셋 /ksx)
+ontop: "${ONTOP_URL:-http://localhost:8081/sparql}"      # 가상 그래프(SPARQL → SQL)
+out: "${KG_OUT:-out/kg}"                                 # 물질화 파일(커밋하지 않음)

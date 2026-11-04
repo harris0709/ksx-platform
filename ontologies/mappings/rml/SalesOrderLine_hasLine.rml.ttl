@@ -6,11 +6,11 @@
 @prefix map: <urn:ksx:map:> .
 
 map:SalesOrderLine_hasLine a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SalesDocumentNumber\"::text AS salesdocumentnumber, \"SalesDocumentSequence\"::text AS salesdocumentsequence FROM ksx.\"SalesOrderLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/SalesOrder/{salesdocumentnumber}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"SalesDocumentNumber\"::text AS salesdocumentnumber, \"SalesDocumentSequence\"::text AS salesdocumentsequence FROM ksx.\"SalesOrderLine\") AS q LEFT JOIN ksx.\"SalesOrderHeader\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"SalesDocumentNumber\"::text = q.salesdocumentnumber::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/SalesOrder/{salesdocumentnumber}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:hasLine ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/SalesOrder/{salesdocumentnumber}/line/{salesdocumentsequence}" ] ] .
 
 map:SalesOrderLine_hasLine_1 a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SalesDocumentNumber\"::text AS salesdocumentnumber, \"SalesDocumentSequence\"::text AS salesdocumentsequence FROM ksx.\"SalesOrderLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/SalesOrder/{salesdocumentnumber}/line/{salesdocumentsequence}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"SalesDocumentNumber\"::text AS salesdocumentnumber, \"SalesDocumentSequence\"::text AS salesdocumentsequence FROM ksx.\"SalesOrderLine\") AS q LEFT JOIN ksx.\"SalesOrderHeader\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"SalesDocumentNumber\"::text = q.salesdocumentnumber::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/SalesOrder/{salesdocumentnumber}/line/{salesdocumentsequence}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:lineOf ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/SalesOrder/{salesdocumentnumber}" ] ] .

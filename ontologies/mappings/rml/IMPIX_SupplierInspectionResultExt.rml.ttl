@@ -7,8 +7,8 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_SupplierInspectionResultExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"InspectionResultID\"::text AS inspectionresultid, \"GoodsReceiptID\"::text AS goodsreceiptid, \"GoodsReceiptSequence\"::text AS goodsreceiptsequence, \"DefectQuantity\" AS defectquantity, \"DefectTypeCode\"::text AS defecttypecode, \"DefectTypeDetailCode\"::text AS defecttypedetailcode FROM ext.\"SupplierInspectionResultExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/SupplierInspectionResult/{inspectionresultid}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"InspectionResultID\"::text AS inspectionresultid, \"GoodsReceiptID\"::text AS goodsreceiptid, \"GoodsReceiptSequence\"::text AS goodsreceiptsequence, \"DefectQuantity\" AS defectquantity, \"DefectTypeCode\"::text AS defecttypecode, \"DefectTypeDetailCode\"::text AS defecttypedetailcode FROM ext.\"SupplierInspectionResultExt\") AS q LEFT JOIN ksx.\"SupplierInspectionResult\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"InspectionResultID\"::text = q.inspectionresultid::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/SupplierInspectionResult/{inspectionresultid}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:goodsReceiptID ; rr:objectMap [ rr:column "goodsreceiptid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:goodsReceiptSequence ; rr:objectMap [ rr:column "goodsreceiptsequence" ; rr:datatype xsd:integer ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:defectQuantity ; rr:objectMap [ rr:column "defectquantity" ; rr:datatype xsd:decimal ] ] ;

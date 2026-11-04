@@ -1,0 +1,162 @@
+"""물질화(구현안내서 8.5): 원장 → Morph-KGC(R2RML) → 사업장 Named Graph → Fuseki.
+
+  1. Morph-KGC로 물질화 매핑 전체를 실행해 N-Quads 한 파일을 만든다(그래프는 매핑의 rr:graphMap이 정함)
+  2. 그래프별 N-Triples로 나누고 중복을 없앤다
+  3. 그래프 단위 교체(PUT) — 다시 실행해도 결과가 같다. 이번에 만들지 않은 기업 데이터 그래프는 지운다
+  4. T-Box·확장 T-Box·셰이프·코드 그래프도 같은 방식으로 교체(구현안내서 8.2 표 21)
+  5. 그래프별 트리플 수를 audit.kg_load에 남긴다
+"""
+from __future__ import annotations
+
+import glob
+import json
+import os
+import re
+import subprocess
+import sys
+import uuid
+
+from .base import Config, put_graph, psql, sparql, update
+
+AUDIT_SQL = """
+create table if not exists audit.kg_load (
+  log_id     bigint generated always as identity primary key,
+  run_id     uuid        not null references audit.run(run_id),
+  graph      text        not null,
+  kind       text        not null check (kind in ('data','vocab','check')),
+  triples    bigint,
+  expected   bigint,
+  status     text        not null check (status in ('ok','warn','fail')),
+  detail     jsonb       not null default '{}'::jsonb,
+  logged_at  timestamptz not null default now()
+);
+comment on table audit.kg_load is 'S5 지식 그래프 물질화·검사 기록(구현안내서 8.5)';
+grant select on audit.kg_load to ksx_reader;
+"""
+
+QUAD_RE = re.compile(r" <([^>]*)> \.\s*$")
+
+
+def start_run(cfg: Config, job: str) -> str:
+    rid = str(uuid.uuid4())
+    psql(cfg.owner, AUDIT_SQL)
+    psql(cfg.owner, f"insert into audit.run(run_id, stage, job, actor, enterprise_id) values "
+                    f"('{rid}', 'S5', '{job}', current_user, '{cfg.ent}')")
+    return rid
+
+
+def end_run(cfg: Config, rid: str, ok: bool, detail: dict):
+    js = json.dumps(detail, ensure_ascii=False).replace("'", "''")
+    psql(cfg.owner, f"update audit.run set status = '{'succeeded' if ok else 'failed'}', ended_at = now(), "
+                    f"detail = '{js}'::jsonb where run_id = '{rid}'")
+
+
+def log(cfg: Config, rid, graph, kind, triples, expected, status, detail=None):
+    js = json.dumps(detail or {}, ensure_ascii=False).replace("'", "''")
+    n = lambda v: "null" if v is None else str(int(v))  # noqa: E731
+    psql(cfg.owner, f"insert into audit.kg_load(run_id, graph, kind, triples, expected, status, detail) values "
+                    f"('{rid}', '{graph}', '{kind}', {n(triples)}, {n(expected)}, '{status}', '{js}'::jsonb)")
+
+
+def morph_kgc(cfg: Config, nq: str, out=print):
+    ini = os.path.join(cfg.out, "morph_kgc.ini")
+    with open(ini, "w", encoding="utf-8") as f:
+        f.write("[CONFIGURATION]\n"
+                f"output_file={nq}\n"
+                "output_format=N-QUADS\n"
+                # 빈 문자열·NULL 표기는 값 없음으로(정수·일시 리터럴에 'None'이 생기지 않게)
+                "na_values=,None,NULL,null,NaN,nan,<NA>,NaT\n"
+                "[ksx]\n"
+                f"mappings={','.join(cfg.rml_files())}\n"
+                f"db_url={cfg.reader.url()}\n")
+    out(f"  Morph-KGC: 물질화 매핑 {len(cfg.rml_files())}개 실행 …")
+    p = subprocess.run([sys.executable, "-m", "morph_kgc", ini], capture_output=True, text=True)
+    os.remove(ini)                                     # 접속 비밀번호가 든 파일을 남기지 않는다
+    if p.returncode != 0:
+        raise RuntimeError("Morph-KGC 실패:\n" + (p.stderr or p.stdout)[-3000:])
+
+
+def split(nq: str, outdir: str) -> dict[str, tuple[str, int]]:
+    """N-Quads → 그래프별 N-Triples(중복 제거). {그래프 IRI: (파일, 트리플 수)}"""
+    handles, files = {}, {}
+    with open(nq, encoding="utf-8") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            m = QUAD_RE.search(line)
+            if not m:
+                raise RuntimeError(f"그래프 없는 트리플(매핑의 rr:graphMap 확인): {line[:200]}")
+            g = m.group(1)
+            if g not in handles:
+                key = re.sub(r"[^A-Za-z0-9]+", "_", g.split("/graph/", 1)[-1]).strip("_")
+                files[g] = os.path.join(outdir, f"data_{key}.nt")
+                handles[g] = open(files[g] + ".tmp", "w", encoding="utf-8")
+            handles[g].write(line[:m.start()] + " .\n")
+    res = {}
+    for g, h in handles.items():
+        h.close()
+        subprocess.run(["sort", "-u", "-o", files[g], files[g] + ".tmp"], check=True,
+                       env={**os.environ, "LC_ALL": "C"})
+        os.remove(files[g] + ".tmp")
+        res[g] = (files[g], sum(1 for _ in open(files[g], encoding="utf-8")))
+    return res
+
+
+def vocab_graphs(cfg: Config) -> dict[str, list[str]]:
+    o = cfg.onto
+    ext = sorted(glob.glob(os.path.join(o, "tbox", "*_ext.ttl")))
+    g = {cfg.graph("tbox/ksx9101"): [os.path.join(o, "tbox", "ksx9101_core.ttl")]}
+    for e in ext:                                   # tbox/impix_ext.ttl → graph/tbox/ext/IMPIX
+        name = os.path.basename(e)[:-len("_ext.ttl")]
+        g[cfg.graph(f"tbox/ext/{cfg.ent if name == cfg.ent.lower() else name.upper()}")] = [e]
+    g[cfg.graph("shapes")] = sorted(glob.glob(os.path.join(o, "shapes", "*.ttl")))
+    g[cfg.graph("codelist")] = sorted(glob.glob(os.path.join(o, "vocab", "*.ttl")))
+    return g
+
+
+def existing_graphs(cfg: Config) -> list[str]:
+    r = sparql(cfg.query, "SELECT DISTINCT ?g WHERE { GRAPH ?g { ?s ?p ?o } }")
+    return sorted(x["g"] for x in r)
+
+
+def materialize(cfg: Config, out=print, skip_morph=False) -> bool:
+    os.makedirs(cfg.out, exist_ok=True)
+    rid = start_run(cfg, "kg_materialize")
+    out(f"S5 물질화 run_id={rid}")
+    ok, detail = True, {}
+    try:
+        nq = os.path.join(cfg.out, "ksx.nq")
+        if not skip_morph or not os.path.exists(nq):
+            morph_kgc(cfg, nq, out)
+        parts = split(nq, cfg.out)
+        total = sum(n for _, n in parts.values())
+        out(f"  트리플 {total:,} → 데이터 그래프 {len(parts)}개")
+        # 데이터 그래프: 그래프 단위 교체
+        for g, (path, n) in sorted(parts.items()):
+            put_graph(cfg.gsp, g, path, "application/n-triples")
+            log(cfg, rid, g, "data", n, None, "ok")
+            out(f"  PUT {g}  {n:,}")
+        # 이번 물질화에 없는 기업 데이터 그래프(이전 실행의 사업장 등)는 지운다 — 추론·BOD 그래프는 건드리지 않음
+        pre = cfg.data_graph_prefix
+        stale = [g for g in existing_graphs(cfg) if (g == pre or g.startswith(pre + "/")) and g not in parts]
+        for g in stale:
+            update(cfg.update, f"DROP SILENT GRAPH <{g}>")
+            log(cfg, rid, g, "data", 0, None, "warn", {"dropped": True})
+            out(f"  DROP {g} (이번 물질화에 없음)")
+        # 어휘 그래프
+        for g, files in vocab_graphs(cfg).items():
+            path = os.path.join(cfg.out, "vocab_" + re.sub(r"[^A-Za-z0-9]+", "_", g.split("/graph/", 1)[-1]) + ".ttl")
+            with open(path, "w", encoding="utf-8") as f:
+                for x in files:
+                    f.write(open(x, encoding="utf-8").read() + "\n")
+            put_graph(cfg.gsp, g, path, "text/turtle")
+            n = int(sparql(cfg.query, f"SELECT (COUNT(*) AS ?n) WHERE {{ GRAPH <{g}> {{ ?s ?p ?o }} }}")[0]["n"])
+            log(cfg, rid, g, "vocab", n, None, "ok", {"files": [os.path.relpath(x, cfg.repo) for x in files]})
+            out(f"  PUT {g}  {n:,} ({', '.join(os.path.basename(x) for x in files)})")
+        detail = {"triples": total, "graphs": len(parts), "dropped": stale}
+    except Exception as e:  # noqa: BLE001 — 실패도 감사 기록에 남긴다
+        ok, detail = False, {"error": str(e)[:2000]}
+        out("실패: " + str(e))
+    end_run(cfg, rid, ok, detail)
+    out("ksxkg materialize: " + ("완료" if ok else "실패"))
+    return ok

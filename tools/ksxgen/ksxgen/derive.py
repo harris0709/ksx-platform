@@ -54,7 +54,75 @@ def _q(s: str) -> str:
 
 
 # ---------------------------------------------------------------- R2RML(RML 호환)
-def rml(obda_text: str) -> dict[str, str]:
+GRAPH_COL = "kg_graph"
+
+
+def site_index(obda_texts: list[str]) -> dict[str, tuple[str, dict[str, str]]]:
+    """주어 IRI 템플릿 → (원장 테이블, {별칭: 컬럼}) — 사업장 컬럼(SiteID·PlantID)이 있는 명사 매핑만.
+
+    헤더–라인 연결·확장 속성 매핑처럼 사업장 컬럼이 없는 매핑이 주어의 사업장을 찾을 때 쓴다."""
+    idx = {}
+    for text in obda_texts:
+        pfx, maps = parse_obda(text)
+        for _, stmts, src in maps:
+            subj, pos = stmts[0]
+            if not any(p == "a" for p, _ in pos) or " AS siteid" not in src or " AS plantid" not in src:
+                continue
+            m = re.search(r'FROM (\w+\."\w+")$', src)
+            if m:
+                idx.setdefault(_expand(subj, pfx), (m.group(1), dict((a, c) for c, a in re.findall(r'"(\w+)" AS (\w+)', src))))
+    return idx
+
+
+def graph_sql(src: str, data_ns: str, subj: str = "", index: dict | None = None) -> str:
+    """행의 사업장 그래프 IRI를 계산하는 컬럼을 더한다(구현안내서 8.2 graph:{Ent}/{Site}/{Plant}).
+
+    매핑 원천에 사업장 컬럼이 없으면 주어 명사의 원장 행에서 사업장을 찾는다(헤더–라인 연결, 확장 속성).
+    사업장이 없거나 비어 있으면 기업 공통 그래프 graph:{Ent}. 값이 IRI가 되도록 SQL에서 이어 붙인다
+    (R2RML 템플릿은 '/'를 %2F로 바꾸기 때문)."""
+    base = f"'{data_ns}graph/' || q.enterpriseid"
+    join, site, plant = "", None, None
+    if " AS siteid" in src and " AS plantid" in src:
+        site, plant = "q.siteid", "q.plantid"
+    elif index and subj in index:
+        table, cols = index[subj]
+        keys = re.findall(r"\{([a-z0-9_]+)\}", subj)
+        if all(k in cols for k in keys):
+            join = f" LEFT JOIN {table} AS o ON " + " AND ".join(f'o."{cols[k]}"::text = q.{k}::text' for k in keys)
+            site, plant = 'o."SiteID"', 'o."PlantID"'
+    if site:
+        g = (f"CASE WHEN {site} IS NULL OR {plant} IS NULL THEN {base} "
+             f"ELSE {base} || '/' || {site} || '/' || {plant} END")
+    else:
+        g = base
+    return f"SELECT q.*, {g} AS {GRAPH_COL} FROM ({src}) AS q{join}"
+
+
+def unwrap_graph_sql(sql: str) -> str:
+    """graph_sql의 역 — 시험에서 OBDA 원천과 비교할 때."""
+    m = re.match(r"SELECT q\.\*, .* AS " + GRAPH_COL + r" FROM \((.*)\) AS q(?: LEFT JOIN .*)?$", sql, re.S)
+    return m.group(1) if m else sql
+
+
+def ontop_files(obda_texts: list[str], ttl_texts: list[str]) -> tuple[str, str]:
+    """Ontop은 매핑·온톨로지를 각 1개 파일로 받고 owl:imports를 인터넷에서 찾는다 → Core + 확장을 합친 파일."""
+    prefixes, bodies = {}, []
+    for t in obda_texts:
+        pre, rest = t.split("[MappingDeclaration] @collection [[", 1)
+        for line in pre.splitlines():
+            if "\t" in line and not line.startswith("["):
+                k, v = line.split("\t", 1)
+                prefixes.setdefault(k, v)
+        bodies.append(rest.rsplit("]]", 1)[0].strip("\n"))
+    obda = ("[PrefixDeclaration]\n"
+            + "".join(f"{k}\t{v}\n" for k, v in prefixes.items())
+            + "\n[MappingDeclaration] @collection [[\n" + "\n\n".join(bodies) + "\n]]\n")
+    ttl = "# Ontop용 T-Box(ksxgen 생성물): Core + 기업 확장 합본(owl:imports 제거) — 직접 수정 금지\n" + "\n".join(
+        "".join(l for l in t.splitlines(keepends=True) if "owl:imports" not in l) for t in ttl_texts)
+    return obda, ttl
+
+
+def rml(obda_text: str, index: dict | None = None) -> dict[str, str]:
     pfx, maps = parse_obda(obda_text)
     files = {}
     head = "".join(f"@prefix {k}: <{v}> .\n" for k, v in pfx.items() if k != "d")
@@ -66,10 +134,12 @@ def rml(obda_text: str) -> dict[str, str]:
                  for c in re.findall(r"\{([a-z0-9_]+)\}", t)}
         src = re.sub(r'("[A-Za-z0-9_]+") AS ([a-z0-9_]+)',
                      lambda m: f"{m.group(1)}::text AS {m.group(2)}" if m.group(2) in tcols else m.group(0), src)
+        src = graph_sql(src, pfx["d"], _expand(stmts[0][0], pfx), index)
         for i, (subj, pos) in enumerate(stmts):
             name = f"map:{mid}" + (f"_{i}" if i else "")
             classes = [o for p, o in pos if p == "a"]
-            sm = f"rr:template {_q(_expand(subj, pfx))}" + "".join(f" ; rr:class {c}" for c in classes)
+            sm = f"rr:template {_q(_expand(subj, pfx))}" + "".join(f" ; rr:class {c}" for c in classes) + \
+                f" ; rr:graphMap [ rr:column {_q(GRAPH_COL)} ]"
             lines = [f"{name} a rr:TriplesMap ;",
                      f"    rr:logicalTable [ rr:sqlQuery {_q(src)} ; rr:sqlVersion rr:SQL2008 ] ;",
                      f"    rr:subjectMap [ {sm} ]"]

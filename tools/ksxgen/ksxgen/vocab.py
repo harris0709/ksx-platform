@@ -65,7 +65,7 @@ def build(model: Model) -> Vocab:
         for c in t.columns:
             if c.pk:
                 continue
-            if c.dtype == "enum":
+            if c.dtype == "enum" and (c.code_group or c.en.endswith("UOMCode")):   # 코드·단위를 가리키는 enum만 코드 관계 — 코드 정의 속성(CommonCodeGroup)은 문자 속성
                 name = lower_camel(c.en)
                 if name in props and props[name].kind != "code":
                     name += "Code"

@@ -7,6 +7,6 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_EquipmentExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"EquipmentID\"::text AS equipmentid, \"StandardUnitsPerMinute\" AS standardunitsperminute FROM ext.\"EquipmentExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Equipment/{equipmentid}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"EquipmentID\"::text AS equipmentid, \"StandardUnitsPerMinute\" AS standardunitsperminute FROM ext.\"EquipmentExt\") AS q LEFT JOIN ksx.\"Equipment\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"EquipmentID\"::text = q.equipmentid::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Equipment/{equipmentid}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate impix:standardUnitsPerMinute ; rr:objectMap [ rr:column "standardunitsperminute" ; rr:datatype xsd:decimal ] ] .

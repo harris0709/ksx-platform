@@ -7,7 +7,7 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_EquipmentParameterExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"ParameterID\"::text AS parameterid, \"LCL\" AS lcl, \"UCL\" AS ucl FROM ext.\"EquipmentParameterExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/EquipmentParameter/{parameterid}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"ParameterID\"::text AS parameterid, \"LCL\" AS lcl, \"UCL\" AS ucl FROM ext.\"EquipmentParameterExt\") AS q LEFT JOIN ksx.\"EquipmentParameter\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"ParameterID\"::text = q.parameterid::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/EquipmentParameter/{parameterid}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate impix:lcl ; rr:objectMap [ rr:column "lcl" ; rr:datatype xsd:decimal ] ] ;
     rr:predicateObjectMap [ rr:predicate impix:ucl ; rr:objectMap [ rr:column "ucl" ; rr:datatype xsd:decimal ] ] .

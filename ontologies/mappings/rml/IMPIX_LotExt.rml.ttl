@@ -7,8 +7,8 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_LotExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"LotID\"::text AS lotid, \"LotOriginType\"::text AS lotorigintype, \"VendorID\"::text AS vendorid, \"VendorLotNumber\" AS vendorlotnumber FROM ext.\"LotExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Lot/{lotid}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"LotID\"::text AS lotid, \"LotOriginType\"::text AS lotorigintype, \"VendorID\"::text AS vendorid, \"VendorLotNumber\" AS vendorlotnumber FROM ext.\"LotExt\") AS q LEFT JOIN ksx.\"Lot\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"LotID\"::text = q.lotid::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Lot/{lotid}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate impix:lotOriginType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/LotOriginType/{lotorigintype}" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:vendorID ; rr:objectMap [ rr:column "vendorid" ] ] ;
     rr:predicateObjectMap [ rr:predicate impix:vendorLotNumber ; rr:objectMap [ rr:column "vendorlotnumber" ] ] ;

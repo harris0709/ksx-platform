@@ -6,8 +6,8 @@
 @prefix map: <urn:ksx:map:> .
 
 map:Plant a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"PlantID\"::text AS plantid, \"PlantName\" AS plantname, \"DialNumber\" AS dialnumber, \"CountryID\"::text AS countryid, \"PostalCode\" AS postalcode, \"BaseAddress\" AS baseaddress, \"DetailAddress\" AS detailaddress FROM ksx.\"Plant\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Plant/{plantid}" ; rr:class ksx:Plant ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN q.siteid IS NULL OR q.plantid IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || q.siteid || '/' || q.plantid END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"PlantID\"::text AS plantid, \"PlantName\" AS plantname, \"DialNumber\" AS dialnumber, \"CountryID\"::text AS countryid, \"PostalCode\" AS postalcode, \"BaseAddress\" AS baseaddress, \"DetailAddress\" AS detailaddress FROM ksx.\"Plant\") AS q" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Plant/{plantid}" ; rr:class ksx:Plant ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:creatorID ; rr:objectMap [ rr:column "creatorid" ] ] ;

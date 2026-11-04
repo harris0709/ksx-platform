@@ -85,11 +85,16 @@ def derived(m, v, cfg: dict, out: str, quiet: bool) -> bool:
         p for p in glob.glob(os.path.join(out, "mappings", "*_ext.obda")))
     texts = [open(p, encoding="utf-8").read() for p in obdas]
     n = 0
+    idx = derive.site_index(texts)
     for t in texts:
-        for fn, txt in derive.rml(t).items():
+        for fn, txt in derive.rml(t, idx).items():
             w(os.path.join(out, "mappings", "rml", fn), txt)
             n += 1
     w(os.path.join(out, "tbox", "catalog-v001.xml"), derive.import_catalog(out))
+    ttls = [os.path.join(out, "tbox", "ksx9101_core.ttl")] + sorted(glob.glob(os.path.join(out, "tbox", "*_ext.ttl")))
+    ob, tt = derive.ontop_files(texts, [open(p, encoding="utf-8").read() for p in ttls])
+    w(os.path.join(out, "ontop", "ksx.obda"), ob)
+    w(os.path.join(out, "ontop", "ksx.ttl"), tt)
     w(os.path.join(out, "graph", "age_schema.sql"), derive.age_schema(texts, cfg.get("graph", "ksx_graph")))
     for fn, txt in derive.tools(out, m).items():
         w(os.path.join(out, "catalog", "tools", fn), txt)

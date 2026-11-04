@@ -39,6 +39,8 @@ jobs:
         run: python tools/build_web.py && git diff --exit-code web/
       - name: 생성기 회귀 시험
         run: python tests/coverage/test_ksxgen.py
+      - name: ksxkg 회귀 시험(S5 사업장 그래프 배정·N-Quads 분할·Ontop 합본)
+        run: python tests/coverage/test_ksxkg.py
       - name: S2 표준 매핑 완료 기준·최신 여부 (automap check)
         run: PYTHONPATH=tools/automap python -m automap check --plan mapping/impix/s2_plan.yaml
       - name: automap 회귀 시험
@@ -122,8 +124,9 @@ jobs:
       - name: S4 물질화 매핑을 적재된 원장에 실행(Morph-KGC) — 가상화 매핑(OBDA)과 트리플이 같아야 함
         run: |
           pip install -q morph-kgc psycopg2-binary sqlalchemy
+          pip show morph-kgc sqlalchemy psycopg2-binary | grep -E "^(Name|Version)"
           M=$(ls ontologies/mappings/rml/*.rml.ttl | paste -sd, -)
-          printf '[CONFIGURATION]\noutput_file=/tmp/mkgc.nt\nna_values=,None,NULL,null,NaN,nan,<NA>,NaT\n[ksx]\nmappings=%s\ndb_url=postgresql+psycopg2://postgres:ci@localhost:5432/ksx\n' "$M" > /tmp/mkgc.ini
+          printf '[CONFIGURATION]\noutput_file=/tmp/mkgc.nt\noutput_format=N-TRIPLES\nna_values=,None,NULL,null,NaN,nan,<NA>,NaT\n[ksx]\nmappings=%s\ndb_url=postgresql+psycopg2://postgres:ci@localhost:5432/ksx\n' "$M" > /tmp/mkgc.ini
           python -m morph_kgc /tmp/mkgc.ini
           for o in ksx9101 impix_ext; do python tests/e2e/obda_exec.py ontologies/mappings/$o.obda "-h localhost -U postgres -d ksx"; done | sort -u > /tmp/obda.nt
           a=$(sort -u /tmp/mkgc.nt | wc -l); b=$(wc -l < /tmp/obda.nt)
@@ -134,3 +137,31 @@ jobs:
           sort -u /tmp/mkgc.nt > /tmp/mkgc.s.nt; n=$(comm -3 /tmp/mkgc.s.nt /tmp/obda.nt | wc -l)
           echo "::notice::S4 물질화·가상화 트리플 내용 차이 $n"; comm -3 /tmp/mkgc.s.nt /tmp/obda.nt | head -6
           test "$n" = 0
+      - name: S5 Fuseki·Ontop 기동(S0 이미지 그대로, Ontop은 Core + 확장 합본 매핑)
+        run: |
+          docker build -q -t ksx/fuseki:ci --build-arg JENA_VERSION=5.2.0 infra/docker-compose/fuseki
+          docker build -q -t ksx/ontop:ci --build-arg ONTOP_VERSION=5.2.1 --build-arg PG_JDBC_VERSION=42.7.4 infra/docker-compose/ontop
+          docker run -d --name fuseki --network host -v $PWD/infra/docker-compose/fuseki/config.ttl:/fuseki/config.ttl:ro ksx/fuseki:ci --config=/fuseki/config.ttl
+          docker run -d --name ontop --network host -v $PWD/ontologies:/opt/onto:ro \
+            -e ONTOP_ONTOLOGY_FILE=/opt/onto/ontop/ksx.ttl -e ONTOP_MAPPING_FILE=/opt/onto/ontop/ksx.obda \
+            -e ONTOP_DB_URL=jdbc:postgresql://localhost:5432/ksx -e ONTOP_DB_USER=ksx_reader -e ONTOP_DB_PASSWORD=ci-reader2 \
+            -e ONTOP_DB_DRIVER=org.postgresql.Driver -e ONTOP_LAZY_INIT=false ksx/ontop:ci
+          for i in $(seq 1 60); do curl -fsS 'http://localhost:3030/ksx/query?query=ASK%7B%7D' >/dev/null 2>&1 && break; sleep 3; done
+          for i in $(seq 1 60); do curl -fsS 'http://localhost:8080/sparql?query=ASK%7B%3Fs%20%3Fp%20%3Fo%7D' >/dev/null 2>&1 && break; sleep 3; done
+          curl -fsS 'http://localhost:8080/sparql?query=ASK%7B%3Fs%20%3Fp%20%3Fo%7D' || (docker logs ontop 2>&1 | grep -v WARN | tail -40; exit 1)
+      - name: S5 물질화(ksxkg materialize — 원장 → 사업장 Named Graph → Fuseki)
+        env: { FUSEKI_URL: "http://localhost:3030/ksx", ONTOP_URL: "http://localhost:8080/sparql", PYTHONPATH: tools/ksxkg }
+        run: python -m ksxkg materialize
+      - name: S5 완료 기준(ksxkg check — 가상 = SQL, 물질화 = 기대치, 사업장 그래프 분리)
+        env: { FUSEKI_URL: "http://localhost:3030/ksx", ONTOP_URL: "http://localhost:8080/sparql", PYTHONPATH: tools/ksxkg }
+        run: |
+          python -m ksxkg check
+          cat mapping/impix/S5_검증결과.md
+      - name: S5 다시 적재해도 같은 결과(그래프 단위 교체)
+        env: { FUSEKI_URL: "http://localhost:3030/ksx", ONTOP_URL: "http://localhost:8080/sparql", PYTHONPATH: tools/ksxkg }
+        run: python -m ksxkg materialize --skip-morph && python -m ksxkg check
+      - name: S5 실패 시 Fuseki·Ontop 로그
+        if: failure()
+        run: |
+          docker logs fuseki 2>&1 | tail -30 || true
+          docker logs ontop 2>&1 | grep -v WARN | tail -30 || true

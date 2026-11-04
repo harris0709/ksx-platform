@@ -6,8 +6,8 @@
 @prefix map: <urn:ksx:map:> .
 
 map:UOMGroupLine a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"UOMGroupID\"::text AS uomgroupid, \"UOMCode\"::text AS uomcode, \"UOMCodeName\" AS uomcodename, \"UseIndicator\" AS useindicator FROM ksx.\"UOMGroupLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/UOMGroup/{uomgroupid}/line/{uomcode}" ; rr:class ksx:UOMGroupLine ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN q.siteid IS NULL OR q.plantid IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || q.siteid || '/' || q.plantid END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"SiteID\"::text AS siteid, \"PlantID\"::text AS plantid, \"CreatorID\"::text AS creatorid, \"CreationDateTime\" AS creationdatetime, \"ModifierID\"::text AS modifierid, \"ModificationDateTime\" AS modificationdatetime, \"Note\" AS note, \"UOMGroupID\"::text AS uomgroupid, \"UOMCode\"::text AS uomcode, \"UOMCodeName\" AS uomcodename, \"UseIndicator\" AS useindicator FROM ksx.\"UOMGroupLine\") AS q" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/UOMGroup/{uomgroupid}/line/{uomcode}" ; rr:class ksx:UOMGroupLine ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:enterpriseID ; rr:objectMap [ rr:column "enterpriseid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:siteID ; rr:objectMap [ rr:column "siteid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:plantID ; rr:objectMap [ rr:column "plantid" ] ] ;

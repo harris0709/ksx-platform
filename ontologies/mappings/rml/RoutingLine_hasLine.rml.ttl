@@ -6,11 +6,11 @@
 @prefix map: <urn:ksx:map:> .
 
 map:RoutingLine_hasLine a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"OperationSequence\"::text AS operationsequence, \"RoutingID\"::text AS routingid FROM ksx.\"RoutingLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Routing/{routingid}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"OperationSequence\"::text AS operationsequence, \"RoutingID\"::text AS routingid FROM ksx.\"RoutingLine\") AS q LEFT JOIN ksx.\"RoutingHeader\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"RoutingID\"::text = q.routingid::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Routing/{routingid}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:hasLine ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Routing/{routingid}/line/{operationsequence}" ] ] .
 
 map:RoutingLine_hasLine_1 a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"OperationSequence\"::text AS operationsequence, \"RoutingID\"::text AS routingid FROM ksx.\"RoutingLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Routing/{routingid}/line/{operationsequence}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"OperationSequence\"::text AS operationsequence, \"RoutingID\"::text AS routingid FROM ksx.\"RoutingLine\") AS q LEFT JOIN ksx.\"RoutingHeader\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"RoutingID\"::text = q.routingid::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Routing/{routingid}/line/{operationsequence}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:lineOf ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Routing/{routingid}" ] ] .

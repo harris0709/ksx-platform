@@ -7,8 +7,8 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_GoodsReceiptExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"GoodsReceiptID\"::text AS goodsreceiptid, \"GoodsReceiptSequence\"::text AS goodsreceiptsequence, \"PurchaseDocumentNumber\"::text AS purchasedocumentnumber, \"PurchaseDocumentSequence\"::text AS purchasedocumentsequence, \"LotID\"::text AS lotid FROM ext.\"GoodsReceiptExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/GoodsReceipt/{goodsreceiptid}_{goodsreceiptsequence}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"GoodsReceiptID\"::text AS goodsreceiptid, \"GoodsReceiptSequence\"::text AS goodsreceiptsequence, \"PurchaseDocumentNumber\"::text AS purchasedocumentnumber, \"PurchaseDocumentSequence\"::text AS purchasedocumentsequence, \"LotID\"::text AS lotid FROM ext.\"GoodsReceiptExt\") AS q LEFT JOIN ksx.\"GoodsReceipt\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"GoodsReceiptID\"::text = q.goodsreceiptid::text AND o.\"GoodsReceiptSequence\"::text = q.goodsreceiptsequence::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/GoodsReceipt/{goodsreceiptid}_{goodsreceiptsequence}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:purchaseDocumentNumber ; rr:objectMap [ rr:column "purchasedocumentnumber" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:purchaseDocumentSequence ; rr:objectMap [ rr:column "purchasedocumentsequence" ; rr:datatype xsd:integer ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:lotID ; rr:objectMap [ rr:column "lotid" ] ] ;
