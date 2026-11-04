@@ -64,7 +64,12 @@ def log(cfg: Config, rid, graph, kind, triples, expected, status, detail=None):
 
 
 def morph_kgc(cfg: Config, nq: str, out=print):
-    ini = os.path.join(cfg.out, "morph_kgc.ini")
+    """Morph-KGC는 여러 프로세스가 한 출력 파일에 이어 쓴다. 윈도우 Docker의 저장소 마운트(/repo)에서는 이 이어 쓰기가
+    원자적이지 않아 줄이 섞이므로(실행마다 다른 위치에서 줄이 끊김), 컨테이너 안 임시 폴더에 쓴 뒤 옮긴다."""
+    import tempfile
+    tmp = tempfile.mkdtemp(prefix="ksxkg-")
+    final, nq = nq, os.path.join(tmp, os.path.basename(nq))
+    ini = os.path.join(tmp, "morph_kgc.ini")
     with open(ini, "w", encoding="utf-8") as f:
         f.write("[CONFIGURATION]\n"
                 f"output_file={nq}\n"
@@ -78,7 +83,10 @@ def morph_kgc(cfg: Config, nq: str, out=print):
     p = subprocess.run([sys.executable, "-m", "morph_kgc", ini], capture_output=True, text=True)
     os.remove(ini)                                     # 접속 비밀번호가 든 파일을 남기지 않는다
     if p.returncode != 0:
+        shutil.rmtree(tmp, ignore_errors=True)
         raise RuntimeError("Morph-KGC 실패:\n" + (p.stderr or p.stdout)[-3000:])
+    shutil.move(nq, final)
+    shutil.rmtree(tmp, ignore_errors=True)
 
 
 def split(nq: str, outdir: str, out=print) -> dict[str, tuple[str, int]]:
