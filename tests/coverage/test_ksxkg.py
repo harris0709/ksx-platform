@@ -53,8 +53,11 @@ def test_split_nquads():
                     f'<https://d/E/Lot/1> <https://o/lotID> "1" <{g1}> .\n'      # 중복
                     f'<https://d/E/Lot/1> <https://o/note> "a <b> c" <{g1}> .\n'
                     f'<https://d/E/Enterprise/E> <https://o/name> "E"@ko <{g2}> .\n')
-        parts = M.split(nq, tmp)
-        assert parts[g1][1] == 2 and parts[g2][1] == 1
+        with open(nq, "a", encoding="utf-8", newline="") as f:   # 윈도우 원천: 문자값 안의 CR이 이스케이프 없이 나옴
+            f.write(f'<https://d/E/Lot/2> <https://o/note> "a\r\\nb" <{g1}> .\n')
+        parts = M.split(nq, tmp, out=lambda *_: None)
+        assert parts[g1][1] == 3 and parts[g2][1] == 1
+        assert '<https://d/E/Lot/2> <https://o/note> "a\\r\\nb" .\n' in open(parts[g1][0], encoding="utf-8", newline="\n").read()
         assert open(parts[g2][0], encoding="utf-8").read() == '<https://d/E/Enterprise/E> <https://o/name> "E"@ko .\n'
 
 

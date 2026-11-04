@@ -81,13 +81,19 @@ def morph_kgc(cfg: Config, nq: str, out=print):
         raise RuntimeError("Morph-KGC 실패:\n" + (p.stderr or p.stdout)[-3000:])
 
 
-def split(nq: str, outdir: str) -> dict[str, tuple[str, int]]:
-    """N-Quads → 그래프별 N-Triples(중복 제거). {그래프 IRI: (파일, 트리플 수)}"""
-    handles, files = {}, {}
-    with open(nq, encoding="utf-8") as f:
+def split(nq: str, outdir: str, out=print) -> dict[str, tuple[str, int]]:
+    """N-Quads → 그래프별 N-Triples(중복 제거). {그래프 IRI: (파일, 트리플 수)}
+
+    줄은 '\n'으로만 나눈다. 원장 문자값에 캐리지 리턴(\r)이 그대로 들어 있으면(윈도우에서 만든 원천 등)
+    Morph-KGC가 이스케이프하지 않은 채 쓰므로, N-Triples 규칙대로 '\\r'로 바꾼다."""
+    handles, files, fixed = {}, {}, []
+    with open(nq, encoding="utf-8", newline="\n") as f:
         for line in f:
             if not line.strip():
                 continue
+            if "\r" in line:
+                line = line.rstrip("\n").rstrip("\r").replace("\r", "\\r") + "\n"
+                fixed.append(line.split(" ", 1)[0])
             m = QUAD_RE.search(line)
             if not m:
                 raise RuntimeError(f"그래프 없는 트리플(매핑의 rr:graphMap 확인): {line[:200]}")
@@ -97,13 +103,15 @@ def split(nq: str, outdir: str) -> dict[str, tuple[str, int]]:
                 files[g] = os.path.join(outdir, f"data_{key}.nt")
                 handles[g] = open(files[g] + ".tmp", "w", encoding="utf-8")
             handles[g].write(line[:m.start()] + " .\n")
+    if fixed:
+        out(f"  주의: 문자값에 캐리지 리턴(\\r)이 든 트리플 {len(fixed):,}개를 이스케이프함 — 예: {', '.join(sorted(set(fixed))[:3])}")
     res = {}
     for g, h in handles.items():
         h.close()
         subprocess.run(["sort", "-u", "-o", files[g], files[g] + ".tmp"], check=True,
                        env={**os.environ, "LC_ALL": "C"})
         os.remove(files[g] + ".tmp")
-        res[g] = (files[g], sum(1 for _ in open(files[g], encoding="utf-8")))
+        res[g] = (files[g], _lines(files[g]))
     return res
 
 
@@ -124,7 +132,7 @@ def count(cfg: Config, g: str) -> int:
 
 
 def _lines(path):
-    return sum(1 for _ in open(path, encoding="utf-8"))
+    return sum(1 for _ in open(path, encoding="utf-8", newline="\n"))
 
 
 def _comm(flag: str, a: str, b: str, dst: str) -> int:
@@ -141,7 +149,7 @@ def delete_data(cfg: Config, g: str, path: str, batch=5000):
         if buf:
             update(cfg.update, f"DELETE DATA {{ GRAPH <{g}> {{\n" + "".join(buf) + "}} }")
             buf.clear()
-    for line in open(path, encoding="utf-8"):
+    for line in open(path, encoding="utf-8", newline="\n"):
         buf.append(line)
         if len(buf) >= batch:
             flush()
@@ -191,7 +199,7 @@ def materialize(cfg: Config, out=print, skip_morph=False, full=False) -> bool:
         nq = os.path.join(cfg.out, "ksx.nq")
         if not skip_morph or not os.path.exists(nq):
             morph_kgc(cfg, nq, out)
-        parts = split(nq, cfg.out)
+        parts = split(nq, cfg.out, out)
         total = sum(n for _, n in parts.values())
         out(f"  트리플 {total:,} → 데이터 그래프 {len(parts)}개")
         # 데이터 그래프
