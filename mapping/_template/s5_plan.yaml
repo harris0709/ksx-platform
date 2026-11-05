@@ -1,0 +1,26 @@
+# S5 지식 그래프(A-Box) 구성 계획 — <기업> (구현안내서 8장) · 양식
+#   복사: mapping/_template/s5_plan.yaml → mapping/<기업 소문자>/s5_plan.yaml
+#   docker compose --profile tools run --rm s5-tools materialize   # 원장 → Named Graph → Fuseki
+#   docker compose --profile tools run --rm s5-tools check         # 완료 기준(표 19) → mapping/<기업>/S5_검증결과.md
+#   compose의 s5-tools 서비스 환경변수 S5_PLAN을 이 파일 경로로 바꾼다.
+enterprise: <기업 ID>          # 원장 EnterpriseID — 그래프 이름 graph/<기업 ID>/…, 결과 폴더 mapping/<기업 소문자>/
+ksxgen: ksxgen.yaml            # ns·data_ns(IRI·그래프 이름), common_graph_nouns(기업 공통 그래프 — 결정 카드로 정함)
+ontologies: ontologies         # S4 생성물: 물질화 매핑(mappings/rml), T-Box·셰이프·코드
+
+ledger:                        # 표준 원장(S3)
+  host: "${KSX_DB_HOST:-localhost}"
+  port: "${KSX_DB_PORT:-5432}"
+  dbname: "${KSX_DB_NAME:-ksx}"
+  reader: { user: ksx_reader, password: "${KSX_READER_PASSWORD}" }   # 물질화·검사(읽기 전용) — RLS 적용 시 물질화 전용 계정으로
+  owner:  { user: ksx_owner,  password: "${KSX_OWNER_PASSWORD}" }    # 감사 기록(audit.run·kg_load)
+
+fuseki: "${FUSEKI_URL:-http://localhost:3030/ksx}"       # 물질화 그래프(데이터셋 /ksx)
+ontop: "${ONTOP_URL:-http://localhost:8081/sparql}"      # 가상 그래프(SPARQL → SQL)
+out: "${KG_OUT:-out/kg}"                                 # 물질화 파일·적재본(커밋하지 않음)
+
+materialize:
+  # 물질화 필터(구현안내서 8.3 표 22): {명사: 원장 테이블 컬럼으로 쓴 SQL 조건}.
+  # 그 명사의 본 매핑·확장 속성 매핑에 같은 원장 행 조건이 걸린다. 가상 그래프(Ontop)에는 적용하지 않는다.
+  # 고빈도 시계열(파라미터·알람)은 이벤트만 — 트리플 비중을 먼저 보고 결정 카드로 정한다.
+  filters: {}
+  #  TraceParameter: "\"ValidationResultCode\" IS DISTINCT FROM 'NORMAL'"
