@@ -24,8 +24,13 @@ def test_every_triples_map_has_graph():
     noplant = [t for t in tms if " AS plantid" not in t.sql.split(" AS kg_graph FROM (", 1)[1]]
     joined = [t for t in noplant if "LEFT JOIN" in t.sql]
     # 공장 컬럼이 없는 매핑: 기업·사업장(Site) 명사(기업 공통 그래프), 헤더–라인 연결 8(주어 2개씩), 확장 속성 17
-    assert {os.path.basename(t.file) for t in noplant if t not in joined} == {"Enterprise.rml.ttl", "Site.rml.ttl"}
-    assert len(joined) == 8 * 2 + 17, len(joined)
+    assert {os.path.basename(t.file) for t in noplant if t not in joined} == {
+        "Enterprise.rml.ttl", "Site.rml.ttl", "IMPIX_CustomerPartyMasterExt.rml.ttl"}
+    assert len(joined) == 8 * 2 + 17 - 1, len(joined)   # 고객 확장 속성은 기업 공통(아래)이라 조인 없음
+    # 기업 공통 기준정보(S5 D-2): 품목·공급사·고객과 그 확장 속성은 공장이 있어도 graph/{Ent}
+    common = [t for t in tms if os.path.basename(t.file) in (
+        "ItemMaster.rml.ttl", "VendorPartyMaster.rml.ttl", "CustomerPartyMaster.rml.ttl", "IMPIX_CustomerPartyMasterExt.rml.ttl")]
+    assert len(common) == 4 and all("CASE" not in t.sql.split(" FROM (", 1)[0] for t in common)
     assert len({c for t in tms for c in t.classes}) == 76 + 5
 
 

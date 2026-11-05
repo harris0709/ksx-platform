@@ -74,15 +74,23 @@ def site_index(obda_texts: list[str]) -> dict[str, tuple[str, dict[str, str]]]:
     return idx
 
 
-def graph_sql(src: str, data_ns: str, subj: str = "", index: dict | None = None) -> str:
+def subject_noun(subj: str) -> str:
+    """주어 IRI 템플릿의 명사: …/{enterpriseid}/ItemMaster/{itemid} → ItemMaster."""
+    m = re.search(r"\{enterpriseid\}/(\w+)/", subj)
+    return m.group(1) if m else ""
+
+
+def graph_sql(src: str, data_ns: str, subj: str = "", index: dict | None = None, common=()) -> str:
     """행의 사업장 그래프 IRI를 계산하는 컬럼을 더한다(구현안내서 8.2 graph:{Ent}/{Site}/{Plant}).
 
-    매핑 원천에 사업장 컬럼이 없으면 주어 명사의 원장 행에서 사업장을 찾는다(헤더–라인 연결, 확장 속성).
-    사업장이 없거나 비어 있으면 기업 공통 그래프 graph:{Ent}. 값이 IRI가 되도록 SQL에서 이어 붙인다
-    (R2RML 템플릿은 '/'를 %2F로 바꾸기 때문)."""
+    기업 공통 기준정보 명사(common — ksxgen.yaml common_graph_nouns, S5 결정 D-2)와 사업장 컬럼이 없는 명사는
+    기업 공통 그래프 graph:{Ent}. 매핑 원천에 사업장 컬럼이 없으면 주어 명사의 원장 행에서 사업장을 찾는다
+    (헤더–라인 연결, 확장 속성). 값이 IRI가 되도록 SQL에서 이어 붙인다(R2RML 템플릿은 '/'를 %2F로 바꾸기 때문)."""
     base = f"'{data_ns}graph/' || q.enterpriseid"
     join, site, plant = "", None, None
-    if " AS siteid" in src and " AS plantid" in src:
+    if subject_noun(subj) in common:
+        pass
+    elif " AS siteid" in src and " AS plantid" in src:
         site, plant = "q.siteid", "q.plantid"
     elif index and subj in index:
         table, cols = index[subj]
@@ -122,7 +130,7 @@ def ontop_files(obda_texts: list[str], ttl_texts: list[str]) -> tuple[str, str]:
     return obda, ttl
 
 
-def rml(obda_text: str, index: dict | None = None) -> dict[str, str]:
+def rml(obda_text: str, index: dict | None = None, common=()) -> dict[str, str]:
     pfx, maps = parse_obda(obda_text)
     files = {}
     head = "".join(f"@prefix {k}: <{v}> .\n" for k, v in pfx.items() if k != "d")
@@ -134,7 +142,7 @@ def rml(obda_text: str, index: dict | None = None) -> dict[str, str]:
                  for c in re.findall(r"\{([a-z0-9_]+)\}", t)}
         src = re.sub(r'("[A-Za-z0-9_]+") AS ([a-z0-9_]+)',
                      lambda m: f"{m.group(1)}::text AS {m.group(2)}" if m.group(2) in tcols else m.group(0), src)
-        src = graph_sql(src, pfx["d"], _expand(stmts[0][0], pfx), index)
+        src = graph_sql(src, pfx["d"], _expand(stmts[0][0], pfx), index, common)
         for i, (subj, pos) in enumerate(stmts):
             name = f"map:{mid}" + (f"_{i}" if i else "")
             classes = [o for p, o in pos if p == "a"]

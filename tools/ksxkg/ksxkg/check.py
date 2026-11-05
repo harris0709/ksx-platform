@@ -93,11 +93,23 @@ def check(cfg: Config, out=print, report=True) -> bool:
 
     # 3. 사업장별 그래프 분리 -----------------------------------------------------
     base = cfg.data_ns + "graph/"
+    common = " ".join(f"<{cfg.ns}{c}>" for c in cfg.common)
+    # 공장 그래프의 개체: 그래프 = 개체의 기업·사업장·공장 속성
     q = (f"PREFIX ksx: <{cfg.ns}>\nSELECT (COUNT(DISTINCT ?s) AS ?n) WHERE {{ GRAPH ?g {{ ?s ksx:enterpriseID ?e ; "
-         f"ksx:siteID ?si ; ksx:plantID ?p }} FILTER(STRSTARTS(STR(?g), \"{pre}\") && "
+         f"ksx:siteID ?si ; ksx:plantID ?p }} FILTER(STRSTARTS(STR(?g), \"{pre}/\") && "
          f"?g != IRI(CONCAT(\"{base}\", STR(?e), \"/\", STR(?si), \"/\", STR(?p)))) }}")
     n = _n(sparql(cfg.query, q)[0]["n"])
-    add("분리", "개체의 사업장 속성과 그래프가 다른 개체", 0, n, n == 0)
+    add("분리", "공장 그래프 개체의 사업장 속성과 그래프가 다름", 0, n, n == 0)
+    # 기업 공통 그래프의 개체: 공장 속성이 있으면 기업 공통 기준정보 명사여야 한다(S5 D-2)
+    q = (f"PREFIX ksx: <{cfg.ns}>\nSELECT (COUNT(DISTINCT ?s) AS ?n) WHERE {{ GRAPH <{pre}> {{ ?s a ?c ; ksx:plantID ?p }} "
+         + (f"FILTER(?c NOT IN ({common.replace(' ', ', ')}))" if common else "") + " }")
+    n = _n(sparql(cfg.query, q)[0]["n"])
+    add("분리", "기업 공통 그래프에 든 공장 개체(기준정보 아닌 것)", 0, n, n == 0, "공통: " + (", ".join(cfg.common) or "없음"))
+    if common:
+        q = (f"SELECT (COUNT(DISTINCT ?s) AS ?n) WHERE {{ VALUES ?c {{ {common} }} GRAPH ?g {{ ?s a ?c }} "
+             f"FILTER(?g != <{pre}>) }}")
+        n = _n(sparql(cfg.query, q)[0]["n"])
+        add("분리", "기업 공통 기준정보인데 공장 그래프에 있는 개체", 0, n, n == 0)
     q = (f"SELECT (COUNT(DISTINCT ?s) AS ?n) WHERE {{ GRAPH ?g1 {{ ?s a ?c1 }} GRAPH ?g2 {{ ?s a ?c2 }} "
          f"FILTER(?g1 != ?g2 && STRSTARTS(STR(?g1), \"{pre}\") && STRSTARTS(STR(?g2), \"{pre}\")) }}")
     n = _n(sparql(cfg.query, q)[0]["n"])

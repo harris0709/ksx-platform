@@ -7,6 +7,6 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_CustomerPartyMasterExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"CustomerID\"::text AS customerid, \"CustomerGroupCode\"::text AS customergroupcode FROM ext.\"CustomerPartyMasterExt\") AS q LEFT JOIN ksx.\"CustomerPartyMaster\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"CustomerID\"::text = q.customerid::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, 'https://data.impix.co.kr/graph/' || q.enterpriseid AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"CustomerID\"::text AS customerid, \"CustomerGroupCode\"::text AS customergroupcode FROM ext.\"CustomerPartyMasterExt\") AS q" ; rr:sqlVersion rr:SQL2008 ] ;
     rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/CustomerPartyMaster/{customerid}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate impix:customerGroupCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/CustomerGroupCode/{customergroupcode}" ] ] .

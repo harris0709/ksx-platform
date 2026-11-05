@@ -131,6 +131,7 @@ class Config:
     fuseki: str
     ontop: str
     out: str
+    common: tuple = ()          # 기업 공통 그래프에 두는 기준정보 명사(ksxgen.yaml common_graph_nouns, S5 D-2)
 
     @property
     def query(self):
@@ -169,4 +170,4 @@ def load_config(path: str, repo: str) -> Config:
     onto = os.path.join(repo, raw.get("ontologies", "ontologies"))
     out = os.path.join(repo, env(raw.get("out", "out/kg")))
     return Config(repo, raw, raw["enterprise"], gen["data_ns"], gen["ns"], onto, rd, ow,
-                  env(raw["fuseki"]), env(raw["ontop"]), out)
+                  env(raw["fuseki"]), env(raw["ontop"]), out, tuple(gen.get("common_graph_nouns") or ()))

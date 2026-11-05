@@ -39,6 +39,14 @@ def _cfg(path: str | None) -> dict:
     return cfg
 
 
+def common_nouns(cfg: dict) -> set[str]:
+    """기업 공통 그래프에 둘 기준정보 명사(S5 결정 D-2). PyYAML 없이 읽으면 '[A, B]' 문자열이다."""
+    v = cfg.get("common_graph_nouns") or []
+    if isinstance(v, str):
+        v = [x.strip() for x in v.strip("[]").split(",") if x.strip()]
+    return set(v)
+
+
 def _simple_yaml(path: str) -> dict:
     """PyYAML이 없을 때: 'key: value' 한 줄 형식만 읽는다(ksxgen.yaml 형식)."""
     out = {}
@@ -87,7 +95,7 @@ def derived(m, v, cfg: dict, out: str, quiet: bool) -> bool:
     n = 0
     idx = derive.site_index(texts)
     for t in texts:
-        for fn, txt in derive.rml(t, idx).items():
+        for fn, txt in derive.rml(t, idx, common_nouns(cfg)).items():
             w(os.path.join(out, "mappings", "rml", fn), txt)
             n += 1
     w(os.path.join(out, "tbox", "catalog-v001.xml"), derive.import_catalog(out))
