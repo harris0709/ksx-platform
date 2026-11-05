@@ -33,7 +33,7 @@ KS X 9101 기반 제조 온톨로지 End-to-End 구현 저장소입니다. 구�
 |---|---|---|
 | S0 환경 | 개발 스택(PostgreSQL 16.4, Fuseki 5.2.0, Ontop 5.1.2, Qdrant, Keycloak, OPA) | `infra/docker/` |
 | S4 T-Box 생성 | **ksxgen 0.3** — 테이블 정의서·공통코드 → **생성물 12종**(T-Box·SHACL·자동 전이 규칙·OBDA·물질화 매핑(R2RML)·DDL·AGE 스키마·SKOS 코드·단위·명사 카드·도구 스키마·적재 순서·커버리지). **기업 확장(`--ext`)** 금지 규칙 검사. **검증**: `ksxgen verify`(DL 선언·OWL RL·SHACL-SHACL) + ROBOT/HermiT, 물질화 = 가상화 트리플 일치(IMPIX 234만). 판단 사항 5건 결정(구현안내서 v1.3). **2026-11-02 승인** | `tools/ksxgen/` → `ontologies/`, `mapping/impix/S4_승인기록.md`, `docs/S4_온톨로지생성_실행가이드.docx` |
-| S5 A-Box | Ontop 가상화 매핑(테이블 76개) 생성, 시험용 OBDA 실행기 | `ontologies/mappings/`, `tests/e2e/obda_exec.py` |
+| S5 A-Box | **ksxkg 0.1** — 가상 그래프(Ontop, Core + 확장 합본 매핑)와 물질화 그래프(Morph-KGC → Fuseki 사업장 Named Graph, 기업 공통 기준정보 그래프, 시계열 이벤트만 물질화, 다시 실행 시 차이 반영). **완료 기준 검사** 10건(가상 = SQL, 물질화 = 기대치, 그래프 분리) — IMPIX 204,257 트리플. 판단 사항 5건 결정(구현안내서 v1.4). **2026-11-05 승인** | `tools/ksxkg/`, `mapping/impix/s5_plan.yaml`, `mapping/impix/S5_승인기록.md`, `docs/S5_지식그래프구성_실행가이드.docx` |
 | S6 검증 | 표준 적합성 SHACL(76개 셰이프) | `ontologies/shapes/` |
 | S7 추론 | 규칙 5종(계보·BOM 전개·영향 수주·납기 리스크) + rule-runner | `ontologies/rules/`, `services/rule-runner/` |
 | 시험 | 생성기 회귀, E2E 최소 시험(DDL → 시드 → OBDA → SHACL → 규칙), GitHub Actions CI | `tests/`, `.github/workflows/` |
