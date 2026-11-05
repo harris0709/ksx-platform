@@ -6,11 +6,11 @@
 @prefix map: <urn:ksx:map:> .
 
 map:UOMGroupLine_hasLine a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"UOMCode\"::text AS uomcode, \"UOMGroupID\"::text AS uomgroupid FROM ksx.\"UOMGroupLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/UOMGroup/{uomgroupid}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"UOMCode\"::text AS uomcode, \"UOMGroupID\"::text AS uomgroupid FROM ksx.\"UOMGroupLine\") AS q LEFT JOIN ksx.\"UOMGroupHeader\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"UOMGroupID\"::text = q.uomgroupid::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/UOMGroup/{uomgroupid}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:hasLine ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/UOMGroup/{uomgroupid}/line/{uomcode}" ] ] .
 
 map:UOMGroupLine_hasLine_1 a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"UOMCode\"::text AS uomcode, \"UOMGroupID\"::text AS uomgroupid FROM ksx.\"UOMGroupLine\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/UOMGroup/{uomgroupid}/line/{uomcode}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"UOMCode\"::text AS uomcode, \"UOMGroupID\"::text AS uomgroupid FROM ksx.\"UOMGroupLine\") AS q LEFT JOIN ksx.\"UOMGroupHeader\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"UOMGroupID\"::text = q.uomgroupid::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/UOMGroup/{uomgroupid}/line/{uomcode}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:lineOf ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/UOMGroup/{uomgroupid}" ] ] .

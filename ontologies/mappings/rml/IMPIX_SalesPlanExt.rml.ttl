@@ -7,8 +7,8 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_SalesPlanExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"SalesPlanID\"::text AS salesplanid, \"SalesPlanType\"::text AS salesplantype, \"CustomerID\"::text AS customerid, \"SalesPlanVersion\" AS salesplanversion FROM ext.\"SalesPlanExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/SalesPlan/{salesplanid}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"SalesPlanID\"::text AS salesplanid, \"SalesPlanType\"::text AS salesplantype, \"CustomerID\"::text AS customerid, \"SalesPlanVersion\" AS salesplanversion FROM ext.\"SalesPlanExt\") AS q LEFT JOIN ksx.\"SalesPlan\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"SalesPlanID\"::text = q.salesplanid::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/SalesPlan/{salesplanid}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate impix:salesPlanType ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/SalesPlanType/{salesplantype}" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:customerID ; rr:objectMap [ rr:column "customerid" ] ] ;
     rr:predicateObjectMap [ rr:predicate impix:salesPlanVersion ; rr:objectMap [ rr:column "salesplanversion" ; rr:datatype xsd:integer ] ] ;

@@ -174,8 +174,8 @@ services:
 
   # ---------------------------------------------------------------
   # Ontop — 원장 가상 그래프(SPARQL → SQL)
-  #   S0~S3: bootstrap 매핑(audit.healthcheck)으로 기동만 확인
-  #   S4 이후: .env의 ONTOP_*_FILE을 ontologies/ 생성물로 교체
+  #   S0~S4: bootstrap 매핑(audit.healthcheck)으로 기동만 확인
+  #   S5부터: .env의 ONTOP_*_FILE = /opt/onto/ontop/ksx.{ttl,obda}(Core + 기업 확장 합본)
   # ---------------------------------------------------------------
   ontop:
     build:
@@ -346,6 +346,31 @@ services:
       postgres:
         condition: service_healthy
       impix-src:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------
+  # [S5] 지식 그래프 도구(ksxkg + Morph-KGC) — profile: tools
+  #   docker compose --profile tools run --rm s5-tools materialize   # 원장 → 사업장 Named Graph → Fuseki
+  #   docker compose --profile tools run --rm s5-tools check         # 가상 = SQL, 물질화 = 기대치, 그래프 분리
+  # ---------------------------------------------------------------
+  s5-tools:
+    profiles: ["tools"]
+    build: ../../tools/ksxkg
+    image: ksx/s5tools:0.1
+    working_dir: /repo
+    environment:
+      S5_PLAN: mapping/impix/s5_plan.yaml
+      KSX_DB_HOST: postgres
+      KSX_DB_PORT: "5432"
+      KSX_DB_NAME: ksx
+      KSX_READER_PASSWORD: ${KSX_READER_PASSWORD}
+      KSX_OWNER_PASSWORD: ${KSX_OWNER_PASSWORD}
+      FUSEKI_URL: http://fuseki:3030/ksx
+      ONTOP_URL: http://ontop:8080/sparql
+    volumes:
+      - ../..:/repo
+    depends_on:
+      postgres:
         condition: service_healthy
 
   # ---------------------------------------------------------------

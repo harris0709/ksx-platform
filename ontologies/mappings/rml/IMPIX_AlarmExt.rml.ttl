@@ -7,6 +7,6 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_AlarmExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"AlarmID\"::text AS alarmid, \"AlarmSeverityCode\"::text AS alarmseveritycode FROM ext.\"AlarmExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Alarm/{alarmid}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"AlarmID\"::text AS alarmid, \"AlarmSeverityCode\"::text AS alarmseveritycode FROM ext.\"AlarmExt\") AS q LEFT JOIN ksx.\"Alarm\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"AlarmID\"::text = q.alarmid::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Alarm/{alarmid}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate impix:alarmSeverityCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/AlarmSeverityCode/{alarmseveritycode}" ] ] .

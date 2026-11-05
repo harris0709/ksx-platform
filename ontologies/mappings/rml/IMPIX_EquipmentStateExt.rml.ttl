@@ -7,8 +7,8 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_EquipmentStateExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"EquipmentStateID\"::text AS equipmentstateid, \"StateStartDateTime\" AS statestartdatetime, \"StateEndDateTime\" AS stateenddatetime, \"EquipmentIdleReasonCode\"::text AS equipmentidlereasoncode FROM ext.\"EquipmentStateExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/EquipmentState/{equipmentstateid}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"EquipmentStateID\"::text AS equipmentstateid, \"StateStartDateTime\" AS statestartdatetime, \"StateEndDateTime\" AS stateenddatetime, \"EquipmentIdleReasonCode\"::text AS equipmentidlereasoncode FROM ext.\"EquipmentStateExt\") AS q LEFT JOIN ksx.\"EquipmentState\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"EquipmentStateID\"::text = q.equipmentstateid::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/EquipmentState/{equipmentstateid}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate impix:stateStartDateTime ; rr:objectMap [ rr:column "statestartdatetime" ; rr:datatype xsd:dateTime ] ] ;
     rr:predicateObjectMap [ rr:predicate impix:stateEndDateTime ; rr:objectMap [ rr:column "stateenddatetime" ; rr:datatype xsd:dateTime ] ] ;
     rr:predicateObjectMap [ rr:predicate impix:equipmentIdleReasonCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/EquipmentIdleReasonCode/{equipmentidlereasoncode}" ] ] .

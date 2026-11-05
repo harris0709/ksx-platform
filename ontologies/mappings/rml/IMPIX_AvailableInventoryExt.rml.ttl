@@ -7,8 +7,8 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_AvailableInventoryExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"AvailableInventoryID\"::text AS availableinventoryid, \"ProductionOrderID\"::text AS productionorderid, \"ProductionOrderSequence\"::text AS productionordersequence, \"AvailabilityCheckDateTime\" AS availabilitycheckdatetime, \"ShortageQuantity\" AS shortagequantity, \"MaterialRequirementQuantity\" AS materialrequirementquantity FROM ext.\"AvailableInventoryExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/AvailableInventory/{availableinventoryid}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"AvailableInventoryID\"::text AS availableinventoryid, \"ProductionOrderID\"::text AS productionorderid, \"ProductionOrderSequence\"::text AS productionordersequence, \"AvailabilityCheckDateTime\" AS availabilitycheckdatetime, \"ShortageQuantity\" AS shortagequantity, \"MaterialRequirementQuantity\" AS materialrequirementquantity FROM ext.\"AvailableInventoryExt\") AS q LEFT JOIN ksx.\"AvailableInventory\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"AvailableInventoryID\"::text = q.availableinventoryid::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/AvailableInventory/{availableinventoryid}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:productionOrderID ; rr:objectMap [ rr:column "productionorderid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:productionOrderSequence ; rr:objectMap [ rr:column "productionordersequence" ; rr:datatype xsd:integer ] ] ;
     rr:predicateObjectMap [ rr:predicate impix:availabilityCheckDateTime ; rr:objectMap [ rr:column "availabilitycheckdatetime" ; rr:datatype xsd:dateTime ] ] ;

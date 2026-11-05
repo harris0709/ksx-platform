@@ -554,7 +554,7 @@ ksx:childLotID a owl:DatatypeProperty ; rdfs:range xsd:string ;
 ksx:collectionDateTime a owl:DatatypeProperty ; rdfs:range xsd:dateTime ;
     rdfs:label "수집일시"@ko, "CollectionDateTime"@en ;
     ksx:sourceAttribute "CollectionDateTime" .
-ksx:commonCodeGroup a owl:ObjectProperty ; rdfs:range skos:Concept ;
+ksx:commonCodeGroup a owl:DatatypeProperty ; rdfs:range xsd:string ;
     rdfs:label "공통코드그룹"@ko, "CommonCodeGroup"@en ;
     ksx:sourceAttribute "CommonCodeGroup" .
 ksx:commonCodeID a owl:DatatypeProperty ; rdfs:range xsd:string ;

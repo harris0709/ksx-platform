@@ -7,8 +7,8 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_GoodsIssueExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"GoodsIssueID\"::text AS goodsissueid, \"InventoryTransactionDate\" AS inventorytransactiondate, \"ProductionOrderID\"::text AS productionorderid, \"ProductionOrderSequence\"::text AS productionordersequence FROM ext.\"GoodsIssueExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/GoodsIssue/{goodsissueid}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"GoodsIssueID\"::text AS goodsissueid, \"InventoryTransactionDate\" AS inventorytransactiondate, \"ProductionOrderID\"::text AS productionorderid, \"ProductionOrderSequence\"::text AS productionordersequence FROM ext.\"GoodsIssueExt\") AS q LEFT JOIN ksx.\"GoodsIssue\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"GoodsIssueID\"::text = q.goodsissueid::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/GoodsIssue/{goodsissueid}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:inventoryTransactionDate ; rr:objectMap [ rr:column "inventorytransactiondate" ; rr:datatype xsd:date ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:productionOrderID ; rr:objectMap [ rr:column "productionorderid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:productionOrderSequence ; rr:objectMap [ rr:column "productionordersequence" ; rr:datatype xsd:integer ] ] ;

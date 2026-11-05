@@ -5,3 +5,4 @@ version: KS X 9101-1:2025 개정안 v1.0
 schema: ksx
 graph: ksx_graph      # 속성 그래프(Apache AGE) 이름 — 관계형 스키마 ksx와 겹치지 않게
 business_rules: ontologies/rules   # 업무 규칙(R-*.rq) 위치 — 여기서 전개하는 전이 관계는 자동 규칙(A-*)을 만들지 않음(S4 D-3)
+common_graph_nouns: [ItemMaster, VendorPartyMaster, CustomerPartyMaster]   # 기업 공통 기준정보 → graph/{Ent}(S5 D-2), 나머지는 행의 공장 그래프

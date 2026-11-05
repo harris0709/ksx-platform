@@ -7,8 +7,8 @@
 @prefix map: <urn:ksx:map:> .
 
 map:IMPIX_ProductIncomingExt a rr:TriplesMap ;
-    rr:logicalTable [ rr:sqlQuery "SELECT \"EnterpriseID\"::text AS enterpriseid, \"ProductIncomingID\"::text AS productincomingid, \"ProductIncomingSequence\"::text AS productincomingsequence, \"ProductionOrderID\"::text AS productionorderid, \"ProductionOrderSequence\"::text AS productionordersequence FROM ext.\"ProductIncomingExt\"" ; rr:sqlVersion rr:SQL2008 ] ;
-    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ProductIncoming/{productincomingid}_{productincomingsequence}" ] ;
+    rr:logicalTable [ rr:sqlQuery "SELECT q.*, CASE WHEN o.\"SiteID\" IS NULL OR o.\"PlantID\" IS NULL THEN 'https://data.impix.co.kr/graph/' || q.enterpriseid ELSE 'https://data.impix.co.kr/graph/' || q.enterpriseid || '/' || o.\"SiteID\" || '/' || o.\"PlantID\" END AS kg_graph FROM (SELECT \"EnterpriseID\"::text AS enterpriseid, \"ProductIncomingID\"::text AS productincomingid, \"ProductIncomingSequence\"::text AS productincomingsequence, \"ProductionOrderID\"::text AS productionorderid, \"ProductionOrderSequence\"::text AS productionordersequence FROM ext.\"ProductIncomingExt\") AS q LEFT JOIN ksx.\"ProductIncoming\" AS o ON o.\"EnterpriseID\"::text = q.enterpriseid::text AND o.\"ProductIncomingID\"::text = q.productincomingid::text AND o.\"ProductIncomingSequence\"::text = q.productincomingsequence::text" ; rr:sqlVersion rr:SQL2008 ] ;
+    rr:subjectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ProductIncoming/{productincomingid}_{productincomingsequence}" ; rr:graphMap [ rr:column "kg_graph" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:productionOrderID ; rr:objectMap [ rr:column "productionorderid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:productionOrderSequence ; rr:objectMap [ rr:column "productionordersequence" ; rr:datatype xsd:integer ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:refProductionOrder ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/ProductionOrder/{productionorderid}_{productionordersequence}" ] ] .

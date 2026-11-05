@@ -118,10 +118,12 @@ def _obda_triples(text):
 
 def _rml_triples(texts):
     import re
+    from ksxgen import derive
     out = set()
     for t in texts:
         for tm in t.split(" a rr:TriplesMap ;")[1:]:
             src = re.search(r'rr:sqlQuery "((?:[^"\\]|\\.)*)"', tm).group(1).replace('\\"', '"')
+            src = derive.unwrap_graph_sql(src)  # 물질화 매핑은 사업장 그래프 컬럼을 더한다
             src = src.replace("::text", "")   # 물질화 매핑은 IRI 템플릿 컬럼을 문자로 읽는다
             subj = re.search(r'rr:subjectMap \[ rr:template "([^"]+)"', tm).group(1)
             for c in re.findall(r"rr:class (\S+)", tm.split("rr:predicateObjectMap")[0]):

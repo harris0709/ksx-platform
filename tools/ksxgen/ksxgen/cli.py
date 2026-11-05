@@ -39,6 +39,14 @@ def _cfg(path: str | None) -> dict:
     return cfg
 
 
+def common_nouns(cfg: dict) -> set[str]:
+    """기업 공통 그래프에 둘 기준정보 명사(S5 결정 D-2). PyYAML 없이 읽으면 '[A, B]' 문자열이다."""
+    v = cfg.get("common_graph_nouns") or []
+    if isinstance(v, str):
+        v = [x.strip() for x in v.strip("[]").split(",") if x.strip()]
+    return set(v)
+
+
 def _simple_yaml(path: str) -> dict:
     """PyYAML이 없을 때: 'key: value' 한 줄 형식만 읽는다(ksxgen.yaml 형식)."""
     out = {}
@@ -85,11 +93,16 @@ def derived(m, v, cfg: dict, out: str, quiet: bool) -> bool:
         p for p in glob.glob(os.path.join(out, "mappings", "*_ext.obda")))
     texts = [open(p, encoding="utf-8").read() for p in obdas]
     n = 0
+    idx = derive.site_index(texts)
     for t in texts:
-        for fn, txt in derive.rml(t).items():
+        for fn, txt in derive.rml(t, idx, common_nouns(cfg)).items():
             w(os.path.join(out, "mappings", "rml", fn), txt)
             n += 1
     w(os.path.join(out, "tbox", "catalog-v001.xml"), derive.import_catalog(out))
+    ttls = [os.path.join(out, "tbox", "ksx9101_core.ttl")] + sorted(glob.glob(os.path.join(out, "tbox", "*_ext.ttl")))
+    ob, tt = derive.ontop_files(texts, [open(p, encoding="utf-8").read() for p in ttls])
+    w(os.path.join(out, "ontop", "ksx.obda"), ob)
+    w(os.path.join(out, "ontop", "ksx.ttl"), tt)
     w(os.path.join(out, "graph", "age_schema.sql"), derive.age_schema(texts, cfg.get("graph", "ksx_graph")))
     for fn, txt in derive.tools(out, m).items():
         w(os.path.join(out, "catalog", "tools", fn), txt)
