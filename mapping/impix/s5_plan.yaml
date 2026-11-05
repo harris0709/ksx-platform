@@ -15,3 +15,10 @@ ledger:                        # 표준 원장(S3)
 fuseki: "${FUSEKI_URL:-http://localhost:3030/ksx}"       # 물질화 그래프(데이터셋 /ksx)
 ontop: "${ONTOP_URL:-http://localhost:8081/sparql}"      # 가상 그래프(SPARQL → SQL)
 out: "${KG_OUT:-out/kg}"                                 # 물질화 파일(커밋하지 않음)
+
+materialize:
+  # 물질화 필터(S5 결정 D-3, 구현안내서 8.3 표 22): 고빈도 시계열은 이벤트(스펙아웃)만 물질화한다.
+  # 조건은 원장 테이블 컬럼으로 쓴다. 가상 그래프(Ontop)에는 적용하지 않으므로 정상값도 SPARQL로 질의할 수 있다.
+  # 트랜잭션은 기간으로 자르지 않는다(로트 계보 추적이 2024년 로트까지 거슬러 올라감).
+  filters:
+    TraceParameter: "\"ValidationResultCode\" IS DISTINCT FROM 'NORMAL'"

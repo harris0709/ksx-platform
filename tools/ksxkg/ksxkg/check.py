@@ -21,9 +21,9 @@ def _n(x) -> int:
     return int(float(x))
 
 
-def expected(cfg: Config):
-    """물질화 매핑 SQL로 (그래프, 클래스)별 기대 개체 수."""
-    tm = read_rml(cfg.rml_files(), {})
+def expected(cfg: Config, materialized=True):
+    """물질화 매핑 SQL로 (그래프, 클래스)별 기대 개체 수. materialized=False면 물질화 필터 없이(가상 그래프 기준)."""
+    tm = read_rml(cfg.rml_texts() if materialized else cfg.rml_files(), {})
     exp = defaultdict(int)
     classes = sorted({c for t in tm for c in t.classes})
     for t in tm:
@@ -46,8 +46,9 @@ def check(cfg: Config, out=print, report=True) -> bool:
         out(f"  {'OK ' if ok else '실패'} [{group}] {name} — 기대 {exp} · 실제 {act}" + (f" ({note})" if note else ""))
 
     exp, classes = expected(cfg)
+    vexp, _ = expected(cfg, materialized=False) if cfg.filters else (exp, classes)
     by_class = {c: 0 for c in classes}
-    for (g, c), n in exp.items():
+    for (g, c), n in vexp.items():
         by_class[c] += n
     pre = cfg.data_graph_prefix
 
@@ -76,7 +77,7 @@ def check(cfg: Config, out=print, report=True) -> bool:
     act = {(r["g"], r["c"]): _n(r["n"]) for r in sparql(cfg.query, q)}
     keys = set(k for k, n in exp.items() if n) | set(act)
     d = sorted(k for k in keys if exp.get(k, 0) != act.get(k, 0))
-    add("물질화", "(그래프, 클래스)별 개체 수 = 매핑 SQL 행 수", f"{len([k for k in exp if exp[k]])}쌍 · {sum(exp.values()):,}",
+    add("물질화", "(그래프, 클래스)별 개체 수 = 매핑 SQL 행 수" + (" (물질화 필터 적용)" if cfg.filters else ""), f"{len([k for k in exp if exp[k]])}쌍 · {sum(exp.values()):,}",
         f"{len(act)}쌍 · {sum(act.values()):,}", not d,
         "; ".join(f"{k[0].split('/graph/')[-1]} {class_label(k[1])} {act.get(k, 0)}/{exp.get(k, 0)}" for k in d[:5]))
     last = rows(cfg.owner, "select graph, triples from audit.kg_load where kind = 'data' and triples > 0 and run_id = "

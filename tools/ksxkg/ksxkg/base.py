@@ -155,6 +155,15 @@ class Config:
     def rml_files(self):
         return sorted(glob.glob(os.path.join(self.onto, "mappings", "rml", "*.rml.ttl")))
 
+    @property
+    def filters(self) -> dict:
+        """물질화 필터 {명사: 원장 컬럼 SQL 조건}(S5 결정 D-3) — 가상 그래프(Ontop)에는 적용하지 않는다."""
+        return dict((self.raw.get("materialize") or {}).get("filters") or {})
+
+    def rml_texts(self) -> dict:
+        from .mappings import filtered
+        return filtered(self.rml_files(), self.filters)
+
     def mapping_dir(self):
         return os.path.join(self.repo, "mapping", self.ent.lower())
 

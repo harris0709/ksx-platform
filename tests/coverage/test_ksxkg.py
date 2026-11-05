@@ -49,6 +49,19 @@ def test_graph_sql():
     assert derive.graph_sql('SELECT "EnterpriseID" AS enterpriseid FROM ksx."Enterprise"', d).count("CASE") == 0
 
 
+def test_materialize_filter():
+    """물질화 필터(S5 D-3): 시계열 본 매핑과 확장 속성 매핑에 같은 원장 행 조건 — 다른 매핑·S4 파일은 그대로."""
+    import glob
+    from ksxkg.mappings import filtered
+    files = sorted(glob.glob(os.path.join(ONTO, "mappings", "rml", "*.rml.ttl")))
+    out = filtered(files, {"TraceParameter": "\"ValidationResultCode\" IS DISTINCT FROM 'NORMAL'"})
+    changed = sorted(os.path.basename(f) for f, t in out.items() if t != open(f, encoding="utf-8").read())
+    assert changed == ["IMPIX_TraceParameterExt.rml.ttl", "TraceParameter.rml.ttl"], changed
+    t = out[[f for f in out if f.endswith("/TraceParameter.rml.ttl")][0]]
+    assert 'WHERE EXISTS (SELECT 1 FROM ksx.\\"TraceParameter\\" AS w WHERE w.\\"EnterpriseID\\"::text = f.enterpriseid::text' in t
+    assert filtered(files, {}) == {f: open(f, encoding="utf-8").read() for f in files}
+
+
 def test_split_nquads():
     with tempfile.TemporaryDirectory() as tmp:
         nq = os.path.join(tmp, "x.nq")

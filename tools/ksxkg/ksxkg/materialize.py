@@ -70,6 +70,11 @@ def morph_kgc(cfg: Config, nq: str, out=print):
     tmp = tempfile.mkdtemp(prefix="ksxkg-")
     final, nq = nq, os.path.join(tmp, os.path.basename(nq))
     ini = os.path.join(tmp, "morph_kgc.ini")
+    maps = []                                       # 물질화 필터(D-3)를 적용한 매핑 사본 — S4 생성물은 그대로
+    for i, (f, text) in enumerate(sorted(cfg.rml_texts().items())):
+        maps.append(os.path.join(tmp, f"{i:03d}_" + os.path.basename(f)))
+        with open(maps[-1], "w", encoding="utf-8") as w:
+            w.write(text)
     with open(ini, "w", encoding="utf-8") as f:
         f.write("[CONFIGURATION]\n"
                 f"output_file={nq}\n"
@@ -77,9 +82,10 @@ def morph_kgc(cfg: Config, nq: str, out=print):
                 # 빈 문자열·NULL 표기는 값 없음으로(정수·일시 리터럴에 'None'이 생기지 않게)
                 "na_values=,None,NULL,null,NaN,nan,<NA>,NaT\n"
                 "[ksx]\n"
-                f"mappings={','.join(cfg.rml_files())}\n"
+                f"mappings={','.join(maps)}\n"
                 f"db_url={cfg.reader.url()}\n")
-    out(f"  Morph-KGC: 물질화 매핑 {len(cfg.rml_files())}개 실행 …")
+    out(f"  Morph-KGC: 물질화 매핑 {len(maps)}개 실행 …"
+        + (f" (물질화 필터: {', '.join(f'{k} — {v}' for k, v in cfg.filters.items())})" if cfg.filters else ""))
     p = subprocess.run([sys.executable, "-m", "morph_kgc", ini], capture_output=True, text=True)
     os.remove(ini)                                     # 접속 비밀번호가 든 파일을 남기지 않는다
     if p.returncode != 0:
