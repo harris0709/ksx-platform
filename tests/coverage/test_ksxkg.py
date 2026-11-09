@@ -98,6 +98,24 @@ def test_s6_seeds_cover_four_dimensions():
     assert [s for s in p["validate"]["seeds"] if not s.get("expect")]          # 정상 대조군
 
 
+def test_quality_params_filled():
+    """S6 D-4: 품질 셰이프 매개변수 — 계획 값으로 채우고, 계획에 없는 매개변수는 오류."""
+    import yaml
+    from ksxkg import validate as Vd
+    class Cfg:
+        repo = ROOT
+        onto = ONTO
+        raw = yaml.safe_load(open(os.path.join(ROOT, "mapping", "impix", "s6_plan.yaml"), encoding="utf-8"))
+    txt, files = Vd.shapes_text(Cfg)
+    assert b"{{" not in txt and b'VALUES ?plant { "P2" }' in txt
+    Cfg.raw = {"validate": {}}
+    try:
+        Vd.shapes_text(Cfg)
+        raise AssertionError("매개변수 누락이 통과됨")
+    except SystemExit as e:
+        assert "order_driven_plants" in str(e)
+
+
 def test_split_nquads():
     with tempfile.TemporaryDirectory() as tmp:
         nq = os.path.join(tmp, "x.nq")

@@ -83,9 +83,29 @@ def parse_report(nt: str) -> tuple[bool, list[dict]]:
 
 
 # ------------------------------------------------------------------ 셰이프
+def params(cfg: Config) -> dict[str, dict]:
+    """품질 셰이프 매개변수(s6_plan validate.params) — 기업 운영 방식(예: 지시 기반 공장)을 셰이프 밖에서 근거와 함께 둔다."""
+    return {k: (v if isinstance(v, dict) else {"value": v}) for k, v in
+            ((cfg.raw.get("validate") or {}).get("params") or {}).items()}
+
+
+def _render(v) -> str:
+    vals = v if isinstance(v, list) else [v]
+    return " ".join(x if isinstance(x, str) and x.startswith("<") else '"' + str(x).replace('"', '\\"') + '"' for x in vals)
+
+
 def shapes_text(cfg: Config) -> tuple[bytes, list[str]]:
     files = sorted(glob.glob(os.path.join(cfg.onto, "shapes", "*.ttl"))) + quality_files(cfg)
-    return b"\n".join(open(f, "rb").read() for f in files), files
+    ps = params(cfg)
+    parts = []
+    for f in files:
+        t = open(f, encoding="utf-8").read()
+        for name in set(re.findall(r"\{\{(\w+)\}\}", t)):
+            if name not in ps:
+                raise SystemExit(f"품질 셰이프 매개변수 {{{{{name}}}}}가 계획(validate.params)에 없음: {os.path.relpath(f, cfg.repo)}")
+            t = t.replace("{{" + name + "}}", _render(ps[name]["value"]))
+        parts.append(t.encode("utf-8"))
+    return b"\n".join(parts), files
 
 
 def quality_files(cfg: Config) -> list[str]:
@@ -364,12 +384,17 @@ def _match(cfg: Config, r: dict, e: dict) -> bool:
 # ------------------------------------------------------------------ 리포트
 def report(cfg: Config, rows: list[dict], rid: str, nmark: int, excl: dict):
     gname = lambda g: (g or "").split("/graph/")[-1] or "(그래프 없음)"  # noqa: E731
+    ps = params(cfg)
     md = [f"# S6 검증 결과 ({cfg.ent}) — ksxkg validate", "",
           "적합성 셰이프(S4 생성물) + 품질 셰이프(저작)로 물질화 그래프(합집합)를 검증한 결과. 대상 개체가 든 그래프로 나눈다.", "",
           f"- 결과 {len(rows):,}건 (위반 {sum(r['severity'] == 'Violation' for r in rows):,} · 경고 "
           f"{sum(r['severity'] == 'Warning' for r in rows):,}), 위반 표식 {nmark:,}개 → `graph/quality`",
-          f"- 추론 제외 확인({excl['rule']}): 규칙 결과 {excl['derived']:,}개 중 위반 개체 {excl['leaked']}개 (0이어야 함)", "",
-          "## 그래프 × 차원", "", "| 그래프 | 구조 | 값 | 관계 | 의미 | 합계 |", "|---|---|---|---|---|---|"]
+          f"- 추론 제외 확인({excl['rule']}): 규칙 결과 {excl['derived']:,}개 중 위반 개체 {excl['leaked']}개 (0이어야 함)", ""]
+    if ps:
+        md += ["## 품질 셰이프 매개변수(s6_plan)", "", "| 매개변수 | 값 | 근거 |", "|---|---|---|"]
+        md += [f"| `{k}` | {', '.join(map(str, v['value'] if isinstance(v['value'], list) else [v['value']]))} | {v.get('note', '')} |"
+               for k, v in ps.items()] + [""]
+    md += ["## 그래프 × 차원", "", "| 그래프 | 구조 | 값 | 관계 | 의미 | 합계 |", "|---|---|---|---|---|---|"]
     t = collections.defaultdict(collections.Counter)
     for r in rows:
         t[gname(r["graph"])][r["dimension"]] += 1
