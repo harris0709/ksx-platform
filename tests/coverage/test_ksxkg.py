@@ -135,6 +135,23 @@ def test_delete_data_braces():
     assert q.count("{") == q.count("}") == 2 and q.rstrip().endswith("} }"), q
 
 
+def test_s6_templates():
+    """S6 양식: 계획 양식은 seeds 10(4차원) + 대조군, 품질 셰이프 양식은 매개변수를 채우면 Turtle로 읽힌다."""
+    import yaml
+    p = yaml.safe_load(open(os.path.join(ROOT, "mapping", "_template", "s6_plan.yaml"), encoding="utf-8"))
+    seeds = [s for s in p["validate"]["seeds"] if s.get("expect")]
+    assert len(seeds) == 10 and {s["dimension"] for s in seeds} == {"구조", "값", "관계", "의미"}
+    t = open(os.path.join(ROOT, "mapping", "_template", "quality_shapes_양식.ttl"), encoding="utf-8").read()
+    assert t.count("    sh:severity sh:") == 5 and "{{order_driven_plants}}" in t
+    try:
+        import rdflib
+    except ImportError:
+        return
+    g = rdflib.Graph().parse(data=t.replace("{{order_driven_plants}}", '"P2"'), format="turtle")
+    SH = rdflib.Namespace("http://www.w3.org/ns/shacl#")
+    assert len(set(g.subjects(rdflib.RDF.type, SH.NodeShape))) == 5
+
+
 def test_split_nquads():
     with tempfile.TemporaryDirectory() as tmp:
         nq = os.path.join(tmp, "x.nq")
