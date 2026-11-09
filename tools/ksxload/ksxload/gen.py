@@ -217,6 +217,27 @@ class Gen:
         raise GenError(f"규칙 {r['id']}: when 또는 orphan 필요")
 
     # ------------------------------------------------------------ 생성
+    def add_line_header_tests(self, schema_models):
+        """헤더·라인 명사: 라인의 사업장·공장 = 소속 헤더의 사업장·공장(정의서 작성기준 '헤더와 다른 값 입력 금지').
+        라인별로 다른 공장이 필요하면 기본 속성이 아니라 확장 속성(예: 공급 공장)으로 정의한다(구현안내서 5.6)."""
+        models = {}
+        for sp in self.specs:
+            models.setdefault(sp["noun"], []).append(sp["_model"])
+        by_name = {m["name"]: m for m in schema_models}
+        for sp in self.specs:
+            t = self.tables.get(f"ksx.{sp['noun']}")
+            if t is None:
+                continue
+            for _, cc, parent, pc in t.fks:
+                pnoun = parent.split(".", 1)[1]
+                if not (pnoun.endswith("Header") and t.name.endswith("Line") and pnoun[:-6] == t.name[:-4]):
+                    continue
+                heads = models.get(pnoun)
+                if not heads:
+                    continue
+                by_name[sp["_model"]]["tests"].append(
+                    {"ksx_line_matches_header": {"headers": sorted(heads), "line_keys": cc, "header_keys": pc}})
+
     def build(self):
         cfg = self.cfg
         mdir = os.path.relpath(cfg.models_dir, cfg.repo)
@@ -292,6 +313,7 @@ class Gen:
             schema_models.append({"name": name, "description": f"{sp['noun']} ← {info['table']} — {sp['_file']}",
                                   "tests": [{"ksx_unique_key": {"columns": info["uk"]}}], "columns": colspec})
             self.manifest.append(self.manifest_entry(sp, info, rules))
+        self.add_line_header_tests(schema_models)
         # sources.yml
         srcs = sorted({f"{t['schema']}__{t['table']}" for t in self.cfg.extract["tables"]})
         self.files[f"{mdir}/sources.yml"] = "# ksxload gen 생성물 — 원천 복제(stg)\n" + yaml.safe_dump(

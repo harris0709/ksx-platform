@@ -68,6 +68,17 @@ models:
       - BOMID
       - BOMRevisionNumber
       - BOMLineSequence
+  - ksx_line_matches_header:
+      headers:
+      - BOMHeader
+      line_keys:
+      - EnterpriseID
+      - BOMID
+      - BOMRevisionNumber
+      header_keys:
+      - EnterpriseID
+      - BOMID
+      - BOMRevisionNumber
   columns:
   - name: EnterpriseID
     quote: true
@@ -193,6 +204,15 @@ models:
       - EnterpriseID
       - DeliveryID
       - DeliveryLineSequence
+  - ksx_line_matches_header:
+      headers:
+      - DeliveryHeader
+      line_keys:
+      - EnterpriseID
+      - DeliveryID
+      header_keys:
+      - EnterpriseID
+      - DeliveryID
   columns:
   - name: EnterpriseID
     quote: true
@@ -815,6 +835,15 @@ models:
       - EnterpriseID
       - PurchaseDocumentNumber
       - PurchaseDocumentSequence
+  - ksx_line_matches_header:
+      headers:
+      - PurchaseOrderHeader
+      line_keys:
+      - EnterpriseID
+      - PurchaseDocumentNumber
+      header_keys:
+      - EnterpriseID
+      - PurchaseDocumentNumber
   columns:
   - name: EnterpriseID
     quote: true
@@ -873,6 +902,15 @@ models:
       - EnterpriseID
       - RoutingID
       - OperationSequence
+  - ksx_line_matches_header:
+      headers:
+      - RoutingHeader
+      line_keys:
+      - EnterpriseID
+      - RoutingID
+      header_keys:
+      - EnterpriseID
+      - RoutingID
   columns:
   - name: EnterpriseID
     quote: true
@@ -936,6 +974,15 @@ models:
       - EnterpriseID
       - SalesDocumentNumber
       - SalesDocumentSequence
+  - ksx_line_matches_header:
+      headers:
+      - SalesOrderHeader
+      line_keys:
+      - EnterpriseID
+      - SalesDocumentNumber
+      header_keys:
+      - EnterpriseID
+      - SalesDocumentNumber
   columns:
   - name: EnterpriseID
     quote: true
@@ -1108,6 +1155,15 @@ models:
       - EnterpriseID
       - WarehouseID
       - WarehouseSection
+  - ksx_line_matches_header:
+      headers:
+      - WarehouseLocationHeader
+      line_keys:
+      - EnterpriseID
+      - WarehouseID
+      header_keys:
+      - EnterpriseID
+      - WarehouseID
   columns:
   - name: EnterpriseID
     quote: true

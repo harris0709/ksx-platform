@@ -67,6 +67,16 @@ def test_manifest():
     assert o.index("ksx.ProductionOrder") < o.index("ksx.Lot") < o.index("ext.LotExt")
 
 
+def test_line_matches_header_tests():
+    """헤더·라인 명사: 라인 모델마다 '라인 사업장·공장 = 헤더' dbt 테스트(정의서 작성기준, S6 이후 결정)."""
+    c = cfg()
+    sch = yaml.safe_load(open(os.path.join(c.models_dir, "schema.yml"), encoding="utf-8"))
+    got = {m["name"]: t["ksx_line_matches_header"] for m in sch["models"] for t in m.get("tests", [])
+           if isinstance(t, dict) and "ksx_line_matches_header" in t}
+    assert sorted(got) == ["BOMLine", "DeliveryLine", "PurchaseOrderLine", "RoutingLine", "SalesOrderLine", "WarehouseLocationLine"], sorted(got)
+    assert got["BOMLine"]["line_keys"] == ["EnterpriseID", "BOMID", "BOMRevisionNumber"]
+
+
 def test_rules_cover_s1_high_issues():
     c = cfg()
     covered = {r["issue"] for r in c.raw["rules"]}
