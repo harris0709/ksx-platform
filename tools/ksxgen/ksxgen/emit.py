@@ -139,8 +139,9 @@ def obda(model: Model, v: Vocab, cfg: dict) -> str:
             c, p = cp.col, cp.prop
             a = "{" + alias(c.en) + "}"
             if p.kind == "code":
-                if p.code_group:
-                    trip.append(f"ksx:{p.name} d:codelist/{p.code_group}/{a}")
+                g = c.code_group or p.code_group        # 같은 이름 속성도 테이블마다 코드 그룹이 다르다(ErrorCode: 설비·이송·서비스)
+                if g:
+                    trip.append(f"ksx:{p.name} d:codelist/{g}/{a}")
                 elif c.en.endswith("UOMCode"):
                     trip.append(f"ksx:{p.name} d:uom/{a}")
                 else:

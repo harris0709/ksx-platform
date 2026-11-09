@@ -24,7 +24,7 @@ map:EquipmentState a rr:TriplesMap ;
     rr:predicateObjectMap [ rr:predicate ksx:processedLotQuantity ; rr:objectMap [ rr:column "processedlotquantity" ; rr:datatype xsd:decimal ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:lastProcessedLotID ; rr:objectMap [ rr:column "lastprocessedlotid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:lastProcessedOperationID ; rr:objectMap [ rr:column "lastprocessedoperationid" ] ] ;
-    rr:predicateObjectMap [ rr:predicate ksx:errorCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/TransferErrorCode/{errorcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:errorCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/EquipmentErrorCode/{errorcode}" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:errorMessage ; rr:objectMap [ rr:column "errormessage" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:refEnterprise ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Enterprise/{enterpriseid}" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:refSite ; rr:objectMap [ rr:template "https://data.impix.co.kr/{enterpriseid}/Site/{siteid}" ] ] ;

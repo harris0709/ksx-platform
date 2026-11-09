@@ -376,10 +376,19 @@ def report(cfg: Config, rows: list[dict], rid: str, nmark: int, excl: dict):
     for g in sorted(t):
         md.append(f"| `{g}` | " + " | ".join(f"{t[g][d]:,}" for d in ("구조", "값", "관계", "의미")) + f" | {sum(t[g].values()):,} |")
     md += ["", "## 셰이프별", "", "| 셰이프 | 차원 | 심각도 | 명사 | 건수 | 메시지 |", "|---|---|---|---|---|---|"]
-    s = collections.Counter((r["shape"].replace(QNS, "ksxq:"), r["dimension"], r["severity"], short(r["class"], cfg),
-                             r["message"]) for r in rows)
-    for (sh, d, sv, c, m), n in sorted(s.items(), key=lambda x: (-x[1], x[0])):
-        md.append(f"| `{sh}` | {d} | {sv} | {c} | {n:,} | {(m or '').replace('|', '/')[:120]} |")
+    s, msg, vals = collections.Counter(), {}, collections.defaultdict(set)
+    for r in rows:
+        k = (r["shape"].replace(QNS, "ksxq:"), r["dimension"], r["severity"], short(r["class"], cfg))
+        s[k] += 1
+        msg.setdefault(k, r["message"])
+        if r["value"]:
+            vals[k].add(short(r["value"], cfg))
+    md[-2] = "| 셰이프 | 차원 | 심각도 | 명사 | 건수 | 값(서로 다른 것) | 메시지 예 |"
+    md[-1] = "|---|---|---|---|---|---|---|"
+    for k, n in sorted(s.items(), key=lambda x: (-x[1], x[0])):
+        v = sorted(vals[k])
+        md.append(f"| `{k[0]}` | {k[1]} | {k[2]} | {k[3]} | {n:,} | {', '.join(v[:4])}{' …' if len(v) > 4 else ''} | "
+                  f"{(msg[k] or '').replace('|', '/')[:90]} |")
     md += ["", "## 대상 예(셰이프별 최대 5개)", "", "| 셰이프 | 대상 | 그래프 | 값 |", "|---|---|---|---|"]
     seen = collections.Counter()
     for r in sorted(rows, key=lambda r: (r["shape"], r["focus"] or "")):

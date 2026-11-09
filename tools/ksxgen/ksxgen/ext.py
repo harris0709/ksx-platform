@@ -616,7 +616,8 @@ def obda(ext: Ext, core: Model, colprop, refs, cfg) -> str:
                 continue
             a = "{" + alias(c.en) + "}"
             if p.kind == "code":
-                trip.append(f"{p.name} " + (f"d:codelist/{p.code_group}/{a}" if p.code_group else
+                g = getattr(c, "code_group", None) or p.code_group   # 컬럼의 코드 그룹 우선(같은 이름 속성 재사용 시)
+                trip.append(f"{p.name} " + (f"d:codelist/{g}/{a}" if g else
                                             (f"d:uom/{a}" if c.en.endswith("UOMCode") else a)))
             elif p.range == "xsd:string":
                 trip.append(f"{p.name} {a}")
