@@ -57,7 +57,8 @@ class DbError(RuntimeError):
 
 
 def psql(dsn: Dsn, sql: str) -> str:
-    p = subprocess.run(["psql", *dsn.args(), "-q", "-c", sql], capture_output=True, text=True, env=dsn.environ())
+    # SQL은 표준 입력으로 — 명령행 길이 제한(대량 insert)을 피한다
+    p = subprocess.run(["psql", *dsn.args(), "-q", "-f", "-"], input=sql, capture_output=True, text=True, env=dsn.environ())
     if p.returncode != 0:
         raise DbError((p.stderr or p.stdout).strip()[-2000:])
     return p.stdout
