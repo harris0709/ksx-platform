@@ -24,4 +24,4 @@ unset S5_PLAN
 | `base.py` | 설정(`mapping/<기업>/s5_plan.yaml` + `ksxgen.yaml`), psql, SPARQL·Graph Store 프로토콜 |
 
 설정: `mapping/<기업>/s5_plan.yaml`(양식 `mapping/_template/s5_plan.yaml`), S6은 `mapping/<기업>/s6_plan.yaml`(`base:`로 S5 설정을 물려받음 — 품질 셰이프 목록, 추론 제외 확인 규칙, 매개변수, 의도적 위반 seeds). 그래프 배정(기업 공통 기준정보)은 S4 생성 단계의 `ksxgen.yaml` `common_graph_nouns`.
-시험: `python tests/coverage/test_ksxkg.py`. 실행 순서와 승인 절차는 `docs/S5_지식그래프구성_실행가이드.docx`, S6은 구현안내서 v1.5 9장.
+시험: `python tests/coverage/test_ksxkg.py`. 실행 순서와 승인 절차는 `docs/S5_지식그래프구성_실행가이드.docx`, S6은 `docs/S6_검증_실행가이드.docx`(구현안내서 v1.5 9장). S6 양식: `mapping/_template/s6_plan.yaml`, `quality_shapes_양식.ttl`, `S6_승인기록_양식.md`, `S6_판단사항_결정카드_양식.md`.

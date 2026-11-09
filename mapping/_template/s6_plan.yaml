@@ -1,0 +1,56 @@
+# S6 검증(SHACL) 계획 — <기업> (구현안내서 9장) · 양식
+#   복사: mapping/_template/s6_plan.yaml → mapping/<기업 소문자>/s6_plan.yaml
+#   실행(infra/docker-compose):
+#     export S5_PLAN=mapping/<기업 소문자>/s6_plan.yaml
+#     docker compose --profile tools run --rm -e S5_PLAN s5-tools validate --seed   # 의도적 위반 시험 → S6_의도적위반시험.md
+#     docker compose --profile tools run --rm -e S5_PLAN s5-tools validate          # 실데이터 검증 → S6_검증결과.md
+#     unset S5_PLAN
+base: mapping/<기업 소문자>/s5_plan.yaml   # 원장·Fuseki·기업·그래프 이름은 S5 설정을 그대로 쓴다
+
+validate:
+  # 품질 셰이프(저작, 양식 mapping/_template/quality_shapes_양식.ttl) — 적합성 셰이프(ontologies/shapes, S4 생성물)와 함께 실행
+  quality: [ontologies/quality/*.ttl]
+
+  # 추론 제외를 확인할 업무 규칙(ontologies/rules) — 이 기업 데이터에서 결과가 나오는 규칙을 고른다(결과 0이면 확인이 안 됨)
+  exclusion_rule: R-010_affected_sales_order.rq
+
+  # 품질 셰이프 매개변수 — 셰이프의 {{이름}} 자리에 채운다. 기업 운영 방식은 셰이프가 아니라 여기에 근거와 함께 둔다.
+  # 셰이프가 쓰는 매개변수가 여기에 없으면 검증이 멈춘다. 값과 근거는 리포트에 실린다.
+  params: {}
+  #  order_driven_plants:
+  #    value: [<공장>]
+  #    note: "<근거 — 현업 확인 일자·결정 번호>"
+
+  # 의도적 위반 10건(완료 기준 표 23) + 정상 대조군 — 실제 개체를 복제해 위반 하나만 넣는다. 4차원(구조·값·관계·의미)을 모두 덮는다.
+  #   from: 복제할 클래스  where: 원본 고르기(SPARQL 패턴, ?s — 합집합에서 찾음)
+  #   drop: [속성] 제거 / set: {속성: 값} 바꾸기 / add: {속성: 값} 하나 더 — 값은 Turtle 표기, {data_ns}는 데이터 네임스페이스
+  #   expect: 적합성은 {component: MinCount|MaxCount|Datatype|MinInclusive|Class, path: 속성}, 품질은 {shape: 셰이프 이름}
+  #   추론 제외 확인은 exclusion_rule이 결과를 내는 개체(예: R-010은 지시 → 수주 라인이 있는 생산실적)로 고른다.
+  seeds:
+    - { id: V01, dimension: 구조, desc: "<필수 속성 누락>", from: "ksx:Lot",
+        drop: [ksx:lotID], expect: { component: MinCount, path: ksx:lotID } }
+    - { id: V02, dimension: 구조, desc: "<단일 값 속성이 두 개>", from: "ksx:Lot",
+        add: { ksx:plantID: '"P9"' }, expect: { component: MaxCount, path: ksx:plantID } }
+    - { id: V03, dimension: 값, desc: "<수량이 문자>", from: "ksx:ProductionPerformance",
+        where: "?s ksx:refProductionOrder ?po . ?po ksx:refSalesOrderLine ?sol .",
+        set: { ksx:producedQuantity: '"많음"' }, expect: { component: Datatype, path: ksx:producedQuantity } }
+    - { id: V04, dimension: 값, desc: "<수량 음수>", from: "ksx:Lot",
+        set: { ksx:lotCreatedQuantity: '"-5"^^xsd:decimal' }, expect: { component: MinInclusive, path: ksx:lotCreatedQuantity } }
+    - { id: V05, dimension: 값, desc: "<코드 목록에 없는 코드>", from: "ksx:Lot",
+        set: { ksx:lotState: "<{data_ns}codelist/LotState/NOPE>" }, expect: { component: Class, path: ksx:lotState } }
+    - { id: V06, dimension: 관계, desc: "<없는 개체 참조>", from: "ksx:Lot",
+        set: { ksx:refItem: "<{data_ns}<기업>/ItemMaster/NO-SUCH-ITEM>" }, expect: { component: Class, path: ksx:refItem } }
+    - { id: V07, dimension: 의미, desc: "<품질 셰이프 — 위반>", from: "ksx:ProductionPerformance",
+        where: "?s ksx:refProductionOrder ?po . ?po ksx:refSalesOrderLine ?sol .",
+        set: { ksx:executionEndDateTime: '"2000-01-01T00:00:00"^^xsd:dateTime' }, expect: { shape: Q01_PerformanceEndAfterStart } }
+    - { id: V08, dimension: 의미, desc: "<품질 셰이프 — 경고>", from: "ksx:Lot",
+        where: "?s ksx:refProductionOrder ?po .",
+        set: { ksx:creationDateTime: '"2000-01-01T00:00:00"^^xsd:dateTime' }, expect: { shape: Q02_LotAfterOrder } }
+    - { id: V09, dimension: 관계, desc: "<품질 셰이프 — 관계>", from: "ksx:ProductionPerformance",
+        where: "?s ksx:refProductionOrder ?po . ?po ksx:refSalesOrderLine ?sol .",
+        set: { ksx:refItem: "<{data_ns}<기업>/ItemMaster/<다른 품목>>" }, expect: { shape: Q03_PerformanceItemMatchesLot } }
+    - { id: V10, dimension: 값, desc: "<품질 셰이프 — 값>", from: "ksx:ProductionOrder",
+        drop: [ksx:itemUOMCode], expect: { shape: Q05_OrderQuantityHasUnit } }
+    # 정상 대조군: 위반 없이 복제 — 검증 결과가 없어야 하고, 추론 규칙 결과에 들어가야 한다
+    - { id: C01, desc: "정상 대조군", from: "ksx:ProductionPerformance",
+        where: "?s ksx:refProductionOrder ?po . ?po ksx:refSalesOrderLine ?sol ." }
