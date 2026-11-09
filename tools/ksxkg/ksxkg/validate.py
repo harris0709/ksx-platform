@@ -248,8 +248,9 @@ def sparql_union(cfg: Config, q: str) -> list[dict]:
 # ------------------------------------------------------------------ 의도적 위반(seed)
 def _copy(cfg: Config, cls: str, where: str, new: str) -> list[str]:
     pre = cfg.data_graph_prefix
-    b = sparql(cfg.query, f"PREFIX ksx: <{cfg.ns}>\nSELECT ?s WHERE {{ GRAPH ?g {{ ?s a {cls} . {where} }} "
-                          f"FILTER(STRSTARTS(STR(?g), \"{pre}\")) }} ORDER BY ?s LIMIT 1")
+    # 원본은 기업 데이터 그래프에서 고르되, 조건(where)은 그래프를 넘어 본다(공장 실적 → P2 지시 등) — 합집합 기본 그래프
+    b = sparql_union(cfg, f"PREFIX ksx: <{cfg.ns}>\nSELECT ?s WHERE {{ GRAPH ?g {{ ?s a {cls} }} "
+                          f"FILTER(STRSTARTS(STR(?g), \"{pre}\")) {where} }} ORDER BY ?s LIMIT 1")
     if not b:
         raise RuntimeError(f"시험 원본 개체 없음: {cls} {where}")
     src = b[0]["s"]
