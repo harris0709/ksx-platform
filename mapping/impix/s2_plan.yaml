@@ -789,8 +789,8 @@ units:
   - { src_unit: "℃", ksx_uom: Cel }
   - { src_unit: degC, ksx_uom: Cel }
   - { src_unit: sec, ksx_uom: s }
-  - { src_unit: "N·m", ksx_uom: "N.m", ext: true, note: "체결 토크 — 표준 단위코드 없음(확장 단위 후보, S3 원천 문자열 보존)" }
-  - { src_unit: cc/min, ksx_uom: "cm3/min", ext: true, note: "누설량 — 표준 단위코드 없음(확장 단위 후보)" }
+  - { src_unit: "N·m", ksx_uom: "N.m", ext: true, note: "체결 토크 — IMPIX 확장 단위 TORQ/N.m(S6 D-2)" }
+  - { src_unit: cc/min, ksx_uom: "cm3/min", ext: true, note: "누설량 — IMPIX 확장 단위 FLOW/cm3/min(S6 D-2)" }
 
 # ---------------------------------------------------------------- 식별 대응(xref.csv)
 xref:

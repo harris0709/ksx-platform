@@ -171,6 +171,20 @@ def test_derived_outputs():
     assert "/uom/" not in cl and "/uom/EA>" in open(os.path.join(o, "vocab", "uom.ttl"), encoding="utf-8").read()
 
 
+def test_unit_iris_match_mapping_encoding():
+    """S6 S4R-05·D-2: 단위 IRI는 매핑(R2RML 템플릿)과 같은 인코딩, S2 단위 대응의 모든 KS X 단위가 표준·확장 어휘에 있다."""
+    import csv
+    import re
+    from ksxgen.naming import iri_safe
+    assert iri_safe("mm/s") == "mm%2Fs" and iri_safe("N.m") == "N.m" and iri_safe("합계") == "합계"
+    voc = "".join(open(os.path.join(ROOT, "ontologies", "vocab", f), encoding="utf-8").read() for f in ("uom.ttl", "impix_uom.ttl"))
+    iris = set(re.findall(r"<https://data\.impix\.co\.kr/uom/([^>]+)> a skos:Concept", voc))
+    assert not [i for i in iris if "/" in i], "단위 IRI에 인코딩되지 않은 '/'"
+    need = {r["ksx_uom"] for r in csv.DictReader(open(os.path.join(ROOT, "mapping", "impix", "units.csv"), encoding="utf-8"))}
+    need.add("EA/d")                                             # S2 매핑 상수(Line.CapacityUOMCode)
+    assert {iri_safe(u) for u in need} <= iris, {iri_safe(u) for u in need} - iris
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

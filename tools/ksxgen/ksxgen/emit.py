@@ -7,7 +7,7 @@ import re
 from collections import defaultdict
 
 from .model import Model, Table
-from .naming import XSD, alias, iri_template, sql_col
+from .naming import XSD, alias, iri_safe, iri_template, sql_col
 from .vocab import Vocab
 
 PREFIXES = """@prefix ksx:  <{ns}> .
@@ -204,12 +204,12 @@ def codelist(model: Model, cfg: dict) -> str:
         o.append(f"<{cfg['data_ns']}codelist/{g.group}> a skos:ConceptScheme ; skos:prefLabel {lit(g.name, 'ko')} ;"
                  f" skos:notation {lit(g.group)} ; skos:definition {lit(g.desc or '', 'ko')} .")
     for c in model.codes:
-        iri = f"<{cfg['data_ns']}codelist/{c.group}/{c.code}>"
+        iri = f"<{cfg['data_ns']}codelist/{c.group}/{iri_safe(c.code)}>"
         s = f"{iri} a skos:Concept ; skos:inScheme <{cfg['data_ns']}codelist/{c.group}> ; skos:notation {lit(c.code)} ; skos:prefLabel {lit(c.name, 'ko')}"
         if c.en:
             s += f", {lit(c.en, 'en')}"
         if c.parent_group and c.parent_code:
-            s += f" ; skos:broader <{cfg['data_ns']}codelist/{c.parent_group}/{c.parent_code}>"
+            s += f" ; skos:broader <{cfg['data_ns']}codelist/{c.parent_group}/{iri_safe(c.parent_code)}>"
         if c.desc:
             s += f" ; skos:definition {lit(c.desc, 'ko')}"
         o.append(s + " .")
@@ -218,9 +218,14 @@ def codelist(model: Model, cfg: dict) -> str:
 
 def uom(model: Model, cfg: dict) -> str:
     """단위(SKOS) — 단위그룹 = ConceptScheme, 단위 = Concept + 기준단위 환산계수(구현안내서 7.1 #9)."""
-    o = [PREFIXES.format(ns=cfg["ns"]), f"@prefix d: <{cfg['data_ns']}> .", ""]
-    for u in model.uoms:
-        s = (f"<{cfg['data_ns']}uom/{u.code}> a skos:Concept ; skos:inScheme <{cfg['data_ns']}uom/{u.group}> ;"
+    return uom_ttl(model.uoms, cfg)
+
+
+def uom_ttl(uoms, cfg: dict, schemes: bool = True, head: str | None = None) -> str:
+    """단위 Concept·단위그룹 ConceptScheme. 단위 IRI는 매핑과 같은 인코딩(uom/EA%2Fd), 표기(notation)는 원래 문자."""
+    o = [head or PREFIXES.format(ns=cfg["ns"]), f"@prefix d: <{cfg['data_ns']}> .", ""]
+    for u in uoms:
+        s = (f"<{cfg['data_ns']}uom/{iri_safe(u.code)}> a skos:Concept ; skos:inScheme <{cfg['data_ns']}uom/{u.group}> ;"
              f" skos:notation {lit(u.code)} ; skos:prefLabel {lit(u.name, 'ko')}")
         if u.en:
             s += f", {lit(u.en, 'en')}"
@@ -229,7 +234,7 @@ def uom(model: Model, cfg: dict) -> str:
         if u.factor is not None:
             s += f' ; ksx:conversionFactor "{u.factor}"^^xsd:decimal'
         o.append(s + " .")
-    for g in sorted({(u.group, u.group_name) for u in model.uoms}):
+    for g in sorted({(u.group, u.group_name) for u in uoms}) if schemes else []:
         o.append(f"<{cfg['data_ns']}uom/{g[0]}> a skos:ConceptScheme ; skos:prefLabel {lit(g[1], 'ko')} .")
     return "\n".join(o) + "\n"
 

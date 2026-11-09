@@ -30,12 +30,14 @@ CODE = ["No", "업무영역", "공통코드그룹\n(CommonCodeGroup)", "그룹�
         "공통코드명\n(CommonCodeName)", "영문명", "표시순번\n(CommonCodeSequence)", "사용여부\n(UseIndicator)",
         "상위공통코드그룹\n(ParentCommonCodeGroup)", "상위공통코드식별자\n(ParentCommonCodeID)", "설명", "출처구분",
         "회사 적용\n(Y/N)", "회사 코드값", "회사 코드명", "비고(회사)", "상태"]
+UOM = ["No", "단위그룹식별자\n(UOMGroupID)", "단위그룹명\n(UOMGroupName)", "단위코드\n(UOMCode)", "단위코드명\n(UOMCodeName)",
+       "영문명", "UN/CEFACT\nRec 20", "그룹 기준단위", "기준단위 환산계수", "원천 단위", "설명", "상태"]
 JUDGE = ["No", "시나리오·KPI", "원천(시스템.테이블.컬럼)", "원천 의미", "판정", "표준·확장 대상", "근거", "처리 단계", "상태"]
 APPROVE = ["구분", "항목", "내용", "일자", "서명·비고"]
 DDL = ["테이블명", "CREATE TABLE (PostgreSQL 참고, ext 스키마)"]
 
 SHEETS = [("작성기준", None), ("테이블목록", STD_LIST + EXT_LIST), ("테이블정의서", STD_TD + EXT_TD),
-          ("관계목록", REL), ("코드그룹목록", GROUP), ("공통코드", CODE), ("판정목록", JUDGE),
+          ("관계목록", REL), ("코드그룹목록", GROUP), ("공통코드", CODE), ("단위코드", UOM), ("판정목록", JUDGE),
           ("검토·승인", APPROVE), ("DDL", DDL)]
 WIDTHS = {
     "테이블목록": [5, 14, 7, 5, 16, 24, 24, 44, 26, 40, 14, 30, 7, 8, 8, 11, 20, 12, 28, 26, 8],
@@ -43,6 +45,7 @@ WIDTHS = {
     "관계목록": [6, 26, 40, 28, 40, 14, 50, 8],
     "코드그룹목록": [5, 14, 26, 18, 16, 20, 50, 28, 28, 16, 8],
     "공통코드": [5, 12, 26, 16, 16, 18, 20, 8, 8, 22, 16, 40, 10, 8, 12, 16, 24, 8],
+    "단위코드": [5, 14, 16, 14, 18, 26, 10, 8, 10, 12, 50, 8],
     "판정목록": [5, 18, 34, 30, 12, 40, 50, 10, 8],
     "검토·승인": [12, 26, 60, 12, 30],
     "DDL": [28, 120],
@@ -54,7 +57,7 @@ PTYPE = {"ID": "VARCHAR(50)", "IDREF": "VARCHAR(50)", "enum": "VARCHAR(30)", "st
 EXT_TYPES = ["확장 명사", "확장 속성"]
 KINDS = ["PK", "기본", "Core키", "확장"]
 STATES = ["초안", "검토", "승인", "후보", "예시"]
-JUDGEMENTS = ["표준 매핑", "코드 대응", "확장 속성", "확장 명사", "확장 코드", "제외", "S3 처리"]
+JUDGEMENTS = ["표준 매핑", "코드 대응", "확장 속성", "확장 명사", "확장 코드", "확장 단위", "제외", "S3 처리"]
 GROUP_KINDS = ["신규 그룹", "표준 그룹 하위 확장"]
 BASE_ROWS = ["EnterpriseID", "SiteID", "PlantID", "CreatorID", "CreationDateTime", "ModifierID",
              "ModificationDateTime", "Note"]
@@ -80,6 +83,7 @@ GUIDE = [
     ("테이블정의서", "확장 테이블의 컬럼. 표준과 같은 열. 구분 = PK / 기본 / Core키 / 확장"),
     ("관계목록", "자동 생성(ext-sync). FK 참조 열에서 도출"),
     ("코드그룹목록·공통코드", "확장 코드 그룹과 코드. 표준 공통코드 워크시트와 같은 열. '회사 코드값'은 원천 코드(대응표 겸용)"),
+    ("단위코드", "확장 단위. 표준 단위코드 워크시트와 같은 열. 표준 단위그룹에 더하거나 새 단위그룹을 만든다. '원천 단위'는 원천 표기(대응표 겸용)"),
     ("판정목록", "S1 후보 → 5.6 판정 기록(표준 매핑·코드 대응·확장·제외·S3 처리). 확장이 아닌 판정도 근거와 함께 남긴다"),
     ("검토·승인", "ksxgen 검사 결과와 승인 서명"),
     ("DDL", "자동 생성(ext-sync). ext 스키마 CREATE TABLE 참고 스크립트"),
@@ -176,7 +180,7 @@ def new_workbook():
         ws = wb.create_sheet(name)
         ws.append(header)
         nstd = {"테이블목록": len(STD_LIST), "테이블정의서": len(STD_TD), "공통코드": len(CODE) - 1,
-                "코드그룹목록": len(GROUP) - 2}.get(name)
+                "코드그룹목록": len(GROUP) - 2, "단위코드": len(UOM) - 3}.get(name)
         _style_header(ws, nstd)
         _widths(ws, name)
     return wb
@@ -199,6 +203,8 @@ def add_validations(wb):
     _dv(wb["공통코드"], "사용여부\n(UseIndicator)", CODE, ["Y", "N"])
     _dv(wb["공통코드"], "회사 적용\n(Y/N)", CODE, ["Y", "N"])
     _dv(wb["공통코드"], "상태", CODE, STATES)
+    _dv(wb["단위코드"], "그룹 기준단위", UOM, ["Y", "N"])
+    _dv(wb["단위코드"], "상태", UOM, STATES)
     _dv(wb["판정목록"], "판정", JUDGE, JUDGEMENTS)
     _dv(wb["판정목록"], "처리 단계", JUDGE, ["S2", "S3", "S4", "원천 개선"])
     _dv(wb["판정목록"], "상태", JUDGE, STATES)

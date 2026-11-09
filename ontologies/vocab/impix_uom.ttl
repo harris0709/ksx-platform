@@ -1,0 +1,16 @@
+@prefix ksx:  <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+@prefix impix: <https://ontology.impix.co.kr/ext/impix/1.0/> .
+
+@prefix d: <https://data.impix.co.kr/> .
+
+<https://data.impix.co.kr/uom/N.m> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/TORQ> ; skos:notation "N.m" ; skos:prefLabel "뉴턴미터"@ko, "newton metre"@en ; skos:exactMatch "UNECE Rec20:NU" ; ksx:conversionFactor "1.0"^^xsd:decimal .
+<https://data.impix.co.kr/uom/cm3%2Fmin> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/FLOW> ; skos:notation "cm3/min" ; skos:prefLabel "분당 세제곱센티미터"@ko, "cubic centimetre per minute"@en ; ksx:conversionFactor "1.0"^^xsd:decimal .
+<https://data.impix.co.kr/uom/FLOW> a skos:ConceptScheme ; skos:prefLabel "유량"@ko .
+<https://data.impix.co.kr/uom/TORQ> a skos:ConceptScheme ; skos:prefLabel "토크"@ko .
