@@ -1,0 +1,41 @@
+# S6 검증(SHACL) 계획 — IMPIX (구현안내서 9장)
+#   docker compose --profile tools run --rm -e S5_PLAN=mapping/impix/s6_plan.yaml s5-tools validate --seed  # 의도적 위반 시험
+#   docker compose --profile tools run --rm -e S5_PLAN=mapping/impix/s6_plan.yaml s5-tools validate         # 실데이터 검증
+base: mapping/impix/s5_plan.yaml     # 원장·Fuseki·Ontop 접속, 기업, 그래프 이름은 S5 설정을 그대로 쓴다
+
+validate:
+  # 품질 셰이프(저작) — 적합성 셰이프(ontologies/shapes/*.ttl, S4 생성물)와 함께 실행
+  quality: [ontologies/quality/*.ttl]
+  # 위반 표식(graph/quality)이 추론에서 빠지는지 확인할 규칙 — 데이터가 있는 업무 규칙(R-001 로트 계보는 IMPIX에 모로트 참조 0건)
+  exclusion_rule: R-010_affected_sales_order.rq
+
+  # 의도적 위반 10건(완료 기준 표 23) — 실제 개체를 복제해 위반 하나만 넣는다. 4차원(구조·값·관계·의미)을 모두 덮는다.
+  #   from: 복제할 클래스, where: 원본 고르기(SPARQL 패턴, ?s), drop/set/add: 바꿀 속성, expect: 검출되어야 할 결과
+  seeds:
+    - { id: V01, dimension: 구조, desc: "LOT 식별자 누락", from: "ksx:Lot",
+        drop: [ksx:lotID], expect: { component: MinCount, path: ksx:lotID } }
+    - { id: V02, dimension: 구조, desc: "LOT 공장 두 개", from: "ksx:Lot",
+        add: { ksx:plantID: '"P9"' }, expect: { component: MaxCount, path: ksx:plantID } }
+    - { id: V03, dimension: 값, desc: "생산실적 양품수가 문자", from: "ksx:ProductionPerformance",
+        where: "?s ksx:refProductionOrder ?po . ?po ksx:refSalesOrderLine ?sol .",
+        set: { ksx:producedQuantity: '"많음"' }, expect: { component: Datatype, path: ksx:producedQuantity } }
+    - { id: V04, dimension: 값, desc: "LOT 생성 수량 음수", from: "ksx:Lot",
+        set: { ksx:lotCreatedQuantity: '"-5"^^xsd:decimal' }, expect: { component: MinInclusive, path: ksx:lotCreatedQuantity } }
+    - { id: V05, dimension: 값, desc: "LOT 상태가 코드 목록에 없음", from: "ksx:Lot",
+        set: { ksx:lotState: "<{data_ns}codelist/LotState/NOPE>" }, expect: { component: Class, path: ksx:lotState } }
+    - { id: V06, dimension: 관계, desc: "LOT 품목 참조가 없는 품목", from: "ksx:Lot",
+        set: { ksx:refItem: "<{data_ns}IMPIX/ItemMaster/NO-SUCH-ITEM>" }, expect: { component: Class, path: ksx:refItem } }
+    - { id: V07, dimension: 의미, desc: "생산실적 종료 < 시작", from: "ksx:ProductionPerformance",
+        where: "?s ksx:refProductionOrder ?po . ?po ksx:refSalesOrderLine ?sol .",
+        set: { ksx:executionEndDateTime: '"2000-01-01T00:00:00"^^xsd:dateTime' }, expect: { shape: Q01_PerformanceEndAfterStart } }
+    - { id: V08, dimension: 의미, desc: "LOT이 생산지시 등록 전 생성(경고)", from: "ksx:Lot",
+        where: "?s ksx:refProductionOrder ?po .",
+        set: { ksx:creationDateTime: '"2000-01-01T00:00:00"^^xsd:dateTime' }, expect: { shape: Q02_LotAfterOrder } }
+    - { id: V09, dimension: 관계, desc: "생산실적 품목 ≠ LOT 품목", from: "ksx:ProductionPerformance",
+        where: "?s ksx:plantID \"P1\" ; ksx:refProductionOrder ?po . ?po ksx:refSalesOrderLine ?sol .",
+        set: { ksx:refItem: "<{data_ns}IMPIX/ItemMaster/EWP-A100>" }, expect: { shape: Q03_PerformanceItemMatchesLot } }
+    - { id: V10, dimension: 값, desc: "생산지시 수량 단위 없음", from: "ksx:ProductionOrder",
+        drop: [ksx:itemUOMCode], expect: { shape: Q05_OrderQuantityHasUnit } }
+    # 정상 대조군: 위반 없이 복제 — 검증 결과가 없어야 하고, 추론 규칙(R-010) 결과에 들어가야 한다
+    - { id: C01, desc: "정상 대조군(생산실적 복제)", from: "ksx:ProductionPerformance",
+        where: "?s ksx:refProductionOrder ?po . ?po ksx:refSalesOrderLine ?sol ." }

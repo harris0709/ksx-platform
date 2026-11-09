@@ -91,6 +91,29 @@ def sparql(endpoint: str, query: str, timeout=300) -> list[dict]:
     return [{k: v["value"] for k, v in b.items()} for b in js["results"]["bindings"]]
 
 
+def sparql_raw(endpoint: str, query: str, accept="application/n-triples", params=None, timeout=600) -> str:
+    """CONSTRUCT 등 결과를 그대로(문자열). params: default-graph-uri 등 추가 매개변수."""
+    data = urllib.parse.urlencode({"query": query, **(params or {})}).encode()
+    req = urllib.request.Request(endpoint, data=data, method="POST", headers={
+        "Accept": accept, "Content-Type": "application/x-www-form-urlencoded"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.read().decode("utf-8")
+    except urllib.error.HTTPError as e:
+        raise SparqlError(f"{endpoint} {e.code}: {e.read().decode(errors='replace')[:800]}") from e
+
+
+def shacl(service: str, graph: str, shapes: bytes, timeout=1800) -> str:
+    """Fuseki SHACL 서비스: 셰이프(Turtle)를 보내 graph(이름·'union')를 검증 → 검증 리포트(N-Triples)."""
+    req = urllib.request.Request(f"{service}?graph={urllib.parse.quote(graph, safe='')}", data=shapes, method="POST",
+                                 headers={"Content-Type": "text/turtle", "Accept": "application/n-triples"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.read().decode("utf-8")
+    except urllib.error.HTTPError as e:
+        raise SparqlError(f"SHACL {graph} {e.code}: {e.read().decode(errors='replace')[:800]}") from e
+
+
 def update(endpoint: str, text: str, timeout=600):
     data = urllib.parse.urlencode({"update": text}).encode()
     req = urllib.request.Request(endpoint, data=data, method="POST",
@@ -142,6 +165,10 @@ class Config:
         return self.fuseki.rstrip("/") + "/update"
 
     @property
+    def shacl(self):
+        return self.fuseki.rstrip("/") + "/shacl"
+
+    @property
     def gsp(self):
         return self.fuseki.rstrip("/") + "/data"
 
@@ -171,6 +198,9 @@ class Config:
 def load_config(path: str, repo: str) -> Config:
     p = path if os.path.isabs(path) else os.path.join(repo, path)
     raw = yaml.safe_load(open(p, encoding="utf-8"))
+    if raw.get("base"):                                   # s6_plan.yaml: base = s5_plan.yaml(접속·그래프 설정 공유)
+        b = yaml.safe_load(open(os.path.join(repo, raw["base"]), encoding="utf-8"))
+        raw = {**b, **{k: v for k, v in raw.items() if k != "base"}}
     gen = yaml.safe_load(open(os.path.join(repo, raw.get("ksxgen", "ksxgen.yaml")), encoding="utf-8"))
     t = raw["ledger"]
     host, port, db = env(t["host"]), env(t["port"]), env(t["dbname"])

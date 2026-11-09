@@ -4,6 +4,7 @@
                      [--skip-morph] [--full]                      # 이전 물질화 파일 재사용 / 그래프 단위 교체 강제
   python -m ksxkg check       --plan …                            # 완료 기준: 가상 = SQL, 물질화 = 기대치, 그래프 분리
   python -m ksxkg query       --plan … --endpoint ontop|fuseki "SPARQL"   # 질의 한 건(확인용)
+  python -m ksxkg validate    --plan mapping/impix/s6_plan.yaml [--seed]  # S6 SHACL 검증 / 의도적 위반 시험
 --plan을 생략하면 환경변수 S5_PLAN(기본 mapping/impix/s5_plan.yaml)을 쓴다.
 """
 from __future__ import annotations
@@ -17,13 +18,14 @@ from .base import DbError, SparqlError, load_config, sparql
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="ksxkg")
-    ap.add_argument("cmd", choices=["materialize", "check", "query"])
+    ap.add_argument("cmd", choices=["materialize", "check", "query", "validate"])
     ap.add_argument("text", nargs="?", help="query: SPARQL")
     ap.add_argument("--plan", default=os.environ.get("S5_PLAN", "mapping/impix/s5_plan.yaml"))
     ap.add_argument("--repo", default=os.getcwd())
     ap.add_argument("--endpoint", choices=["ontop", "fuseki"], default="fuseki", help="query: 질의할 엔드포인트")
     ap.add_argument("--skip-morph", action="store_true", help="materialize: 이전 N-Quads(out/kg/ksx.nq)를 다시 적재만")
     ap.add_argument("--full", action="store_true", help="materialize: 차이 반영 대신 그래프 단위 교체(PUT)")
+    ap.add_argument("--seed", action="store_true", help="validate: 의도적 위반을 시험 그래프에 넣어 전건 검출·추론 제외 확인")
     a = ap.parse_args(argv)
     cfg = load_config(a.plan, a.repo)
     try:
@@ -33,6 +35,9 @@ def main(argv=None) -> int:
         if a.cmd == "check":
             from .check import check
             return 0 if check(cfg) else 1
+        if a.cmd == "validate":
+            from .validate import seed_test, validate
+            return 0 if (seed_test(cfg) if a.seed else validate(cfg)) else 1
         if a.cmd == "query":
             ep = cfg.ontop if a.endpoint == "ontop" else cfg.query
             r = sparql(ep, a.text or sys.stdin.read())

@@ -168,7 +168,18 @@ jobs:
           python -m ksxkg materialize | tee m3.txt
           grep -q "IMPIX/HQ/P1  .* — 차이 반영 +1" m3.txt
           python -m ksxkg check
-      - name: S5 실패 시 Fuseki·Ontop 로그
+      - name: S6 의도적 위반 시험(ksxkg validate --seed — 10건 전건 검출, 추론 제외)
+        env: { FUSEKI_URL: "http://localhost:3030/ksx", ONTOP_URL: "http://localhost:8080/sparql", PYTHONPATH: tools/ksxkg, S5_PLAN: mapping/impix/s6_plan.yaml }
+        run: |
+          python -m ksxkg validate --seed
+          cat mapping/impix/S6_의도적위반시험.md
+      - name: S6 실데이터 검증(ksxkg validate — 리포트·audit.shacl_result·위반 표식)
+        env: { FUSEKI_URL: "http://localhost:3030/ksx", ONTOP_URL: "http://localhost:8080/sparql", PYTHONPATH: tools/ksxkg, S5_PLAN: mapping/impix/s6_plan.yaml }
+        run: |
+          python -m ksxkg validate
+          cat mapping/impix/S6_검증결과.md
+          psql -d ksx -c "select dimension, severity, count(*) from audit.shacl_result where mode = 'data' group by 1, 2 order by 1, 2"
+      - name: S5·S6 실패 시 Fuseki·Ontop 로그
         if: failure()
         run: |
           docker logs fuseki 2>&1 | tail -30 || true
