@@ -36,11 +36,11 @@
 <https://data.impix.co.kr/uom/min> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/TIME> ; skos:notation "min" ; skos:prefLabel "분"@ko, "minute"@en ; skos:exactMatch "UNECE Rec20:MIN" ; ksx:conversionFactor "0.0166666666666667"^^xsd:decimal .
 <https://data.impix.co.kr/uom/h> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/TIME> ; skos:notation "h" ; skos:prefLabel "시간"@ko, "hour"@en ; skos:exactMatch "UNECE Rec20:HUR" ; ksx:conversionFactor "1.0"^^xsd:decimal .
 <https://data.impix.co.kr/uom/d> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/TIME> ; skos:notation "d" ; skos:prefLabel "일"@ko, "day"@en ; skos:exactMatch "UNECE Rec20:DAY" ; ksx:conversionFactor "24.0"^^xsd:decimal .
-<https://data.impix.co.kr/uom/EA/h> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/RATE> ; skos:notation "EA/h" ; skos:prefLabel "시간당 개수"@ko, "each per hour"@en .
-<https://data.impix.co.kr/uom/kg/h> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/RATE> ; skos:notation "kg/h" ; skos:prefLabel "시간당 킬로그램"@ko, "kilogram per hour"@en .
-<https://data.impix.co.kr/uom/EA/min> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/RATE> ; skos:notation "EA/min" ; skos:prefLabel "분당 개수"@ko, "each per minute"@en .
-<https://data.impix.co.kr/uom/EA/d> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/RATE> ; skos:notation "EA/d" ; skos:prefLabel "일당 개수"@ko, "each per day"@en .
-<https://data.impix.co.kr/uom/m/min> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/RATE> ; skos:notation "m/min" ; skos:prefLabel "분당 미터"@ko, "metre per minute"@en .
+<https://data.impix.co.kr/uom/EA%2Fh> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/RATE> ; skos:notation "EA/h" ; skos:prefLabel "시간당 개수"@ko, "each per hour"@en .
+<https://data.impix.co.kr/uom/kg%2Fh> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/RATE> ; skos:notation "kg/h" ; skos:prefLabel "시간당 킬로그램"@ko, "kilogram per hour"@en .
+<https://data.impix.co.kr/uom/EA%2Fmin> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/RATE> ; skos:notation "EA/min" ; skos:prefLabel "분당 개수"@ko, "each per minute"@en .
+<https://data.impix.co.kr/uom/EA%2Fd> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/RATE> ; skos:notation "EA/d" ; skos:prefLabel "일당 개수"@ko, "each per day"@en .
+<https://data.impix.co.kr/uom/m%2Fmin> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/RATE> ; skos:notation "m/min" ; skos:prefLabel "분당 미터"@ko, "metre per minute"@en .
 <https://data.impix.co.kr/uom/Cel> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/TEMP> ; skos:notation "Cel" ; skos:prefLabel "섭씨온도"@ko, "degree Celsius"@en ; skos:exactMatch "UNECE Rec20:CEL" .
 <https://data.impix.co.kr/uom/mV> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/ELEC> ; skos:notation "mV" ; skos:prefLabel "밀리볼트"@ko, "millivolt"@en ; skos:exactMatch "UNECE Rec20:2Z" .
 <https://data.impix.co.kr/uom/V> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/ELEC> ; skos:notation "V" ; skos:prefLabel "볼트"@ko, "volt"@en ; skos:exactMatch "UNECE Rec20:VLT" .
@@ -54,8 +54,8 @@
 <https://data.impix.co.kr/uom/RH> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/RATIO> ; skos:notation "RH" ; skos:prefLabel "상대습도(%)"@ko, "relative humidity"@en .
 <https://data.impix.co.kr/uom/PPM> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/RATIO> ; skos:notation "PPM" ; skos:prefLabel "백만분율"@ko, "parts per million"@en ; skos:exactMatch "UNECE Rec20:59" .
 <https://data.impix.co.kr/uom/Hz> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/FREQ> ; skos:notation "Hz" ; skos:prefLabel "헤르츠"@ko, "hertz"@en ; skos:exactMatch "UNECE Rec20:HTZ" .
-<https://data.impix.co.kr/uom/r/min> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/FREQ> ; skos:notation "r/min" ; skos:prefLabel "분당 회전수"@ko, "revolutions per minute"@en .
-<https://data.impix.co.kr/uom/mm/s> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/VIBV> ; skos:notation "mm/s" ; skos:prefLabel "초당 밀리미터"@ko, "millimetre per second"@en .
+<https://data.impix.co.kr/uom/r%2Fmin> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/FREQ> ; skos:notation "r/min" ; skos:prefLabel "분당 회전수"@ko, "revolutions per minute"@en .
+<https://data.impix.co.kr/uom/mm%2Fs> a skos:Concept ; skos:inScheme <https://data.impix.co.kr/uom/VIBV> ; skos:notation "mm/s" ; skos:prefLabel "초당 밀리미터"@ko, "millimetre per second"@en .
 <https://data.impix.co.kr/uom/AREA> a skos:ConceptScheme ; skos:prefLabel "면적"@ko .
 <https://data.impix.co.kr/uom/ELEC> a skos:ConceptScheme ; skos:prefLabel "전기"@ko .
 <https://data.impix.co.kr/uom/FREQ> a skos:ConceptScheme ; skos:prefLabel "주파수·회전"@ko .

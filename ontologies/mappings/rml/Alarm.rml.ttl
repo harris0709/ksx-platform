@@ -19,7 +19,7 @@ map:Alarm a rr:TriplesMap ;
     rr:predicateObjectMap [ rr:predicate ksx:alarmID ; rr:objectMap [ rr:column "alarmid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:equipmentID ; rr:objectMap [ rr:column "equipmentid" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:alarmState ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/AlarmState/{alarmstate}" ] ] ;
-    rr:predicateObjectMap [ rr:predicate ksx:errorCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/TransferErrorCode/{errorcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:errorCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/EquipmentErrorCode/{errorcode}" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:errorMessage ; rr:objectMap [ rr:column "errormessage" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:eventDateTime ; rr:objectMap [ rr:column "eventdatetime" ; rr:datatype xsd:dateTime ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:currentLocation ; rr:objectMap [ rr:column "currentlocation" ] ] ;

@@ -1,5 +1,5 @@
 -- ksxload gen 생성물 — 직접 수정 금지. 원본: mapping/impix/erp/WarehouseLocationHeader.yaml
--- WarehouseLocationHeader ← erp.tb_mm_wh (1:1)
+-- WarehouseLocationHeader ← erp.tb_mm_wh (1→헤더·라인(헤더))
 select
     cast('IMPIX' as text) as "EnterpriseID",
     cast('HQ' as text) as "SiteID",

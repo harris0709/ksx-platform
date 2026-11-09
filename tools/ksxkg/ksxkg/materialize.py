@@ -161,7 +161,7 @@ def delete_data(cfg: Config, g: str, path: str, batch=5000):
 
     def flush():
         if buf:
-            update(cfg.update, f"DELETE DATA {{ GRAPH <{g}> {{\n" + "".join(buf) + "}} }")
+            update(cfg.update, f"DELETE DATA {{ GRAPH <{g}> {{\n" + "".join(buf) + "} }")   # 뒤쪽은 f-문자열이 아님
             buf.clear()
     for line in open(path, encoding="utf-8", newline="\n"):
         buf.append(line)

@@ -96,4 +96,6 @@ def load_std(std_dir: str, ext_dir: str | None = None) -> Std:
             codes.setdefault(c.group, {})[c.code] = c.name
         groups |= set(e.groups)
     uoms = {u.code: u.name for u in core.uoms}
+    if e:
+        uoms.update({u.code: u.name for u in e.uoms})   # 확장 단위(확장정의서 단위코드 시트)
     return Std(nouns, groups, codes, uoms, core, e)

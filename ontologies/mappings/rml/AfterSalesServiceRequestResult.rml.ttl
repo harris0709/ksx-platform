@@ -25,7 +25,7 @@ map:AfterSalesServiceRequestResult a rr:TriplesMap ;
     rr:predicateObjectMap [ rr:predicate ksx:serialNumber ; rr:objectMap [ rr:column "serialnumber" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:faultLargeClass ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/FaultLargeClass/{faultlargeclass}" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:faultSmallClass ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/FaultSmallClass/{faultsmallclass}" ] ] ;
-    rr:predicateObjectMap [ rr:predicate ksx:errorCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/TransferErrorCode/{errorcode}" ] ] ;
+    rr:predicateObjectMap [ rr:predicate ksx:errorCode ; rr:objectMap [ rr:template "https://data.impix.co.kr/codelist/ServiceErrorCode/{errorcode}" ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:installationDate ; rr:objectMap [ rr:column "installationdate" ; rr:datatype xsd:date ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:processingDate ; rr:objectMap [ rr:column "processingdate" ; rr:datatype xsd:date ] ] ;
     rr:predicateObjectMap [ rr:predicate ksx:endIndicator ; rr:objectMap [ rr:column "endindicator" ; rr:datatype xsd:boolean ] ] ;

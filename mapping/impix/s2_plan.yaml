@@ -165,9 +165,19 @@ specs:
       CapacityUOMCode: { from: capa_unit, transform: "const(EA/d)", note: "원천 EA(일 기준) → EA/d" }
   - noun: WarehouseLocationHeader
     source: erp.tb_mm_wh
+    structure: "1→헤더·라인(헤더)"
     base: { PlantID: "xref(plant, plant_cd)" }
     map:
       WarehouseType: { from: wh_tp, code: WH_TP }
+  - noun: WarehouseLocationLine
+    source: erp.tb_mm_wh
+    structure: "1→헤더·라인(라인)"
+    base: { PlantID: "xref(plant, plant_cd)" }
+    map:
+      WarehouseID: wh_cd
+      WarehouseSection: { transform: "const('00')", note: "기본 구역 — 원천에 창고 구역(섹션) 없음, 표준 7.1 라인 struct[1..N] 충족(S6 D-3)" }
+      WarehouseSectionName: { transform: "const(전체)", note: "기본 구역명 — 창고 전체를 구역 1개로 본다(S6 D-3)" }
+    rest: "WarehouseLocationHeader 명세에서 판정"
   - noun: Equipment
     source: mes.tm_eqp
     base: { PlantID: "xref(plant, fac_id)" }
@@ -789,8 +799,8 @@ units:
   - { src_unit: "℃", ksx_uom: Cel }
   - { src_unit: degC, ksx_uom: Cel }
   - { src_unit: sec, ksx_uom: s }
-  - { src_unit: "N·m", ksx_uom: "N.m", ext: true, note: "체결 토크 — 표준 단위코드 없음(확장 단위 후보, S3 원천 문자열 보존)" }
-  - { src_unit: cc/min, ksx_uom: "cm3/min", ext: true, note: "누설량 — 표준 단위코드 없음(확장 단위 후보)" }
+  - { src_unit: "N·m", ksx_uom: "N.m", ext: true, note: "체결 토크 — IMPIX 확장 단위 TORQ/N.m(S6 D-2)" }
+  - { src_unit: cc/min, ksx_uom: "cm3/min", ext: true, note: "누설량 — IMPIX 확장 단위 FLOW/cm3/min(S6 D-2)" }
 
 # ---------------------------------------------------------------- 식별 대응(xref.csv)
 xref:

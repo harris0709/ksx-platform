@@ -74,3 +74,10 @@ def sql_col(col: str, dtype: str) -> str:
                 f" || 'M' || extract(day FROM {q})::int || 'DT' || extract(hour FROM {q})::int || 'H' || extract(minute FROM {q})::int"
                 f" || 'M' || trim_scale(extract(second FROM {q})) || 'S' END AS {alias(col)}")
     return f"{q} AS {alias(col)}"
+
+
+def iri_safe(v: str) -> str:
+    """R2RML 템플릿 값과 같은 IRI 인코딩(IRI-safe): ASCII 비예약 문자(A-Z a-z 0-9 - . _ ~)와 비ASCII(ucschar)는 그대로,
+    나머지 ASCII는 %XX — 매핑이 만드는 코드·단위 IRI(uom/mm%2Fs)와 어휘의 IRI가 같아야 한다(S6 S4R-05)."""
+    return "".join(ch if ch.isalnum() and ch.isascii() or ch in "-._~" or not ch.isascii() else "%{:02X}".format(ord(ch))
+                   for ch in v)

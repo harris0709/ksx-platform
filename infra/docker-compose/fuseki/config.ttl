@@ -16,6 +16,8 @@ PREFIX tdb2:    <http://jena.apache.org/2016/tdb#>
     fuseki:endpoint [ fuseki:operation fuseki:update ; fuseki:name "update" ] ;
     fuseki:endpoint [ fuseki:operation fuseki:gsp-rw ; fuseki:name "data" ] ;
     fuseki:endpoint [ fuseki:operation fuseki:upload ; fuseki:name "upload" ] ;
+    # S6 SHACL 검증 서비스: POST 셰이프(Turtle) → /ksx/shacl?graph=union|<그래프 IRI> → 검증 리포트
+    fuseki:endpoint [ fuseki:operation fuseki:shacl ; fuseki:name "shacl" ] ;
     fuseki:dataset :dataset .
 
 :dataset rdf:type tdb2:DatasetTDB2 ;

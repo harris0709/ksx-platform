@@ -1,0 +1,84 @@
+# IMPIX 품질 셰이프(저작) — 구현안내서 9.1 표 24의 4차원(구조·값·관계·의미)
+#   적합성 셰이프(shapes/, ksxgen 생성물)가 표준 정의서에서 나오는 제약(필수·카디널리티·타입·코드·참조 클래스)을 맡고,
+#   이 파일은 표준에 없는 현장 품질 규칙을 맡는다. ksxkg validate가 두 셰이프를 함께 실행한다.
+#   ksxq:dimension — 결과 집계 차원, ksxq:owner — 위반 알림 대상(S1 인벤토리의 원천 책임자), ksxq:ruleId — 승인기록 대응
+#   심각도(셰이프의 sh:severity): sh:Violation은 S7 추론에서 제외(ksxq:violates 표식), sh:Warning은 알림만
+@prefix ksx:  <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix ksxq: <https://ontology.impix.co.kr/quality/> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+
+ksxq:prefixes a owl:Ontology ;
+    sh:declare [ sh:prefix "ksx" ; sh:namespace "https://ontology.impix.co.kr/ksx9101/1.0/"^^xsd:anyURI ] ,
+               [ sh:prefix "xsd" ; sh:namespace "http://www.w3.org/2001/XMLSchema#"^^xsd:anyURI ] .
+
+# Q-01 의미: 생산실적 종료 일시는 시작 일시 이후 (S3 R08 정정 대상과 같은 규칙 — 정정 후 남으면 위반)
+ksxq:Q01_PerformanceEndAfterStart a sh:NodeShape ;
+    rdfs:label "Q-01 생산실적 종료 ≥ 시작"@ko ;
+    ksxq:ruleId "Q-01" ; ksxq:dimension "의미" ; ksxq:owner "MES 생산실적(mes.tb_trk_in/out)" ;
+    sh:targetClass ksx:ProductionPerformance ;
+    sh:severity sh:Violation ;
+    sh:sparql [ a sh:SPARQLConstraint ;
+        sh:message "생산실적 종료 일시가 시작 일시보다 이릅니다" ;
+        sh:prefixes ksxq:prefixes ;
+        sh:select """SELECT $this ?value WHERE {
+            $this ksx:executionStartDateTime ?b ; ksx:executionEndDateTime ?value .
+            FILTER (?value < ?b) }""" ] .
+
+# Q-02 의미: 지시 기반 공장의 LOT은 연결된 생산지시가 등록된 뒤에 생성.
+#   계획 기반 선행 생산 공장(IMPIX P1: ERP 생산계획으로 토요일 선행 생산, 지시는 이후 P2 완제품 지시로 연결)은 대상 아님 — S6 D-4.
+#   지시 기반 공장 목록은 계획의 validate.params.order_driven_plants(셰이프의 VALUES ?plant 자리에 채움)
+ksxq:Q02_LotAfterOrder a sh:NodeShape ;
+    rdfs:label "Q-02 LOT 생성 ≥ 생산지시 등록"@ko ;
+    ksxq:ruleId "Q-02" ; ksxq:dimension "의미" ; ksxq:owner "ERP 생산지시(erp.tb_pp_mo)·MES LOT(mes.tb_lot)" ;
+    sh:targetClass ksx:Lot ;
+    sh:severity sh:Warning ;
+    sh:sparql [ a sh:SPARQLConstraint ;
+        sh:message "LOT이 연결된 생산지시의 등록 시각보다 먼저 생성되었습니다" ;
+        sh:prefixes ksxq:prefixes ;
+        sh:select """SELECT $this ?value WHERE {
+            $this ksx:plantID ?plant ; ksx:creationDateTime ?c ; ksx:refProductionOrder ?value .
+            VALUES ?plant { {{order_driven_plants}} }
+            ?value ksx:creationDateTime ?o .
+            FILTER (?c < ?o) }""" ] .
+
+# Q-03 관계: 생산실적의 품목은 실적 LOT의 품목과 같다
+ksxq:Q03_PerformanceItemMatchesLot a sh:NodeShape ;
+    rdfs:label "Q-03 실적 품목 = LOT 품목"@ko ;
+    ksxq:ruleId "Q-03" ; ksxq:dimension "관계" ; ksxq:owner "MES 생산실적·LOT" ;
+    sh:targetClass ksx:ProductionPerformance ;
+    sh:severity sh:Violation ;
+    sh:sparql [ a sh:SPARQLConstraint ;
+        sh:message "생산실적의 품목이 실적 LOT의 품목과 다릅니다" ;
+        sh:prefixes ksxq:prefixes ;
+        sh:select """SELECT $this ?value WHERE {
+            $this ksx:refLot ?lot ; ksx:refItem ?value .
+            ?lot ksx:refItem ?li .
+            FILTER (?value != ?li) }""" ] .
+
+# Q-04 구조: 공정 파라미터 이벤트(물질화된 스펙아웃)는 발생 일시와 측정값이 있어야 한다
+ksxq:Q04_TraceParameterEvent a sh:NodeShape ;
+    rdfs:label "Q-04 공정 파라미터 이벤트 필수 값"@ko ;
+    ksxq:ruleId "Q-04" ; ksxq:dimension "구조" ; ksxq:owner "MES 공정 파라미터(mes.tb_param_val)" ;
+    sh:targetClass ksx:TraceParameter ;
+    sh:severity sh:Violation ;
+    sh:sparql [ a sh:SPARQLConstraint ;
+        sh:message "공정 파라미터 이벤트에 발생 일시 또는 측정값이 없습니다" ;
+        sh:prefixes ksxq:prefixes ;
+        sh:select """SELECT $this WHERE {
+            FILTER (NOT EXISTS { $this ksx:eventDateTime ?t } || NOT EXISTS { $this ksx:parameterValue ?v }) }""" ] .
+
+# Q-05 값: 생산지시 수량에는 단위가 있어야 한다
+ksxq:Q05_OrderQuantityHasUnit a sh:NodeShape ;
+    rdfs:label "Q-05 생산지시 수량 단위"@ko ;
+    ksxq:ruleId "Q-05" ; ksxq:dimension "값" ; ksxq:owner "ERP 생산지시(erp.tb_pp_mo)" ;
+    sh:targetClass ksx:ProductionOrder ;
+    sh:severity sh:Violation ;
+    sh:sparql [ a sh:SPARQLConstraint ;
+        sh:message "생산지시 수량에 단위가 없습니다" ;
+        sh:prefixes ksxq:prefixes ;
+        sh:select """SELECT $this ?value WHERE {
+            $this ksx:productionOrderQuantity ?value .
+            FILTER NOT EXISTS { $this ksx:itemUOMCode ?u } }""" ] .

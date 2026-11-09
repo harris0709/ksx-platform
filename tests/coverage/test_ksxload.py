@@ -53,9 +53,9 @@ def test_generated_current():
 def test_manifest():
     c = cfg()
     man = yaml.safe_load(open(os.path.join(c.dbt_dir, "publish", "impix.yml"), encoding="utf-8"))
-    assert len(man["models"]) == 59
+    assert len(man["models"]) == 60
     tables = {t["table"] for m in man["models"] for t in m["targets"]}
-    assert len(tables) == len(man["order"]) == 70
+    assert len(tables) == len(man["order"]) == 71
     lots = [m["model"] for m in man["models"] if m["noun"] == "Lot"]
     assert sorted(lots) == ["Lot", "Lot_legacy", "Lot_material", "Lot_shipped"]
     alarm = next(m for m in man["models"] if m["model"] == "Alarm")
@@ -65,6 +65,16 @@ def test_manifest():
     # 대상 테이블 순서: 부모가 자식보다 먼저
     o = man["order"]
     assert o.index("ksx.ProductionOrder") < o.index("ksx.Lot") < o.index("ext.LotExt")
+
+
+def test_line_matches_header_tests():
+    """헤더·라인 명사: 라인 모델마다 '라인 사업장·공장 = 헤더' dbt 테스트(정의서 작성기준, S6 이후 결정)."""
+    c = cfg()
+    sch = yaml.safe_load(open(os.path.join(c.models_dir, "schema.yml"), encoding="utf-8"))
+    got = {m["name"]: t["ksx_line_matches_header"] for m in sch["models"] for t in m.get("tests", [])
+           if isinstance(t, dict) and "ksx_line_matches_header" in t}
+    assert sorted(got) == ["BOMLine", "DeliveryLine", "PurchaseOrderLine", "RoutingLine", "SalesOrderLine", "WarehouseLocationLine"], sorted(got)
+    assert got["BOMLine"]["line_keys"] == ["EnterpriseID", "BOMID", "BOMRevisionNumber"]
 
 
 def test_rules_cover_s1_high_issues():

@@ -62,6 +62,79 @@ def test_materialize_filter():
     assert filtered(files, {}) == {f: open(f, encoding="utf-8").read() for f in files}
 
 
+def test_shacl_report_parse_and_classify():
+    """S6: 검증 리포트(N-Triples) 파싱, 결과 차원 분류(구조·값·관계·의미), 품질 셰이프 메타."""
+    from ksxkg import validate as Vd
+    SH = "http://www.w3.org/ns/shacl#"
+    nt = "\n".join([
+        f'_:r <{SH}conforms> "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .',
+        f"_:r <{SH}result> _:a .", f"_:r <{SH}result> _:b .", f"_:r <{SH}result> _:c .",
+        f"_:a <{SH}focusNode> <https://d/IMPIX/Lot/L1> .", f"_:a <{SH}resultPath> <https://o/lotID> .",
+        f"_:a <{SH}sourceConstraintComponent> <{SH}MinCountConstraintComponent> .",
+        f"_:a <{SH}resultSeverity> <{SH}Violation> .", f'_:a <{SH}resultMessage> "최소 1개 \\"lotID\\"" .',
+        f"_:b <{SH}focusNode> <https://d/IMPIX/Lot/L2> .", f"_:b <{SH}resultPath> <https://o/lotState> .",
+        f"_:b <{SH}sourceConstraintComponent> <{SH}ClassConstraintComponent> .",
+        f"_:b <{SH}value> <https://d/codelist/LotState/NOPE> .",
+        f"_:c <{SH}focusNode> <https://d/IMPIX/ProductionPerformance/P1> .",
+        f"_:c <{SH}sourceShape> <https://ontology.impix.co.kr/quality/Q01_PerformanceEndAfterStart> .",
+        f"_:c <{SH}sourceConstraintComponent> <{SH}SPARQLConstraintComponent> ."])
+    conforms, res = Vd.parse_report(nt)
+    assert not conforms and len(res) == 3 and res[0]["resultMessage"] == '최소 1개 "lotID"'
+    class Cfg:
+        repo = ROOT
+        raw = {}
+    q = Vd.quality_meta(Cfg)
+    assert {m["rule"] for m in q.values()} == {"Q-01", "Q-02", "Q-03", "Q-04", "Q-05"}
+    assert {m["dimension"] for m in q.values()} == {"구조", "값", "관계", "의미"}
+    dims = [Vd.classify(r, q)["dimension"] for r in res]
+    assert dims == ["구조", "값", "의미"], dims
+
+
+def test_s6_seeds_cover_four_dimensions():
+    import yaml
+    p = yaml.safe_load(open(os.path.join(ROOT, "mapping", "impix", "s6_plan.yaml"), encoding="utf-8"))
+    seeds = [s for s in p["validate"]["seeds"] if s.get("expect")]
+    assert len(seeds) == 10 and {s["dimension"] for s in seeds} == {"구조", "값", "관계", "의미"}
+    assert [s for s in p["validate"]["seeds"] if not s.get("expect")]          # 정상 대조군
+
+
+def test_quality_params_filled():
+    """S6 D-4: 품질 셰이프 매개변수 — 계획 값으로 채우고, 계획에 없는 매개변수는 오류."""
+    import yaml
+    from ksxkg import validate as Vd
+    class Cfg:
+        repo = ROOT
+        onto = ONTO
+        raw = yaml.safe_load(open(os.path.join(ROOT, "mapping", "impix", "s6_plan.yaml"), encoding="utf-8"))
+    txt, files = Vd.shapes_text(Cfg)
+    assert b"{{" not in txt and b'VALUES ?plant { "P2" }' in txt
+    Cfg.raw = {"validate": {}}
+    try:
+        Vd.shapes_text(Cfg)
+        raise AssertionError("매개변수 누락이 통과됨")
+    except SystemExit as e:
+        assert "order_driven_plants" in str(e)
+
+
+def test_delete_data_braces():
+    """S5 차이 반영: DELETE DATA 문의 중괄호가 짝이 맞는다(삭제가 있는 재적재에서만 실행되는 경로)."""
+    from ksxkg import materialize as Mt
+    sent = []
+    old = Mt.update
+    Mt.update = lambda ep, q: sent.append(q)
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            f = os.path.join(tmp, "d.nt")
+            open(f, "w", encoding="utf-8").write('<https://d/a> <https://o/p> "x}" .\n')
+            class C:
+                update = "http://x/update"
+            Mt.delete_data(C, "https://d/graph/E", f)
+    finally:
+        Mt.update = old
+    q = sent[0].replace('"x}"', '""')
+    assert q.count("{") == q.count("}") == 2 and q.rstrip().endswith("} }"), q
+
+
 def test_split_nquads():
     with tempfile.TemporaryDirectory() as tmp:
         nq = os.path.join(tmp, "x.nq")

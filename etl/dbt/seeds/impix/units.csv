@@ -13,5 +13,5 @@ kPa,kPa,1,
 ℃,Cel,1,
 degC,Cel,1,
 sec,s,1,
-N·m,N.m,1,"체결 토크 — 표준 단위코드 없음(확장 단위 후보, S3 원천 문자열 보존)"
-cc/min,cm3/min,1,누설량 — 표준 단위코드 없음(확장 단위 후보)
+N·m,N.m,1,체결 토크 — IMPIX 확장 단위 TORQ/N.m(S6 D-2)
+cc/min,cm3/min,1,누설량 — IMPIX 확장 단위 FLOW/cm3/min(S6 D-2)

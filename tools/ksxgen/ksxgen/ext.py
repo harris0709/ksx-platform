@@ -12,10 +12,10 @@ from dataclasses import dataclass, field
 import openpyxl
 
 from . import extform as F
-from .model import Code, CodeGroup, Column, Model, Relation, Table, _rows, _s
-from .naming import XSD, alias, iri_template, lower_camel, sql_col, strip_id
+from .model import Code, CodeGroup, Column, Model, Relation, Table, Uom, _rows, _s
+from .naming import XSD, alias, iri_safe, iri_template, lower_camel, sql_col, strip_id
 from .vocab import Vocab
-from .emit import PREFIXES, lit
+from .emit import PREFIXES, lit, uom_ttl
 
 PK_DESC = ("— 테이블 행을 식별하는 일련번호(PK, 대리키) — 표준 외 물리 컬럼\n"
            "— 자동 증가 값(IDENTITY)으로 부여하며 다른 테이블이 참조하지 않음(FK는 UK 참조)")
@@ -53,6 +53,8 @@ class Ext:
     judgements: list[list]
     approvals: list[list]
     orphans: list[str] = field(default_factory=list)
+    uoms: list[Uom] = field(default_factory=list)          # 확장 단위(단위코드 시트) — S6 D-2
+    uom_meta: list[dict] = field(default_factory=list)
 
 
 def ext_config(ext_dir: str) -> dict:
@@ -139,8 +141,18 @@ def read(path: str, core: Model, cfg: dict | None = None) -> Ext:
     judg = [[r.get(h.replace("\n", "")) for h in F.JUDGE] for r in _rows(wb["판정목록"]) if _s(r.get("상태")) != "예시"
             and any(r.get(h) for h in ("원천(시스템.테이블.컬럼)", "판정"))]
     appr = [[r.get(h) for h in F.APPROVE] for r in _rows(wb["검토·승인"]) if _s(r.get("구분")) != "검사"]
+    uoms, umeta = [], []
+    for r in (_rows(wb["단위코드"]) if "단위코드" in wb.sheetnames else []):   # 단위코드 시트 이전 양식도 읽는다
+        code = _s(r.get("단위코드(UOMCode)"))
+        if not code or _s(r.get("상태")) == "예시":
+            continue
+        f = r.get("기준단위 환산계수")
+        uoms.append(Uom(_s(r.get("단위그룹식별자(UOMGroupID)")), _s(r.get("단위그룹명(UOMGroupName)")), code,
+                        _s(r.get("단위코드명(UOMCodeName)")), _s(r.get("영문명")) or None, _s(r.get("UN/CEFACTRec 20")) or None,
+                        _s(r.get("그룹 기준단위")) == "Y", float(f) if isinstance(f, (int, float)) else None))
+        umeta.append({"src": _s(r.get("원천 단위")), "desc": _s(r.get("설명")), "state": _s(r.get("상태"))})
     return Ext(cfg.get("ent", ""), cfg.get("prefix", "ext"), cfg.get("ns", ""), cfg.get("schema", "ext"), path,
-               tables, [], groups, gmeta, codes, cmeta, judg, appr, orphans)
+               tables, [], groups, gmeta, codes, cmeta, judg, appr, orphans, uoms, umeta)
 
 
 # ================================================================== 채움(sync)
@@ -337,6 +349,21 @@ def validate(ext: Ext, core: Model) -> list[Issue]:
         seen.add((c.group, c.code))
         if c.parent_group and c.parent_code and (c.parent_group, c.parent_code) not in core_codes | ext_codes:
             E(where, f"상위 코드 {c.parent_group}/{c.parent_code} 없음")
+    core_uoms, core_ugroups, useen = {u.code for u in core.uoms}, {u.group for u in core.uoms}, set()
+    for u in ext.uoms:
+        where = f"단위 {u.group}/{u.code}"
+        if u.code in core_uoms:
+            E(where, "표준 단위와 같은 코드 — 재정의 금지(원천 단위 대응으로 처리)")
+        if u.code in useen:
+            E(where, "중복 단위")
+        useen.add(u.code)
+        if not u.group:
+            E(where, "단위그룹 없음 — 표준 단위그룹 또는 새 단위그룹 식별자")
+        elif u.group not in core_ugroups and not u.group_name:
+            E(where, "새 단위그룹에는 단위그룹명 필요")
+    for g in {u.group for u in ext.uoms} - core_ugroups:
+        if not any(u.base for u in ext.uoms if u.group == g):
+            W(f"단위그룹 {g}", "새 단위그룹에 기준단위(그룹 기준단위 = Y)가 없음")
     # 참조 완결성: 부모 UK가 복합(문서번호+순번 등)이면 참조 컬럼이 UK 전체를 덮어야 FK가 성립한다
     for r in derive_relations(ext, core):
         parent = _lookup(ext, core, r.parent)
@@ -422,6 +449,10 @@ def write_back(ext: Ext, core: Model, issues: list[Issue], out_path: str | None 
         ws.append([i, m["area"], c.group, m["group_name"], c.code, c.name, c.en, c.seq, c.use, c.parent_group,
                    c.parent_code, c.desc, m["src"], m["apply"], m["cval"] or None, m["cname"] or None, m["note"] or None,
                    m["state"] or "초안"])
+    ws = wb["단위코드"]
+    for i, (u, m) in enumerate(zip(ext.uoms, ext.uom_meta), 1):
+        ws.append([i, u.group, u.group_name or None, u.code, u.name, u.en, u.cefact, "Y" if u.base else "N", u.factor,
+                   m["src"] or None, m["desc"] or None, m["state"] or "초안"])
     ws = wb["판정목록"]
     for i, j in enumerate(ext.judgements, 1):
         ws.append([i] + list(j[1:]))
@@ -431,7 +462,7 @@ def write_back(ext: Ext, core: Model, issues: list[Issue], out_path: str | None 
                f"{sum(1 for e in ext.tables.values() if e.ext_type == '확장 명사')}, 확장 속성 테이블 "
                f"{sum(1 for e in ext.tables.values() if e.ext_type == '확장 속성')}, 확장 컬럼 "
                f"{sum(1 for e in ext.tables.values() for c in e.t.columns if c.kind == '확장')}, 코드 그룹 {len(ext.groups)}, "
-               f"코드 {len(ext.codes)}, 판정 {len(ext.judgements)}", None, None])
+               f"코드 {len(ext.codes)}, 단위 {len(ext.uoms)}, 판정 {len(ext.judgements)}", None, None])
     for x in issues:
         ws.append(["검사", f"{x.level}: {x.where}", x.msg, None, None])
     for a in ext.approvals:
@@ -441,7 +472,7 @@ def write_back(ext: Ext, core: Model, issues: list[Issue], out_path: str | None 
         ws.append([et.t.en, _ddl_table(ext, core, et)])
     fk = [l for l in ddl_sql(ext, core).splitlines() if l.startswith("ALTER TABLE")]
     ws.append(["(물리 FK)", "\n".join(fk)])
-    for name in ("테이블목록", "테이블정의서", "관계목록", "코드그룹목록", "공통코드", "판정목록", "검토·승인", "DDL"):
+    for name in ("테이블목록", "테이블정의서", "관계목록", "코드그룹목록", "공통코드", "단위코드", "판정목록", "검토·승인", "DDL"):
         F._style_body(wb[name])
     for row in wb["DDL"].iter_rows(min_row=2):
         row[1].font = openpyxl.styles.Font(name="Consolas", size=9)
@@ -616,7 +647,8 @@ def obda(ext: Ext, core: Model, colprop, refs, cfg) -> str:
                 continue
             a = "{" + alias(c.en) + "}"
             if p.kind == "code":
-                trip.append(f"{p.name} " + (f"d:codelist/{p.code_group}/{a}" if p.code_group else
+                g = getattr(c, "code_group", None) or p.code_group   # 컬럼의 코드 그룹 우선(같은 이름 속성 재사용 시)
+                trip.append(f"{p.name} " + (f"d:codelist/{g}/{a}" if g else
                                             (f"d:uom/{a}" if c.en.endswith("UOMCode") else a)))
             elif p.range == "xsd:string":
                 trip.append(f"{p.name} {a}")
@@ -641,10 +673,10 @@ def codelist(ext: Ext, cfg) -> str:
             o.append(f"<{dn}codelist/{g}> a skos:ConceptScheme ; skos:prefLabel {lit(cg.name, 'ko')} ; "
                      f"skos:notation {lit(g)} ; skos:definition {lit(cg.desc or '', 'ko')} .")
     for c in ext.codes:
-        s = (f"<{dn}codelist/{c.group}/{c.code}> a skos:Concept ; skos:inScheme <{dn}codelist/{c.group}> ; "
+        s = (f"<{dn}codelist/{c.group}/{iri_safe(c.code)}> a skos:Concept ; skos:inScheme <{dn}codelist/{c.group}> ; "
              f"skos:notation {lit(c.code)} ; skos:prefLabel {lit(c.name, 'ko')}" + (f", {lit(c.en, 'en')}" if c.en else ""))
         if c.parent_group and c.parent_code:
-            s += f" ; skos:broader <{dn}codelist/{c.parent_group}/{c.parent_code}>"
+            s += f" ; skos:broader <{dn}codelist/{c.parent_group}/{iri_safe(c.parent_code)}>"
         if c.desc:
             s += f" ; skos:definition {lit(c.desc, 'ko')}"
         o.append(s + " .")
@@ -724,11 +756,17 @@ def build(ext_dir: str, core: Model, v: Vocab, cfg: dict, out: str, quiet=False)
     _w(os.path.join(out, "mappings", f"{ent}_ext.obda"), obda(ext, core, colprop, refs, cfg))
     _w(os.path.join(out, "ddl", f"ext_{ent}.sql"), ddl_sql(ext, core, cfg.get("schema", "ksx")))
     _w(os.path.join(out, "vocab", f"{ent}_codelist.ttl"), codelist(ext, cfg))
+    if ext.uoms:   # 확장 단위 — 새 단위그룹만 ConceptScheme 선언(표준 그룹은 vocab/uom.ttl)
+        core_g = {u.group for u in core.uoms}
+        txt = uom_ttl(ext.uoms, cfg, schemes=False, head=_pfx(ext, cfg))
+        txt += "\n".join(f"<{cfg['data_ns']}uom/{g}> a skos:ConceptScheme ; skos:prefLabel {lit(n, 'ko')} ."
+                         for g, n in sorted({(u.group, u.group_name) for u in ext.uoms if u.group not in core_g})) + "\n"
+        _w(os.path.join(out, "vocab", f"{ent}_uom.ttl"), txt)
     for fn, txt in noun_cards(ext, core, colprop, refs).items():
         _w(os.path.join(out, "catalog", "nouns", fn), txt)
     if not quiet:
         print(f"ksxgen --ext {ext_dir}: 확장 명사 {sum(1 for e in ext.tables.values() if e.ext_type == '확장 명사')} · "
               f"확장 속성 테이블 {sum(1 for e in ext.tables.values() if e.ext_type == '확장 속성')} · "
               f"속성 신규 {sum(1 for p in props.values() if p.new)}/재사용 {sum(1 for p in props.values() if not p.new)} · "
-              f"코드 {len(ext.codes)} · 경고 {len(issues)}")
+              f"코드 {len(ext.codes)} · 단위 {len(ext.uoms)} · 경고 {len(issues)}")
     return True
