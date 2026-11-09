@@ -116,6 +116,25 @@ def test_quality_params_filled():
         assert "order_driven_plants" in str(e)
 
 
+def test_delete_data_braces():
+    """S5 차이 반영: DELETE DATA 문의 중괄호가 짝이 맞는다(삭제가 있는 재적재에서만 실행되는 경로)."""
+    from ksxkg import materialize as Mt
+    sent = []
+    old = Mt.update
+    Mt.update = lambda ep, q: sent.append(q)
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            f = os.path.join(tmp, "d.nt")
+            open(f, "w", encoding="utf-8").write('<https://d/a> <https://o/p> "x}" .\n')
+            class C:
+                update = "http://x/update"
+            Mt.delete_data(C, "https://d/graph/E", f)
+    finally:
+        Mt.update = old
+    q = sent[0].replace('"x}"', '""')
+    assert q.count("{") == q.count("}") == 2 and q.rstrip().endswith("} }"), q
+
+
 def test_split_nquads():
     with tempfile.TemporaryDirectory() as tmp:
         nq = os.path.join(tmp, "x.nq")
