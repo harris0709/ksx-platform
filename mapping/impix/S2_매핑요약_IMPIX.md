@@ -2,11 +2,11 @@
 
 | 항목 | 값 |
 |---|---|
-| 매핑 명세 / 대상 명사 | 59 / 54 |
-| 매핑 속성(컬럼 1개) / 파생(여러 컬럼) | 431 / 17 |
+| 매핑 명세 / 대상 명사 | 60 / 55 |
+| 매핑 속성(컬럼 1개) / 파생(여러 컬럼) | 432 / 17 |
 | 결정론 해소율 | 72.2% (목표 70% 이상) |
 | 검토자 수정 비율 | 1.9% (목표 20% 미만) |
-| 필수 속성 매핑 | 100.0% (278/278) |
+| 필수 속성 매핑 | 100.0% (283/283) |
 | 대상 컬럼 판정 | 100.0% (452/452) |
 | 판정 분포 | 매핑 325, 미판정 0, 식별 대응 9, 제외 40, 조인 원천 4, 조인 키 7, 코드 원천 16, 확장 51 |
 | 검사 오류 | 0 |
@@ -28,7 +28,8 @@
 | RoutingLine | erp.tb_pp_rout_d | 1:1(헤더 참조) | 10 | — |
 | Operation | mes.tm_proc | N→1(MES 공정 + ERP 작업장) | 7 | — |
 | Line | erp.tb_pp_line | 1:1 | 10 | — |
-| WarehouseLocationHeader | erp.tb_mm_wh | 1:1 | 7 | — |
+| WarehouseLocationHeader | erp.tb_mm_wh | 1→헤더·라인(헤더) | 7 | — |
+| WarehouseLocationLine | erp.tb_mm_wh | 1→헤더·라인(라인) | 6 | — |
 | Equipment | mes.tm_eqp | 1:1 | 15 | — |
 | OperationEquipment | mes.tm_eqp | 파생(설비→공정 배정) | 6 | — |
 | CustomerPartyMaster | erp.tb_sd_cust | 1:1 | 11 | — |

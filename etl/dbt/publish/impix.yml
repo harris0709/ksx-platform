@@ -14,6 +14,7 @@ order:
 - ksx.ItemMaster
 - ksx.Personnel
 - ksx.SalesOrderHeader
+- ksx.WarehouseLocationLine
 - ext.InventorySnapshot
 - ext.StandardCost
 - ksx.AvailableInventory
@@ -1110,6 +1111,27 @@ models:
   uk:
   - EnterpriseID
   - WarehouseID
+  expect_sql: select count(*) from stg."erp__tb_mm_wh" s
+  sums: []
+  audit: null
+  rules: []
+- model: WarehouseLocationLine
+  noun: WarehouseLocationLine
+  spec: mapping/impix/erp/WarehouseLocationLine.yaml
+  kind: rows
+  targets:
+  - table: ksx.WarehouseLocationLine
+    columns:
+    - EnterpriseID
+    - SiteID
+    - PlantID
+    - WarehouseID
+    - WarehouseSection
+    - WarehouseSectionName
+  uk:
+  - EnterpriseID
+  - WarehouseID
+  - WarehouseSection
   expect_sql: select count(*) from stg."erp__tb_mm_wh" s
   sums: []
   audit: null

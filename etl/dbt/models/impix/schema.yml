@@ -1100,6 +1100,35 @@ models:
     tests:
     - ksx_code_mapped:
         group: WH_TP
+- name: WarehouseLocationLine
+  description: WarehouseLocationLine ← erp.tb_mm_wh — mapping/impix/erp/WarehouseLocationLine.yaml
+  tests:
+  - ksx_unique_key:
+      columns:
+      - EnterpriseID
+      - WarehouseID
+      - WarehouseSection
+  columns:
+  - name: EnterpriseID
+    quote: true
+    tests:
+    - not_null
+  - name: SiteID
+    quote: true
+    tests:
+    - not_null
+  - name: PlantID
+    quote: true
+    tests:
+    - not_null
+  - name: WarehouseID
+    quote: true
+    tests:
+    - not_null
+  - name: WarehouseSection
+    quote: true
+    tests:
+    - not_null
 - name: Alarm
   description: Alarm ← mes.tb_alarm — mapping/impix/mes/Alarm.yaml
   tests:
