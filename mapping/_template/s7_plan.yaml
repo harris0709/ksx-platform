@@ -1,0 +1,41 @@
+# S7 규칙 추론 계획 — <기업> (구현안내서 10장) · 양식
+#   복사: mapping/_template/s7_plan.yaml → mapping/<기업 소문자>/s7_plan.yaml
+#   실행(infra/docker-compose):
+#     export S5_PLAN=mapping/<기업 소문자>/s7_plan.yaml
+#     docker compose --profile tools run --rm -e S5_PLAN s5-tools infer          # 규칙 실행 + 정확도 평가 → S7_추론결과.md
+#     docker compose --profile tools run --rm -e S5_PLAN s5-tools infer --eval   # 평가만(사례만 고쳤을 때)
+#     unset S5_PLAN
+base: mapping/<기업 소문자>/s6_plan.yaml   # s6 → s5: 원장·Fuseki·기업·그래프, 위반 표식 설정을 물려받는다
+
+infer:
+  rules: ontologies/rules            # A-*(자동 전이) → R-*(업무 규칙) 파일명 순. 파라미터는 rules/params.yaml
+  today: "<YYYY-MM-DD>"              # 기준일 — 데이터 기간이 끝난 실습·검증은 고정, 운영은 이 줄을 지워 실행일로
+  site: <사업장 ID>                  # 결과 그래프 graph/inferred/<기업>/<사업장>/{규칙 ID}
+  batch_target_seconds: 600          # 야간 배치 목표(완료 기준) — 규칙 전체 실행 시간
+  thresholds: {precision: 0.9, recall: 0.95}   # 완료 기준(표 25) — 규칙마다
+
+# 정확도 평가 — 정답(수작업 판정)은 지식 그래프와 다른 경로로 만든다(S7 D-2)
+#   ① 업무 질의 사례: S1 업무 질의서의 답   ② 전수 사례: 원천 DB 직접 조회(산출 쿼리는 s7_answers.sql)
+#   select: SPARQL 패턴(합집합 그래프 + 추론 그래프), ?x가 비교 값. 타입을 함께 건다(ID 속성은 여러 클래스에 있다)
+#   expected: 정답 목록. 정밀도 = 일치/결과, 재현율 = 일치/정답 — 규칙별로 사례를 합쳐 판정
+#   규칙마다 업무 질의 사례 1건 이상, 결과가 많은 규칙은 전수 사례 1건. 판단 사항 결정도 사례로 남긴다.
+evaluate:
+  cases:
+    - id: E01
+      rule: R-001
+      question: "<업무 질의 ID 또는 사건>"
+      desc: "<무엇을 확인하는가 — 전수면 원천 건수>"
+      select: "?l a ksx:Lot ; ksx:lotID ?a ; inf:consumedLot ?i . ?i ksx:lotID ?b . BIND(CONCAT(?a, '<-', ?b) AS ?x)"
+      expected: ["<산출 LOT><-<투입 LOT>"]
+    - id: E02
+      rule: R-020
+      question: "<업무 질의 ID>"
+      desc: "<이벤트 대상 확인>"
+      select: "?e a inf:SpecOutLotEvent ; inf:onLot ?l . ?l ksx:lotID ?x"
+      expected: ["<LOT ID>"]
+    - id: E03
+      rule: R-100
+      question: "<업무 질의 ID>"
+      desc: "<리스크 수주라인(수주-순번)>"
+      select: "?e a inf:OTDRiskEvent ; inf:onSalesOrderLine ?s . ?s ksx:salesDocumentNumber ?n ; ksx:salesDocumentSequence ?q . BIND(CONCAT(?n, '-', STR(?q)) AS ?x)"
+      expected: ["<수주번호>-<순번>"]
