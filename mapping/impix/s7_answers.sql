@@ -22,6 +22,11 @@ select distinct l.mo_no from mes.tb_trk_out o join mes.tb_lot l using (lot_no) w
 -- [impix_erp] 위 제조오더의 수주
 -- select mo_no, so_no, so_seq from erp.tb_pp_mo where mo_no in (…);
 
+-- [impix_mes → impix_erp] A07 생산실적 → 영향 수주라인(R-010): 실적(PP-trk_out_id)의 LOT 제조오더 → 수주라인(수주-순번)
+select o.trk_out_id, l.mo_no from mes.tb_trk_out o join mes.tb_lot l using (lot_no);                 -- [impix_mes]
+select m.mo_no, m.so_no, m.so_seq from erp.tb_pp_mo m
+  join erp.tb_sd_so_d d on d.so_no = m.so_no and d.so_seq = m.so_seq;                                   -- [impix_erp] 두 결과를 제조오더로 잇는다
+
 -- [impix_erp] A06 BOM 직접 구성품(R-002): 기준일 2026-10-20에 유효한 라인, 품목마스터에 있는 자품목만
 select d.prnt_item_cd || '>' || d.chld_item_cd from erp.tb_pp_bom_d d join erp.tb_mm_item i on i.item_cd = d.chld_item_cd
 where d.valid_fr <= '20261020' and coalesce(d.valid_to, '99991231') >= '20261020' order by 1;

@@ -163,6 +163,12 @@ def test_s7_rules_and_plan():
     files = sorted(glob.glob(os.path.join(rules, "*.rq")))
     ids = {os.path.basename(f).split("_", 1)[0] for f in files}
     assert {"R-001", "R-002", "R-003", "R-005", "R-010", "R-020", "R-030", "R-100"} <= ids
+    import re as _re
+    for f in files:   # 규칙 ID 체계(rules/README.md): {ID}_{영문 소문자 이름}.rq, R은 001~039·100~299
+        n = os.path.basename(f)
+        assert _re.fullmatch(r"(A-\d{3}_\w+|R-(00[1-9]|0[1-3]\d|[12]\d\d)_[a-z0-9_]+)\.rq", n), n
+    assert all('inf:ruleId "' + os.path.basename(f).split("_")[0] + '"' in open(f, encoding="utf-8").read()
+               for f in files if "Event" in open(f, encoding="utf-8").read() and os.path.basename(f).startswith("R-"))
     texts = [I.render(open(f, encoding="utf-8").read(), prm) for f in files]
     assert all("${" not in t for t in texts)
     plan = yaml.safe_load(open(os.path.join(ROOT, "mapping", "impix", "s7_plan.yaml"), encoding="utf-8"))
