@@ -152,6 +152,33 @@ def test_s6_templates():
     assert len(set(g.subjects(rdflib.RDF.type, SH.NodeShape))) == 5
 
 
+def test_s7_rules_and_plan():
+    """S7: 규칙 파라미터(기준일·due_limit), 모든 규칙이 파라미터로 채워지고 SPARQL로 읽힌다, 평가 사례의 규칙이 있다."""
+    import glob
+    import yaml
+    from ksxkg import infer as I
+    rules = os.path.join(ROOT, "ontologies", "rules")
+    prm = I.load_params(rules, "2026-10-20")
+    assert prm["due_limit"] == "2026-10-27" and prm["min_defect_rate"] == "0.02"
+    files = sorted(glob.glob(os.path.join(rules, "*.rq")))
+    ids = {os.path.basename(f).split("_", 1)[0] for f in files}
+    assert {"R-001", "R-002", "R-003", "R-005", "R-010", "R-020", "R-030", "R-100"} <= ids
+    texts = [I.render(open(f, encoding="utf-8").read(), prm) for f in files]
+    assert all("${" not in t for t in texts)
+    plan = yaml.safe_load(open(os.path.join(ROOT, "mapping", "impix", "s7_plan.yaml"), encoding="utf-8"))
+    cases = plan["evaluate"]["cases"]
+    assert {c["rule"] for c in cases} <= ids and plan["base"].endswith("s6_plan.yaml")
+    assert {c["rule"] for c in cases} >= {"R-001", "R-002", "R-003", "R-005", "R-010", "R-020", "R-030", "R-100"}
+    try:
+        from rdflib.plugins.sparql import prepareQuery
+    except ImportError:
+        return
+    for f, t in zip(files, texts):
+        prepareQuery(t)
+    for c in cases:
+        prepareQuery(I.PREFIXES.format(ns="https://ontology.impix.co.kr/ksx9101/1.0/") + "SELECT DISTINCT ?x WHERE { " + c["select"] + " }")
+
+
 def test_split_nquads():
     with tempfile.TemporaryDirectory() as tmp:
         nq = os.path.join(tmp, "x.nq")

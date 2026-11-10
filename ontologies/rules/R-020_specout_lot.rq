@@ -1,0 +1,24 @@
+PREFIX ksx: <https://ontology.impix.co.kr/ksx9101/1.0/>
+PREFIX inf: <https://ontology.impix.co.kr/inference/>
+PREFIX ksxq: <https://ontology.impix.co.kr/quality/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+# R-020 스펙아웃 중 가공된 LOT(이벤트): 설비 파라미터 규격 이탈(검증결과 ≠ NORMAL) 시각이 그 설비의 생산실적
+#   착공~완공 사이에 있으면, 해당 LOT·설비·파라미터마다 이벤트 하나(이탈 건수 포함). Q-SC03-02, EV1
+CONSTRUCT {
+  ?evt a inf:SpecOutLotEvent ; inf:onLot ?lot ; inf:onEquipment ?eq ; inf:onParameter ?par ;
+       inf:specOutCount ?n ; inf:ruleId "R-020" .
+}
+WHERE {
+  { SELECT ?lot ?eq ?par (COUNT(DISTINCT ?tp) AS ?n) WHERE {
+      ?tp a ksx:TraceParameter ; ksx:refEquipment ?eq ; ksx:refParameter ?par ;
+          ksx:eventDateTime ?t ; ksx:validationResultCode ?vc .
+      FILTER (!STRENDS(STR(?vc), "/NORMAL"))
+      ?ppe a ksx:ProductionPerformanceEquipment ; ksx:refEquipment ?eq ; ksx:refProductionPerformance ?pp ;
+           ksx:executionStartDateTime ?s ; ksx:executionEndDateTime ?e .
+      FILTER (?t >= ?s && ?t <= ?e)
+      ?pp ksx:refLot ?lot .
+      FILTER NOT EXISTS { ?tp ksxq:violates ?v1 }
+      FILTER NOT EXISTS { ?lot ksxq:violates ?v2 }
+    } GROUP BY ?lot ?eq ?par }
+  BIND (IRI(CONCAT(STR(?lot), "/specout/", MD5(STR(?par)))) AS ?evt)
+}

@@ -42,11 +42,11 @@ grant select on audit.kg_load to ksx_reader;
 QUAD_RE = re.compile(r" <([^>]*)> \.\s*$")
 
 
-def start_run(cfg: Config, job: str) -> str:
+def start_run(cfg: Config, job: str, stage: str = "S5") -> str:
     rid = str(uuid.uuid4())
     psql(cfg.owner, AUDIT_SQL)
     psql(cfg.owner, f"insert into audit.run(run_id, stage, job, actor, enterprise_id) values "
-                    f"('{rid}', 'S5', '{job}', current_user, '{cfg.ent}')")
+                    f"('{rid}', '{stage}', '{job}', current_user, '{cfg.ent}')")
     return rid
 
 
