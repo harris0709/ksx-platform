@@ -4,23 +4,34 @@ PREFIX ksxq: <https://ontology.impix.co.kr/quality/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 # R-100 납기 리스크(업무 규칙)
 #   IF 생산실적 불량률 > ${min_defect_rate} AND 수주라인 요청 납기 ≤ 기준일 + ${due_within_days}일(지난 납기 포함)
-#   THEN 수주라인 납기 리스크 이벤트(원인 생산실적·생산지시·불량률·납기)
-#   납기 상태(S7 D-3): 납기 < 기준일 → "지연", 그 밖 → "임박". 남은 일수 inf:daysToDue = 납기 − 기준일(정수, 음수 = 지난 일수)
+#   THEN 수주라인마다 납기 리스크 이벤트 하나(S7 D-4)
+#     이벤트: 수주라인·생산지시·납기·최대 불량률, 납기 상태(지연·임박)·남은 일수(음수 = 지난 일수)·기준일(D-3)
+#     원인: 불량률을 넘은 생산실적마다 원인 노드 inf:cause [ 실적·LOT·공정·불량률 ] — 불량률과 원인을 짝지어 둔다
 CONSTRUCT {
-  ?evt a inf:OTDRiskEvent ; inf:onSalesOrderLine ?sol ; inf:onProductionOrder ?po ; inf:causedBy ?pp ;
-       inf:defectRate ?rate ; inf:dueDate ?due ; inf:dueStatus ?st ; inf:daysToDue ?days ; inf:baseDate ?base ;
-       inf:ruleId "R-100" .
+  ?evt a inf:OTDRiskEvent ; inf:onSalesOrderLine ?sol ; inf:onProductionOrder ?po ; inf:dueDate ?due ;
+       inf:maxDefectRate ?maxRate ; inf:dueStatus ?st ; inf:daysToDue ?days ; inf:baseDate ?base ;
+       inf:cause ?c ; inf:ruleId "R-100" .
+  ?c a inf:RiskCause ; inf:performance ?pp ; inf:lot ?lot ; inf:operation ?op ; inf:defectRate ?rate .
 }
 WHERE {
+  { SELECT ?sol (MAX(?r) AS ?maxRate) WHERE {
+      ?p2 inf:affectedSalesOrderLine ?sol ; ksx:producedQuantity ?q2 ; ksx:defectQuantity ?d2 .
+      ?sol ksx:requestedDeliveryDate ?due2 .
+      BIND (xsd:decimal(?d2) / xsd:decimal(?q2) AS ?r)
+      FILTER (?q2 > 0 && ?r > ${min_defect_rate} && ?due2 <= "${due_limit}"^^xsd:date)
+      FILTER NOT EXISTS { ?p2 ksxq:violates ?v2 }
+    } GROUP BY ?sol }
   ?pp inf:affectedSalesOrderLine ?sol ; ksx:refProductionOrder ?po ; ksx:producedQuantity ?p ; ksx:defectQuantity ?d .
   ?sol ksx:requestedDeliveryDate ?due .
   BIND (xsd:decimal(?d) / xsd:decimal(?p) AS ?rate)
   FILTER (?p > 0 && ?rate > ${min_defect_rate})
-  FILTER (?due <= "${due_limit}"^^xsd:date)
   FILTER NOT EXISTS { ?pp ksxq:violates ?v }
+  OPTIONAL { ?pp ksx:refLot ?lot }
+  OPTIONAL { ?pp ksx:refOperation ?op }
   BIND ("${today}"^^xsd:date AS ?base)
   BIND (IF(?due < ?base, "지연", "임박") AS ?st)
   BIND (STR(?due - ?base) AS ?dur)                                   # 엔진 표기 예: -P14D, -P14DT0H0M0.000S
   BIND (xsd:integer(CONCAT(IF(STRSTARTS(?dur, "-"), "-", ""), STRBEFORE(STRAFTER(?dur, "P"), "D"))) AS ?days)
   BIND (IRI(CONCAT(STR(?sol), "/risk/R-100")) AS ?evt)
+  BIND (IRI(CONCAT(STR(?sol), "/risk/R-100/cause/", MD5(STR(?pp)))) AS ?c)
 }

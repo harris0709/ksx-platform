@@ -202,6 +202,21 @@ evaluate:
       desc: "남은 일수(납기 − 기준일, 음수 = 지난 일수)"
       select: "?e a inf:OTDRiskEvent ; inf:onSalesOrderLine ?s ; inf:daysToDue ?d . ?s ksx:salesDocumentNumber ?n . BIND(CONCAT(?n, ':', STR(?d)) AS ?x)"
       expected: ["SO260926001:-14", "SO260928001:-13", "SO260929001:-12", "SO260930001:-11"]
+    - id: E15
+      rule: R-100
+      question: "Q-SC02-04, Q-SC05-06"
+      desc: "원인별 불량률(수주:LOT@공정=불량률%) — 하우징 세척 P300과 누설시험 A200"
+      select: "?e a inf:OTDRiskEvent ; inf:onSalesOrderLine ?s ; inf:cause ?c . ?s ksx:salesDocumentNumber ?n . ?c inf:lot ?l ; inf:operation ?o ; inf:defectRate ?r . ?l ksx:lotID ?a . ?o ksx:operationID ?op . BIND(CONCAT(?n, ':', ?a, '@', ?op, '=', STR(ROUND(?r * 1000) / 10)) AS ?x)"
+      expected: ["SO260926001:H261003A1@P300=3.6", "SO260926001:E261003A1@A200=7.3",
+                 "SO260928001:H261005A1@P300=3.7", "SO260928001:E261005A1@A200=9.8",
+                 "SO260929001:H261006A1@P300=4.2", "SO260929001:E261006A1@A200=10.5",
+                 "SO260930001:H261007A1@P300=4.2", "SO260930001:E261007A1@A200=10.4"]
+    - id: E16
+      rule: R-100
+      question: "Q-SC02-04"
+      desc: "이벤트 최대 불량률(수주=최대%)"
+      select: "?e a inf:OTDRiskEvent ; inf:onSalesOrderLine ?s ; inf:maxDefectRate ?r . ?s ksx:salesDocumentNumber ?n . BIND(CONCAT(?n, '=', STR(ROUND(?r * 1000) / 10)) AS ?x)"
+      expected: ["SO260926001=7.3", "SO260928001=9.8", "SO260929001=10.5", "SO260930001=10.4"]
     - id: E09
       rule: R-010
       question: "Q-SC06-03"
