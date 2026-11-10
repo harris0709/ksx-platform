@@ -1,0 +1,259 @@
+# 추론 어휘(inf:) — S7 규칙(ontologies/rules)이 만드는 관계·이벤트·값 (S7 D-5)
+#   손으로 관리한다. 규칙에 새 inf: 어휘를 쓰면 여기에도 선언한다 — 회귀 시험(test_inference_vocabulary)이 누락을 잡는다.
+#   항목마다: 종류(owl:Class / ObjectProperty / DatatypeProperty), 한국어·영어 레이블, 정의(skos:definition),
+#   도메인·범위, 만든 규칙 ID(inf:producedBy). 물질화 때 graph/tbox/inference로 적재된다.
+@prefix inf:  <https://ontology.impix.co.kr/inference/> .
+@prefix ksx:  <https://ontology.impix.co.kr/ksx9101/1.0/> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<https://ontology.impix.co.kr/inference/> a owl:Ontology ;
+    rdfs:label "추론 어휘"@ko , "Inference vocabulary"@en ;
+    rdfs:comment "S7 규칙(ontologies/rules)이 만드는 관계·이벤트·값. 원천 데이터가 아니라 규칙이 이끌어 낸 사실이며, 결과는 graph/inferred/{기업}/{사업장}/{규칙 ID}에 있다."@ko ;
+    owl:versionInfo "1.0 (S7, 2026-11)" .
+
+inf:producedBy a owl:AnnotationProperty ;
+    rdfs:label "생성 규칙"@ko , "produced by rule"@en ;
+    skos:definition "이 어휘를 만드는 규칙 ID(rules/README.md 규칙 ID 체계). AI 답변의 근거 표시에 쓴다."@ko .
+
+inf:InferenceEvent a owl:Class ;
+    rdfs:label "추론 이벤트"@ko , "inference event"@en ;
+    skos:definition "규칙이 조건을 판단해 만든 이벤트의 상위 클래스. 이벤트 노드에는 만든 규칙 ID(inf:ruleId)가 붙는다."@ko .
+
+inf:ruleId a owl:DatatypeProperty ;
+    rdfs:label "규칙 ID"@ko , "rule ID"@en ;
+    skos:definition "이벤트를 만든 규칙 ID(예: R-100)."@ko ;
+    rdfs:domain inf:InferenceEvent ; rdfs:range xsd:string .
+
+# ── R-001 로트 계보(전이)
+
+inf:consumedLot a owl:ObjectProperty ;
+    rdfs:label "투입 LOT"@ko , "consumed lot"@en ;
+    skos:definition "이 LOT을 만든 생산실적에 투입된 LOT(한 단계). 생산실적투입품목 또는 모로트 참조에서 얻는다."@ko ;
+    rdfs:domain ksx:Lot ; rdfs:range ksx:Lot ;
+    inf:producedBy "R-001" .
+
+inf:derivedFrom a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "계보상 원재료 LOT"@ko , "derived from"@en ;
+    skos:definition "투입 LOT을 끝까지 거슬러 올라간 모든 LOT(로트 계보). 예: 완제품 E261003A1 ← 하우징 H261003A1."@ko ;
+    rdfs:domain ksx:Lot ; rdfs:range ksx:Lot ;
+    inf:producedBy "R-001" .
+
+# ── R-002·R-003 자재명세서
+
+inf:directComponent a owl:ObjectProperty ;
+    rdfs:label "직접 구성품"@ko , "direct component"@en ;
+    skos:definition "기준일에 유효한 BOM 라인의 자품목(한 단계)."@ko ;
+    rdfs:domain ksx:ItemMaster ; rdfs:range ksx:ItemMaster ;
+    inf:producedBy "R-002" .
+
+inf:component a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "구성품(전개)"@ko , "component (exploded)"@en ;
+    skos:definition "직접 구성품을 끝까지 펼친 모든 하위 품목(다단 BOM 전개). 예: EWP-B200 → 하우징 → 잉곳 ALDC12."@ko ;
+    rdfs:domain ksx:ItemMaster ; rdfs:range ksx:ItemMaster ;
+    inf:producedBy "R-003" .
+
+# ── R-005 LOT 공정 설비
+
+inf:processedOn a owl:ObjectProperty ;
+    rdfs:label "가공 설비"@ko , "processed on"@en ;
+    skos:definition "LOT이 생산실적에서 거친 설비. 계보(inf:derivedFrom)와 이으면 '완제품 하우징을 주조한 설비'를 답한다."@ko ;
+    rdfs:domain ksx:Lot ; rdfs:range ksx:Equipment ;
+    inf:producedBy "R-005" .
+
+# ── R-010 영향 전개
+
+inf:affectedSalesOrderLine a owl:ObjectProperty ;
+    rdfs:label "영향 수주라인"@ko , "affected sales order line"@en ;
+    skos:definition "생산실적이 영향을 주는 수주라인(생산실적 → 생산지시 → 수주라인)."@ko ;
+    rdfs:domain ksx:ProductionPerformance ; rdfs:range ksx:SalesOrderLine ;
+    inf:producedBy "R-010" .
+
+inf:affectedSalesOrder a owl:ObjectProperty ;
+    rdfs:label "영향 수주"@ko , "affected sales order"@en ;
+    skos:definition "생산실적이 영향을 주는 수주(영향 수주라인의 헤더)."@ko ;
+    rdfs:domain ksx:ProductionPerformance ; rdfs:range ksx:SalesOrder ;
+    inf:producedBy "R-010" .
+
+# ── R-020 스펙아웃 중 가공된 LOT(이벤트)
+
+inf:SpecOutLotEvent a owl:Class ;
+    rdfs:subClassOf inf:InferenceEvent ;
+    rdfs:label "스펙아웃 가공 LOT 이벤트"@ko , "spec-out lot event"@en ;
+    skos:definition "설비 파라미터가 규격을 벗어난 시각이 그 설비의 생산실적 착공~완공 사이에 있는 LOT. LOT·설비·파라미터마다 하나."@ko ;
+    inf:producedBy "R-020" .
+
+inf:onLot a owl:ObjectProperty ;
+    rdfs:label "대상 LOT"@ko , "lot"@en ;
+    skos:definition "스펙아웃 중 가공된 LOT."@ko ;
+    rdfs:domain inf:SpecOutLotEvent ; rdfs:range ksx:Lot ;
+    inf:producedBy "R-020" .
+
+inf:onEquipment a owl:ObjectProperty ;
+    rdfs:label "대상 설비"@ko , "equipment"@en ;
+    skos:definition "규격을 벗어난 설비."@ko ;
+    rdfs:domain inf:SpecOutLotEvent ; rdfs:range ksx:Equipment ;
+    inf:producedBy "R-020" .
+
+inf:onParameter a owl:ObjectProperty ;
+    rdfs:label "대상 파라미터"@ko , "parameter"@en ;
+    skos:definition "규격을 벗어난 설비 파라미터(예: 금형온도)."@ko ;
+    rdfs:domain inf:SpecOutLotEvent ; rdfs:range ksx:EquipmentParameter ;
+    inf:producedBy "R-020" .
+
+inf:specOutCount a owl:DatatypeProperty ;
+    rdfs:label "이탈 건수"@ko , "spec-out count"@en ;
+    skos:definition "가공 시간 안에 규격을 벗어난 파라미터 수집값 건수."@ko ;
+    rdfs:domain inf:SpecOutLotEvent ; rdfs:range xsd:integer ;
+    inf:producedBy "R-020" .
+
+# ── R-030 보류 LOT
+
+inf:hasHeldLot a owl:ObjectProperty ;
+    rdfs:label "보류 LOT"@ko , "held lot"@en ;
+    skos:definition "생산지시에 속한 LOT 중 보류(holdIndicator = true)된 LOT."@ko ;
+    rdfs:domain ksx:ProductionOrder ; rdfs:range ksx:Lot ;
+    inf:producedBy "R-030" .
+
+# ── R-100 납기 리스크(이벤트·원인)
+
+inf:OTDRiskEvent a owl:Class ;
+    rdfs:subClassOf inf:InferenceEvent ;
+    rdfs:label "납기 리스크 이벤트"@ko , "on-time delivery risk event"@en ;
+    skos:definition "불량률이 기준(min_defect_rate)을 넘은 생산실적이 걸린 수주라인 중 납기가 기준일 + due_within_days일 이내(지난 납기 포함)인 것. 수주라인마다 하나."@ko ;
+    inf:producedBy "R-100" .
+
+inf:RiskCause a owl:Class ;
+    rdfs:label "리스크 원인"@ko , "risk cause"@en ;
+    skos:definition "리스크 이벤트의 원인 생산실적 하나와 그 LOT·공정·불량률의 묶음."@ko ;
+    inf:producedBy "R-100" .
+
+inf:onSalesOrderLine a owl:ObjectProperty ;
+    rdfs:label "대상 수주라인"@ko , "sales order line"@en ;
+    skos:definition "납기 리스크가 있는 수주라인."@ko ;
+    rdfs:domain inf:OTDRiskEvent ; rdfs:range ksx:SalesOrderLine ;
+    inf:producedBy "R-100" .
+
+inf:onProductionOrder a owl:ObjectProperty ;
+    rdfs:label "대상 생산지시"@ko , "production order"@en ;
+    skos:definition "원인 생산실적의 생산지시."@ko ;
+    rdfs:domain inf:OTDRiskEvent ; rdfs:range ksx:ProductionOrder ;
+    inf:producedBy "R-100" .
+
+inf:cause a owl:ObjectProperty ;
+    rdfs:label "원인"@ko , "cause"@en ;
+    skos:definition "이벤트의 원인(원인 생산실적마다 하나)."@ko ;
+    rdfs:domain inf:OTDRiskEvent ; rdfs:range inf:RiskCause ;
+    inf:producedBy "R-100" .
+
+inf:dueDate a owl:DatatypeProperty ;
+    rdfs:label "납기"@ko , "due date"@en ;
+    skos:definition "수주라인의 요청 납기."@ko ;
+    rdfs:domain inf:OTDRiskEvent ; rdfs:range xsd:date ;
+    inf:producedBy "R-100" .
+
+inf:maxDefectRate a owl:DatatypeProperty ;
+    rdfs:label "최대 불량률"@ko , "max defect rate"@en ;
+    skos:definition "원인 불량률 중 가장 큰 값(0~1)."@ko ;
+    rdfs:domain inf:OTDRiskEvent ; rdfs:range xsd:decimal ;
+    inf:producedBy "R-100" .
+
+inf:dueStatus a owl:DatatypeProperty ;
+    rdfs:label "납기 상태"@ko , "due status"@en ;
+    skos:definition "\"지연\"(납기 < 기준일) 또는 \"임박\"."@ko ;
+    rdfs:domain inf:OTDRiskEvent ; rdfs:range xsd:string ;
+    inf:producedBy "R-100" .
+
+inf:daysToDue a owl:DatatypeProperty ;
+    rdfs:label "납기까지 남은 일수"@ko , "days to due"@en ;
+    skos:definition "납기 − 기준일(일). 음수는 이미 지난 일수."@ko ;
+    rdfs:domain inf:OTDRiskEvent ; rdfs:range xsd:integer ;
+    inf:producedBy "R-100" .
+
+inf:baseDate a owl:DatatypeProperty ;
+    rdfs:label "기준일"@ko , "base date"@en ;
+    skos:definition "판단 기준일(계획의 today, 비우면 실행일)."@ko ;
+    rdfs:domain inf:OTDRiskEvent ; rdfs:range xsd:date ;
+    inf:producedBy "R-100" .
+
+inf:performance a owl:ObjectProperty ;
+    rdfs:label "원인 생산실적"@ko , "performance"@en ;
+    skos:definition "불량률이 기준을 넘은 생산실적."@ko ;
+    rdfs:domain inf:RiskCause ; rdfs:range ksx:ProductionPerformance ;
+    inf:producedBy "R-100" .
+
+inf:lot a owl:ObjectProperty ;
+    rdfs:label "원인 LOT"@ko , "lot"@en ;
+    skos:definition "원인 생산실적의 LOT."@ko ;
+    rdfs:domain inf:RiskCause ; rdfs:range ksx:Lot ;
+    inf:producedBy "R-100" .
+
+inf:operation a owl:ObjectProperty ;
+    rdfs:label "원인 공정"@ko , "operation"@en ;
+    skos:definition "원인 생산실적의 공정."@ko ;
+    rdfs:domain inf:RiskCause ; rdfs:range ksx:Operation ;
+    inf:producedBy "R-100" .
+
+inf:defectRate a owl:DatatypeProperty ;
+    rdfs:label "불량률"@ko , "defect rate"@en ;
+    skos:definition "불량 수량 ÷ 양품 수량(0~1)."@ko ;
+    rdfs:domain inf:RiskCause ; rdfs:range xsd:decimal ;
+    inf:producedBy "R-100" .
+
+# ── A-001~A-009 자동 전이(ksxgen 생성 규칙) — 자기 참조 관계의 닫힘
+
+inf:refParentDepartmentClosure a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "상위 부서(전체)"@ko , "refParentDepartment closure"@en ;
+    skos:definition "ksx:refParentDepartment를 끝까지 따라간 모든 대상."@ko ;
+    rdfs:domain ksx:Department ; rdfs:range ksx:Department ;
+    inf:producedBy "A-001" .
+
+inf:refCommonCodeMasterClosure a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "상위 공통코드 그룹(전체)"@ko , "refCommonCodeMaster closure"@en ;
+    skos:definition "ksx:refCommonCodeMaster를 끝까지 따라간 모든 대상."@ko ;
+    rdfs:domain ksx:CommonCodeMaster ; rdfs:range ksx:CommonCodeMaster ;
+    inf:producedBy "A-002" .
+
+inf:refReplacementItemClosure a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "대체 품목(전체)"@ko , "refReplacementItem closure"@en ;
+    skos:definition "ksx:refReplacementItem를 끝까지 따라간 모든 대상."@ko ;
+    rdfs:domain ksx:ItemMaster ; rdfs:range ksx:ItemMaster ;
+    inf:producedBy "A-003" .
+
+inf:refChildLotClosure a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "자로트(전체)"@ko , "refChildLot closure"@en ;
+    skos:definition "ksx:refChildLot를 끝까지 따라간 모든 대상."@ko ;
+    rdfs:domain ksx:Lot ; rdfs:range ksx:Lot ;
+    inf:producedBy "A-004" .
+
+inf:refParentEquipmentClosure a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "상위 설비(전체)"@ko , "refParentEquipment closure"@en ;
+    skos:definition "ksx:refParentEquipment를 끝까지 따라간 모든 대상."@ko ;
+    rdfs:domain ksx:Equipment ; rdfs:range ksx:Equipment ;
+    inf:producedBy "A-005" .
+
+inf:refAlternateStockerClosure a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "대체 저장소(전체)"@ko , "refAlternateStocker closure"@en ;
+    skos:definition "ksx:refAlternateStocker를 끝까지 따라간 모든 대상."@ko ;
+    rdfs:domain ksx:StockerInventory ; rdfs:range ksx:StockerInventory ;
+    inf:producedBy "A-006" .
+
+inf:refParentBatchClosure a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "모배치(전체)"@ko , "refParentBatch closure"@en ;
+    skos:definition "ksx:refParentBatch를 끝까지 따라간 모든 대상."@ko ;
+    rdfs:domain ksx:Batch ; rdfs:range ksx:Batch ;
+    inf:producedBy "A-007" .
+
+inf:refParentLineClosure a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "상위 라인(전체)"@ko , "refParentLine closure"@en ;
+    skos:definition "ksx:refParentLine를 끝까지 따라간 모든 대상."@ko ;
+    rdfs:domain ksx:Line ; rdfs:range ksx:Line ;
+    inf:producedBy "A-008" .
+
+inf:refParentEnterpriseClosure a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "상위 회사(전체)"@ko , "refParentEnterprise closure"@en ;
+    skos:definition "ksx:refParentEnterprise를 끝까지 따라간 모든 대상."@ko ;
+    rdfs:domain ksx:Enterprise ; rdfs:range ksx:Enterprise ;
+    inf:producedBy "A-009" .

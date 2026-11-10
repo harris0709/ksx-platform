@@ -138,6 +138,9 @@ def vocab_graphs(cfg: Config) -> dict[str, list[str]]:
         g[cfg.graph(f"tbox/ext/{cfg.ent if name == cfg.ent.lower() else name.upper()}")] = [e]
     g[cfg.graph("shapes")] = sorted(glob.glob(os.path.join(o, "shapes", "*.ttl")))
     g[cfg.graph("codelist")] = sorted(glob.glob(os.path.join(o, "vocab", "*.ttl")))
+    inf = os.path.join(o, "inference", "inf.ttl")
+    if os.path.exists(inf):                        # 추론 어휘(S7 D-5) — 규칙 결과 관계·이벤트의 레이블·정의·생성 규칙
+        g[cfg.graph("tbox/inference")] = [inf]
     return g
 
 

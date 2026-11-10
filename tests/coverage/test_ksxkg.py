@@ -185,6 +185,40 @@ def test_s7_rules_and_plan():
         prepareQuery(I.PREFIXES.format(ns="https://ontology.impix.co.kr/ksx9101/1.0/") + "SELECT DISTINCT ?x WHERE { " + c["select"] + " }")
 
 
+def test_inference_vocabulary():
+    """S7 D-5: 규칙이 쓰는 inf: 어휘는 모두 ontologies/inference/inf.ttl에 선언되고, inf:producedBy가 실제 규칙 ID다."""
+    import glob
+    import re
+    rules = sorted(glob.glob(os.path.join(ONTO, "rules", "*.rq")))
+    used = {}
+    for f in rules:
+        rid = os.path.basename(f).split("_", 1)[0]
+        body = "\n".join(l for l in open(f, encoding="utf-8") if not l.lstrip().startswith(("#", "PREFIX")))
+        for t in re.findall(r"inf:([A-Za-z]\w*)", body):
+            used.setdefault(t, set()).add(rid)
+    voc = open(os.path.join(ONTO, "inference", "inf.ttl"), encoding="utf-8").read()
+    declared = set(re.findall(r"^inf:(\w+) a ", voc, re.M))
+    assert set(used) - declared == set(), sorted(set(used) - declared)
+    ids = {os.path.basename(f).split("_", 1)[0] for f in rules}
+    for block in re.split(r"\n\s*\n", voc):                    # 선언 하나 = 빈 줄로 나뉜 블록 하나
+        m = re.match(r"inf:(\w+) a ", block.strip())
+        pb = re.search(r"inf:producedBy \"([A-Z]-\d{3})\"", block)
+        if m and pb:
+            t, rid = m.group(1), pb.group(1)
+            assert rid in ids, (t, rid)
+            assert t in used and rid in used[t], (t, rid, used.get(t))
+    try:
+        import rdflib
+    except ImportError:
+        return
+    g = rdflib.Graph().parse(os.path.join(ONTO, "inference", "inf.ttl"))
+    SK = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
+    INF = rdflib.Namespace("https://ontology.impix.co.kr/inference/")
+    for t in used:
+        s = INF[t]
+        assert any(l.language == "ko" for l in g.objects(s, rdflib.RDFS.label)) and (s, SK.definition, None) in g, t
+
+
 def test_split_nquads():
     with tempfile.TemporaryDirectory() as tmp:
         nq = os.path.join(tmp, "x.nq")
