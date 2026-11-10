@@ -190,6 +190,18 @@ evaluate:
       desc: "납기 리스크 수주라인(수주-순번)"
       select: "?e a inf:OTDRiskEvent ; inf:onSalesOrderLine ?s . ?s ksx:salesDocumentNumber ?n ; ksx:salesDocumentSequence ?q . BIND(CONCAT(?n, '-', STR(?q)) AS ?x)"
       expected: ["SO260926001-1", "SO260928001-1", "SO260929001-1", "SO260930001-1"]
+    - id: E13
+      rule: R-100
+      question: "Q-SC02-04"
+      desc: "납기 상태(수주-순번:상태) — 4건 모두 기준일 10-20에 이미 지난 납기(10-06~09)"
+      select: "?e a inf:OTDRiskEvent ; inf:onSalesOrderLine ?s ; inf:dueStatus ?st . ?s ksx:salesDocumentNumber ?n ; ksx:salesDocumentSequence ?q . BIND(CONCAT(?n, '-', STR(?q), ':', ?st) AS ?x)"
+      expected: ["SO260926001-1:지연", "SO260928001-1:지연", "SO260929001-1:지연", "SO260930001-1:지연"]
+    - id: E14
+      rule: R-100
+      question: "Q-SC02-04"
+      desc: "남은 기간(납기 − 기준일, 음수 = 지난 일수)"
+      select: "?e a inf:OTDRiskEvent ; inf:onSalesOrderLine ?s ; inf:timeToDue ?d . ?s ksx:salesDocumentNumber ?n . BIND(CONCAT(?n, ':', STR(?d)) AS ?x)"
+      expected: ["SO260926001:-P14D", "SO260928001:-P13D", "SO260929001:-P12D", "SO260930001:-P11D"]
     - id: E09
       rule: R-010
       question: "Q-SC06-03"
