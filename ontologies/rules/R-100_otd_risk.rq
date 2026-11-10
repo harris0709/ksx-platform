@@ -5,10 +5,10 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 # R-100 납기 리스크(업무 규칙)
 #   IF 생산실적 불량률 > ${min_defect_rate} AND 수주라인 요청 납기 ≤ 기준일 + ${due_within_days}일(지난 납기 포함)
 #   THEN 수주라인 납기 리스크 이벤트(원인 생산실적·생산지시·불량률·납기)
-#   납기 상태(S7 D-3): 납기 < 기준일 → "지연", 그 밖 → "임박". 남은 기간 inf:timeToDue = 납기 − 기준일(xsd:duration, 음수 = 지난 일수)
+#   납기 상태(S7 D-3): 납기 < 기준일 → "지연", 그 밖 → "임박". 남은 일수 inf:daysToDue = 납기 − 기준일(정수, 음수 = 지난 일수)
 CONSTRUCT {
   ?evt a inf:OTDRiskEvent ; inf:onSalesOrderLine ?sol ; inf:onProductionOrder ?po ; inf:causedBy ?pp ;
-       inf:defectRate ?rate ; inf:dueDate ?due ; inf:dueStatus ?st ; inf:timeToDue ?ttd ; inf:baseDate ?base ;
+       inf:defectRate ?rate ; inf:dueDate ?due ; inf:dueStatus ?st ; inf:daysToDue ?days ; inf:baseDate ?base ;
        inf:ruleId "R-100" .
 }
 WHERE {
@@ -20,6 +20,7 @@ WHERE {
   FILTER NOT EXISTS { ?pp ksxq:violates ?v }
   BIND ("${today}"^^xsd:date AS ?base)
   BIND (IF(?due < ?base, "지연", "임박") AS ?st)
-  BIND (?due - ?base AS ?ttd)
+  BIND (STR(?due - ?base) AS ?dur)                                   # 엔진 표기 예: -P14D, -P14DT0H0M0.000S
+  BIND (xsd:integer(CONCAT(IF(STRSTARTS(?dur, "-"), "-", ""), STRBEFORE(STRAFTER(?dur, "P"), "D"))) AS ?days)
   BIND (IRI(CONCAT(STR(?sol), "/risk/R-100")) AS ?evt)
 }

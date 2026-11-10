@@ -199,9 +199,9 @@ evaluate:
     - id: E14
       rule: R-100
       question: "Q-SC02-04"
-      desc: "남은 기간(납기 − 기준일, 음수 = 지난 일수)"
-      select: "?e a inf:OTDRiskEvent ; inf:onSalesOrderLine ?s ; inf:timeToDue ?d . ?s ksx:salesDocumentNumber ?n . BIND(CONCAT(?n, ':', STR(?d)) AS ?x)"
-      expected: ["SO260926001:-P14D", "SO260928001:-P13D", "SO260929001:-P12D", "SO260930001:-P11D"]
+      desc: "남은 일수(납기 − 기준일, 음수 = 지난 일수)"
+      select: "?e a inf:OTDRiskEvent ; inf:onSalesOrderLine ?s ; inf:daysToDue ?d . ?s ksx:salesDocumentNumber ?n . BIND(CONCAT(?n, ':', STR(?d)) AS ?x)"
+      expected: ["SO260926001:-14", "SO260928001:-13", "SO260929001:-12", "SO260930001:-11"]
     - id: E09
       rule: R-010
       question: "Q-SC06-03"
