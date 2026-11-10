@@ -179,7 +179,13 @@ jobs:
           python -m ksxkg validate
           cat mapping/impix/S6_검증결과.md
           psql -d ksx -c "select dimension, severity, count(*) from audit.shacl_result where mode = 'data' group by 1, 2 order by 1, 2"
-      - name: S5·S6 실패 시 Fuseki·Ontop 로그
+      - name: S7 규칙 추론·정확도 평가(ksxkg infer — 추론 그래프·audit.rule_run·정답 사례 대비 정밀도·재현율)
+        env: { FUSEKI_URL: "http://localhost:3030/ksx", ONTOP_URL: "http://localhost:8080/sparql", PYTHONPATH: tools/ksxkg, S5_PLAN: mapping/impix/s7_plan.yaml }
+        run: |
+          python -m ksxkg infer || { cat mapping/impix/S7_추론결과.md; exit 1; }
+          cat mapping/impix/S7_추론결과.md
+          psql -d ksx -c "select rule_id, triples, seconds from audit.rule_run order by log_id"
+      - name: S5~S7 실패 시 Fuseki·Ontop 로그
         if: failure()
         run: |
           docker logs fuseki 2>&1 | tail -30 || true

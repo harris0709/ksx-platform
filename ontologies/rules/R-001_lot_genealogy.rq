@@ -2,6 +2,22 @@ PREFIX ksx: <https://ontology.impix.co.kr/ksx9101/1.0/>
 PREFIX inf: <https://ontology.impix.co.kr/inference/>
 PREFIX ksxq: <https://ontology.impix.co.kr/quality/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-# R-001 로트 계보 전개: 모로트를 끝까지 따라간다
-CONSTRUCT { ?lot inf:derivedFrom ?anc }
-WHERE { ?lot ksx:refParentLot+ ?anc . FILTER NOT EXISTS { ?lot ksxq:violates ?v } }
+# R-001 로트 계보(전이) — 투입 LOT(직접)과 계보 전체(닫힘)
+#   직접: 생산실적투입품목(투입 LOT) → 생산실적 → 산출 LOT  ⇒  ?lot inf:consumedLot ?input
+#         표준 모로트 참조(ksx:refParentLot)도 같은 관계로 본다
+#   닫힘: 위 두 관계를 끝까지 따라간다  ⇒  ?lot inf:derivedFrom ?ancestor
+#   IMPIX는 모로트 참조가 0건이고 계보가 투입품목으로 이어진다(S6 넘긴 과제). 위반 표식 LOT은 제외(S6).
+CONSTRUCT { ?lot inf:consumedLot ?input . ?d inf:derivedFrom ?anc . }
+WHERE {
+  {
+    ?ppi a ksx:ProductionPerformanceItem ; ksx:refProductionPerformance ?pp ; ksx:refLot ?input .
+    ?pp ksx:refLot ?lot .
+    FILTER (?lot != ?input)
+    FILTER NOT EXISTS { ?lot ksxq:violates ?v1 }
+  } UNION {
+    ?d a ksx:Lot ; (ksx:refParentLot | ^ksx:refLot/^ksx:refProductionPerformance/ksx:refLot)+ ?anc .
+    ?anc a ksx:Lot .
+    FILTER (?d != ?anc)
+    FILTER NOT EXISTS { ?d ksxq:violates ?v2 }
+  }
+}

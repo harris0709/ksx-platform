@@ -199,7 +199,7 @@ class Config:
 def load_config(path: str, repo: str) -> Config:
     p = path if os.path.isabs(path) else os.path.join(repo, path)
     raw = yaml.safe_load(open(p, encoding="utf-8"))
-    if raw.get("base"):                                   # s6_plan.yaml: base = s5_plan.yaml(접속·그래프 설정 공유)
+    while raw.get("base"):                                # s7 → s6 → s5: 앞 단계 계획을 물려받는다(접속·그래프·검증 설정 공유)
         b = yaml.safe_load(open(os.path.join(repo, raw["base"]), encoding="utf-8"))
         raw = {**b, **{k: v for k, v in raw.items() if k != "base"}}
     gen = yaml.safe_load(open(os.path.join(repo, raw.get("ksxgen", "ksxgen.yaml")), encoding="utf-8"))

@@ -152,6 +152,73 @@ def test_s6_templates():
     assert len(set(g.subjects(rdflib.RDF.type, SH.NodeShape))) == 5
 
 
+def test_s7_rules_and_plan():
+    """S7: 규칙 파라미터(기준일·due_limit), 모든 규칙이 파라미터로 채워지고 SPARQL로 읽힌다, 평가 사례의 규칙이 있다."""
+    import glob
+    import yaml
+    from ksxkg import infer as I
+    rules = os.path.join(ROOT, "ontologies", "rules")
+    prm = I.load_params(rules, "2026-10-20")
+    assert prm["due_limit"] == "2026-10-27" and prm["min_defect_rate"] == "0.02"
+    files = sorted(glob.glob(os.path.join(rules, "*.rq")))
+    ids = {os.path.basename(f).split("_", 1)[0] for f in files}
+    assert {"R-001", "R-002", "R-003", "R-005", "R-010", "R-020", "R-030", "R-100"} <= ids
+    import re as _re
+    for f in files:   # 규칙 ID 체계(rules/README.md): {ID}_{영문 소문자 이름}.rq, R은 001~039·100~299
+        n = os.path.basename(f)
+        assert _re.fullmatch(r"(A-\d{3}_\w+|R-(00[1-9]|0[1-3]\d|[12]\d\d)_[a-z0-9_]+)\.rq", n), n
+    assert all('inf:ruleId "' + os.path.basename(f).split("_")[0] + '"' in open(f, encoding="utf-8").read()
+               for f in files if "Event" in open(f, encoding="utf-8").read() and os.path.basename(f).startswith("R-"))
+    texts = [I.render(open(f, encoding="utf-8").read(), prm) for f in files]
+    assert all("${" not in t for t in texts)
+    plan = yaml.safe_load(open(os.path.join(ROOT, "mapping", "impix", "s7_plan.yaml"), encoding="utf-8"))
+    cases = plan["evaluate"]["cases"]
+    assert {c["rule"] for c in cases} <= ids and plan["base"].endswith("s6_plan.yaml")
+    assert {c["rule"] for c in cases} >= {"R-001", "R-002", "R-003", "R-005", "R-010", "R-020", "R-030", "R-100"}
+    try:
+        from rdflib.plugins.sparql import prepareQuery
+    except ImportError:
+        return
+    for f, t in zip(files, texts):
+        prepareQuery(t)
+    for c in cases:
+        prepareQuery(I.PREFIXES.format(ns="https://ontology.impix.co.kr/ksx9101/1.0/") + "SELECT DISTINCT ?x WHERE { " + c["select"] + " }")
+
+
+def test_inference_vocabulary():
+    """S7 D-5: 규칙이 쓰는 inf: 어휘는 모두 ontologies/inference/inf.ttl에 선언되고, inf:producedBy가 실제 규칙 ID다."""
+    import glob
+    import re
+    rules = sorted(glob.glob(os.path.join(ONTO, "rules", "*.rq")))
+    used = {}
+    for f in rules:
+        rid = os.path.basename(f).split("_", 1)[0]
+        body = "\n".join(l for l in open(f, encoding="utf-8") if not l.lstrip().startswith(("#", "PREFIX")))
+        for t in re.findall(r"inf:([A-Za-z]\w*)", body):
+            used.setdefault(t, set()).add(rid)
+    voc = open(os.path.join(ONTO, "inference", "inf.ttl"), encoding="utf-8").read()
+    declared = set(re.findall(r"^inf:(\w+) a ", voc, re.M))
+    assert set(used) - declared == set(), sorted(set(used) - declared)
+    ids = {os.path.basename(f).split("_", 1)[0] for f in rules}
+    for block in re.split(r"\n\s*\n", voc):                    # 선언 하나 = 빈 줄로 나뉜 블록 하나
+        m = re.match(r"inf:(\w+) a ", block.strip())
+        pb = re.search(r"inf:producedBy \"([A-Z]-\d{3})\"", block)
+        if m and pb:
+            t, rid = m.group(1), pb.group(1)
+            assert rid in ids, (t, rid)
+            assert t in used and rid in used[t], (t, rid, used.get(t))
+    try:
+        import rdflib
+    except ImportError:
+        return
+    g = rdflib.Graph().parse(os.path.join(ONTO, "inference", "inf.ttl"))
+    SK = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
+    INF = rdflib.Namespace("https://ontology.impix.co.kr/inference/")
+    for t in used:
+        s = INF[t]
+        assert any(l.language == "ko" for l in g.objects(s, rdflib.RDFS.label)) and (s, SK.definition, None) in g, t
+
+
 def test_split_nquads():
     with tempfile.TemporaryDirectory() as tmp:
         nq = os.path.join(tmp, "x.nq")

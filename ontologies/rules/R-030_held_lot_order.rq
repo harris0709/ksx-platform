@@ -1,0 +1,10 @@
+PREFIX ksx: <https://ontology.impix.co.kr/ksx9101/1.0/>
+PREFIX inf: <https://ontology.impix.co.kr/inference/>
+PREFIX ksxq: <https://ontology.impix.co.kr/quality/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+# R-030 보류 LOT이 걸린 생산지시(체인): 보류 LOT → 생산지시  ⇒  ?order inf:hasHeldLot ?lot. Q-SC05-06, EV2·EV3
+CONSTRUCT { ?po inf:hasHeldLot ?lot }
+WHERE {
+  ?lot a ksx:Lot ; ksx:holdIndicator true ; ksx:refProductionOrder ?po .
+  FILTER NOT EXISTS { ?lot ksxq:violates ?v }
+}

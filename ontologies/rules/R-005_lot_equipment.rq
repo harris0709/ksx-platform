@@ -1,0 +1,13 @@
+PREFIX ksx: <https://ontology.impix.co.kr/ksx9101/1.0/>
+PREFIX inf: <https://ontology.impix.co.kr/inference/>
+PREFIX ksxq: <https://ontology.impix.co.kr/quality/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+# R-005 LOT이 거친 설비(체인): 생산실적설비 → 생산실적 → LOT  ⇒  ?lot inf:processedOn ?equipment
+#   "완제품 LOT의 하우징을 주조한 설비"는 R-001(계보) + R-005로 답한다(Q-SC02-06, Q-SC06-03)
+CONSTRUCT { ?lot inf:processedOn ?eq }
+WHERE {
+  ?ppe a ksx:ProductionPerformanceEquipment ; ksx:refProductionPerformance ?pp ; ksx:refEquipment ?eq .
+  ?pp ksx:refLot ?lot .
+  FILTER NOT EXISTS { ?lot ksxq:violates ?v1 }
+  FILTER NOT EXISTS { ?ppe ksxq:violates ?v2 }
+}

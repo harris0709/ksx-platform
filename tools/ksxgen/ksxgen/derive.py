@@ -266,7 +266,10 @@ def business_closures(rules_dir: str) -> dict[str, str]:
     found = {}
     for f in sorted(glob.glob(os.path.join(rules_dir, "R-*.rq"))):
         body = "\n".join(l for l in open(f, encoding="utf-8") if not l.lstrip().startswith("#"))
-        for p in re.findall(r"ksx:(\w+)\+", body):
+        paths = re.findall(r"ksx:(\w+)\+", body)
+        for grp in re.findall(r"\(([^()]*)\)\+", body):     # 대안 경로 (ksx:a | …)+ 안의 관계도 업무 규칙이 전개한다
+            paths += re.findall(r"ksx:(\w+)", grp)
+        for p in paths:
             found.setdefault(p, os.path.basename(f))
     return found
 
