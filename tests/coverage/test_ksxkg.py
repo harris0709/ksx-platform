@@ -219,6 +219,22 @@ def test_inference_vocabulary():
         assert any(l.language == "ko" for l in g.objects(s, rdflib.RDFS.label)) and (s, SK.definition, None) in g, t
 
 
+def test_s7_templates():
+    """S7 양식: 계획 양식은 base·infer·사례, 규칙 양식은 파라미터 없이 SPARQL로 읽힌다."""
+    import yaml
+    t = os.path.join(ROOT, "mapping", "_template")
+    p = yaml.safe_load(open(os.path.join(t, "s7_plan.yaml"), encoding="utf-8"))
+    assert p["base"].endswith("s6_plan.yaml") and p["infer"]["thresholds"] == {"precision": 0.9, "recall": 0.95}
+    assert all({"id", "rule", "select", "expected"} <= set(c) for c in p["evaluate"]["cases"])
+    q = open(os.path.join(t, "rule_양식.rq"), encoding="utf-8").read()
+    assert sum(1 for l in q.splitlines() if l.startswith("CONSTRUCT {")) == 1 and "ksxq:violates" in q
+    try:
+        from rdflib.plugins.sparql import prepareQuery
+    except ImportError:
+        return
+    prepareQuery(q)
+
+
 def test_split_nquads():
     with tempfile.TemporaryDirectory() as tmp:
         nq = os.path.join(tmp, "x.nq")
