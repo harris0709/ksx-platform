@@ -381,7 +381,7 @@ def rdf_counts(cfg: Config) -> dict:
 def age_counts(cfg: Config, s: dict) -> dict:
     g = s["graph"]
     labels = [x.split("|") for x in psql_at(cfg, (
-        "SELECT l.name || '|' || l.kind FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph gg ON l.graph = gg.graphid "
+        "SELECT l.name || '|' || l.kind::text FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph gg ON l.graph = gg.graphid "
         f"WHERE gg.name = '{g}' AND l.name NOT LIKE '\\_ag\\_label\\_%' ORDER BY 1")).split()]
     if not labels:
         return {"v": {}, "e": {}, "broken": 0}
