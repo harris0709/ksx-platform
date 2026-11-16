@@ -201,6 +201,7 @@ jobs:
         env: { FUSEKI_URL: "http://localhost:3030/ksx", ONTOP_URL: "http://localhost:8080/sparql", PYTHONPATH: tools/ksxkg, S5_PLAN: mapping/impix/s8_plan.yaml,
                QDRANT_URL: "http://localhost:6333", EMBED_URL: "http://localhost:8082" }
         run: |
+          set -o pipefail
           python -m ksxkg sync | tee s8a.txt || { cat mapping/impix/S8_동기화결과.md; exit 1; }
           cat mapping/impix/S8_동기화결과.md
       - name: S8 다시 실행 — 변경 없음 / 원장 1행 변경은 그 노드만
