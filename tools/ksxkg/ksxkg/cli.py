@@ -6,6 +6,8 @@
   python -m ksxkg query       --plan … --endpoint ontop|fuseki "SPARQL"   # 질의 한 건(확인용)
   python -m ksxkg validate    --plan mapping/impix/s6_plan.yaml [--seed]  # S6 SHACL 검증 / 의도적 위반 시험
   python -m ksxkg infer       --plan mapping/impix/s7_plan.yaml [--eval]  # S7 규칙 추론(+정확도 평가) / 평가만
+  python -m ksxkg sync        --plan mapping/impix/s8_plan.yaml [--eval]  # S8 속성 그래프(AGE)·벡터(Qdrant) 동기화+정합·검색 평가
+  python -m ksxkg search      --plan … --collection documents "질문"      # 벡터 검색 한 건(확인용, 문서는 현행만)
 --plan을 생략하면 환경변수 S5_PLAN(기본 mapping/impix/s5_plan.yaml)을 쓴다.
 """
 from __future__ import annotations
@@ -19,7 +21,7 @@ from .base import DbError, SparqlError, load_config, sparql
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="ksxkg")
-    ap.add_argument("cmd", choices=["materialize", "check", "query", "validate", "infer"])
+    ap.add_argument("cmd", choices=["materialize", "check", "query", "validate", "infer", "sync", "search"])
     ap.add_argument("text", nargs="?", help="query: SPARQL")
     ap.add_argument("--plan", default=os.environ.get("S5_PLAN", "mapping/impix/s5_plan.yaml"))
     ap.add_argument("--repo", default=os.getcwd())
@@ -27,7 +29,10 @@ def main(argv=None) -> int:
     ap.add_argument("--skip-morph", action="store_true", help="materialize: 이전 N-Quads(out/kg/ksx.nq)를 다시 적재만")
     ap.add_argument("--full", action="store_true", help="materialize: 차이 반영 대신 그래프 단위 교체(PUT)")
     ap.add_argument("--seed", action="store_true", help="validate: 의도적 위반을 시험 그래프에 넣어 전건 검출·추론 제외 확인")
-    ap.add_argument("--eval", action="store_true", help="infer: 규칙을 다시 실행하지 않고 현재 추론 결과만 정답 사례와 비교")
+    ap.add_argument("--eval", action="store_true", help="infer: 규칙을 다시 실행하지 않고 현재 추론 결과만 정답 사례와 비교 / sync: 검색 평가만")
+    ap.add_argument("--skip-vectors", action="store_true", help="sync: 속성 그래프만(벡터 색인 생략)")
+    ap.add_argument("--collection", default="noun_cards", choices=["noun_cards", "documents", "cases", "nodes"], help="search: 컬렉션")
+    ap.add_argument("-k", type=int, default=5, help="search: 상위 k")
     a = ap.parse_args(argv)
     cfg = load_config(a.plan, a.repo)
     try:
@@ -43,6 +48,12 @@ def main(argv=None) -> int:
         if a.cmd == "infer":
             from .infer import infer
             return 0 if infer(cfg, eval_only=a.eval) else 1
+        if a.cmd == "sync":
+            from .sync import sync
+            return 0 if sync(cfg, eval_only=a.eval, skip_vectors=a.skip_vectors) else 1
+        if a.cmd == "search":
+            from .sync import search_cli
+            return search_cli(cfg, a.collection, a.text or sys.stdin.read(), a.k)
         if a.cmd == "query":
             ep = cfg.ontop if a.endpoint == "ontop" else cfg.query
             r = sparql(ep, a.text or sys.stdin.read())
@@ -53,7 +64,7 @@ def main(argv=None) -> int:
                     print("\t".join(x.get(c, "") for c in cols))
             print(f"({len(r)}행)")
             return 0
-    except (DbError, SparqlError) as e:
+    except (DbError, SparqlError, RuntimeError) as e:
         print("오류:", e, file=sys.stderr)
         return 1
     return 0

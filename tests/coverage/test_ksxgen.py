@@ -156,7 +156,7 @@ def test_derived_outputs():
     o = os.path.join(ROOT, "ontologies")
     age = open(os.path.join(o, "graph", "age_schema.sql"), encoding="utf-8").read()
     arrays = re.findall(r"FOREACH x IN ARRAY ARRAY\[(.*?)\] LOOP", age)
-    vl, el = (re.findall(r"'(\w+)'", a) for a in arrays)
+    vl, el = (re.findall(r"'(\w+)'", a) for a in arrays[:2])   # 3·4번째는 추론 라벨(S8)
     assert len(vl) == 76 + 5 and {"Lot", "BOMLine", "CustomerComplaint"} <= set(vl)
     assert {"refParentLot", "hasLine", "lineOf", "refItem"} <= set(el) and "lotState" not in el
     onto = json.load(open(os.path.join(o, "catalog", "tools", "ksx-ontology.json"), encoding="utf-8"))

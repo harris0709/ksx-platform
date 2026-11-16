@@ -167,7 +167,19 @@ def rml(obda_text: str, index: dict | None = None, common=()) -> dict[str, str]:
 
 
 # ---------------------------------------------------------------- Apache AGE 스키마
-def age_schema(obda_texts: list[str], graph: str) -> str:
+def inference_labels(inf_text: str) -> tuple[list[str], list[str]]:
+    """추론 어휘(inf.ttl)의 클래스 → 노드 라벨, 객체 관계 → 관계 라벨(S8: 추론 이벤트·관계도 속성 그래프에 둔다)."""
+    vl, el = [], []
+    for name, kinds in re.findall(r"^inf:(\w+) a ([^;]+);", inf_text or "", re.M):
+        if "owl:Class" in kinds:
+            vl.append(name)
+        elif "owl:ObjectProperty" in kinds:
+            el.append(name)
+    return vl, el
+
+
+def age_schema(obda_texts: list[str], graph: str, inf_text: str = "",
+               writer: str = "ksx_owner", readers: tuple = ("ksx_reader",)) -> str:
     vl, el = [], []
     for text in obda_texts:
         pfx, maps = parse_obda(text)
@@ -182,9 +194,15 @@ def age_schema(obda_texts: list[str], graph: str) -> str:
                         e = p.split(":", 1)[1]
                         if e not in el:
                             el.append(e)
-    o = [f"-- Apache AGE 속성 그래프 스키마(ksxgen 생성물, 구현안내서 11.1) — 노드 라벨 {len(vl)} · 관계 라벨 {len(el)}",
+    ivl, iel = inference_labels(inf_text)
+    ivl = [x for x in ivl if x not in vl]
+    iel = [x for x in iel if x not in el]
+    o = [f"-- Apache AGE 속성 그래프 스키마(ksxgen 생성물, 구현안내서 11.1) — 노드 라벨 {len(vl)} · 관계 라벨 {len(el)}"
+         + (f" + 추론 노드 라벨 {len(ivl)} · 관계 라벨 {len(iel)}" if ivl or iel else ""),
          "-- 노드 = 명사 개체(키: iri), 관계 = 객체 관계(ref*·hasLine·lineOf). 코드·단위는 노드 속성으로 둔다.",
-         "-- 다시 실행해도 된다(있으면 건너뜀). 이 세션에서만 AGE를 쓴다.",
+         "-- 추론(S7) 이벤트·관계는 inference/inf.ttl의 클래스·객체 관계로 라벨을 만든다.",
+         "-- 관리자(superuser)로 적용한다. 다시 실행해도 된다(있으면 건너뜀).",
+         "CREATE EXTENSION IF NOT EXISTS age;",
          "LOAD 'age';", 'SET search_path = ag_catalog, "$user", public;', "",
          "DO $$ BEGIN",
          f"  IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_graph WHERE name = '{graph}') THEN",
@@ -199,10 +217,42 @@ def age_schema(obda_texts: list[str], graph: str) -> str:
          "  FOREACH x IN ARRAY ARRAY[" + ", ".join(f"'{x}'" for x in el) + "] LOOP",
          "    IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph g ON l.graph = g.graphid",
          f"                   WHERE g.name = '{graph}' AND l.name = x) THEN PERFORM ag_catalog.create_elabel('{graph}', x); END IF;",
-         "  END LOOP;",
-         "END $$;"]
+         "  END LOOP;"]
+    if ivl or iel:
+        o += ["  -- 추론 이벤트 라벨(inf: 클래스)과 추론 관계 라벨(inf: 객체 관계)",
+              "  FOREACH x IN ARRAY ARRAY[" + ", ".join(f"'{x}'" for x in ivl) + "] LOOP",
+              "    IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph g ON l.graph = g.graphid",
+              f"                   WHERE g.name = '{graph}' AND l.name = x) THEN PERFORM ag_catalog.create_vlabel('{graph}', x); END IF;",
+              "  END LOOP;",
+              "  FOREACH x IN ARRAY ARRAY[" + ", ".join(f"'{x}'" for x in iel) + "] LOOP",
+              "    IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph g ON l.graph = g.graphid",
+              f"                   WHERE g.name = '{graph}' AND l.name = x) THEN PERFORM ag_catalog.create_elabel('{graph}', x); END IF;",
+              "  END LOOP;"]
+    o += ["END $$;"]
     o += ["", "-- 노드 속성 인덱스(iri·식별 속성 조회)"]
-    o += [f'CREATE INDEX IF NOT EXISTS "ix_{x}_props" ON {graph}."{x}" USING gin (properties);' for x in vl]
+    o += [f'CREATE INDEX IF NOT EXISTS "ix_{x}_props" ON {graph}."{x}" USING gin (properties);' for x in vl + ivl]
+    rs = ", ".join(readers)
+    o += ["",
+          "-- 서비스 계정 권한(구현안내서 11.1·15장) — 계정이 있을 때만(S0 init이 만든 원장 DB)",
+          f"--   {writer}: pg-sync(ksxkg sync)가 라벨 테이블에 직접 쓴다(cypher 해석기를 쓰지 않으므로 LOAD 없이 동작).",
+          f"--   {rs}: 탐색(MCP 도구, S9). 관리자가 아니면 LOAD 'age'를 쓸 수 없으므로($libdir/plugins 밖)",
+          "--   접속할 때 미리 로드한다(session_preload_libraries — 서버 전체 미리 로드는 하지 않는다, 3.1).",
+          "DO $$",
+          "DECLARE r text;",
+          "BEGIN",
+          "  FOREACH r IN ARRAY ARRAY[" + ", ".join(f"'{x}'" for x in (writer,) + tuple(readers)) + "] LOOP",
+          "    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = r) THEN",
+          f"      EXECUTE format('GRANT USAGE ON SCHEMA ag_catalog, {graph} TO %I', r);",
+          "      EXECUTE format('GRANT SELECT ON ag_catalog.ag_graph, ag_catalog.ag_label TO %I', r);",
+          f"      EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA {graph} TO %I', r);",
+          "      EXECUTE format('ALTER ROLE %I SET session_preload_libraries = ''age''', r);",
+          "    END IF;",
+          "  END LOOP;",
+          f"  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '{writer}') THEN",
+          f"    EXECUTE 'GRANT INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {graph} TO {writer}';",
+          f"    EXECUTE 'GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA {graph} TO {writer}';",
+          "  END IF;",
+          "END $$;"]
     return "\n".join(o) + "\n"
 
 

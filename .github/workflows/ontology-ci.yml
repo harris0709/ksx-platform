@@ -34,7 +34,7 @@ jobs:
           PGPASSWORD=ci psql -h localhost -p 5434 -U postgres -v ON_ERROR_STOP=1 -q -c "CREATE EXTENSION IF NOT EXISTS age"
           for n in 1 2; do PGPASSWORD=ci psql -h localhost -p 5434 -U postgres -v ON_ERROR_STOP=1 -q -o /dev/null -f ontologies/graph/age_schema.sql; done
           PGPASSWORD=ci psql -h localhost -p 5434 -U postgres -At -c "select kind, count(*) from ag_catalog.ag_label l join ag_catalog.ag_graph g on l.graph = g.graphid where g.name = 'ksx_graph' group by 1 order by 1" | tee age.txt
-          grep -q "^v|82$" age.txt && grep -q "^e|71$" age.txt   # 노드 81·관계 70 + AGE 기본 라벨 각 1
+          grep -q "^v|86$" age.txt && grep -q "^e|97$" age.txt   # 노드 81 + 추론 4 · 관계 70 + 추론 26 + AGE 기본 라벨 각 1
       - name: 웹 콘솔 데이터 최신 여부
         run: python tools/build_web.py && git diff --exit-code web/
       - name: 생성기 회귀 시험
@@ -58,12 +58,6 @@ jobs:
   # S3 적재 E2E: IMPIX 원천 → stg → dbt(xfm) → 표준 원장 + 대사 — 실제 dbt로 실행
   s3-load:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16.4
-        env: { POSTGRES_USER: postgres, POSTGRES_PASSWORD: ci, POSTGRES_DB: ksx }
-        ports: ["5432:5432"]
-        options: --health-cmd "pg_isready -U postgres" --health-interval 5s --health-retries 20
     env:
       PGHOST: localhost
       PGPORT: "5432"
@@ -85,6 +79,15 @@ jobs:
       PYTHONUNBUFFERED: "1"
     steps:
       - uses: actions/checkout@v4
+      - name: 원장 DB(apache/age — compose와 같이 서버 전체 미리 로드 없음) · S8 Qdrant·임베딩(bge-m3) 기동
+        run: |
+          docker run -d --name pg -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=ci -e POSTGRES_DB=ksx \
+            apache/age:release_PG16_1.5.0 postgres -c shared_preload_libraries=
+          docker run -d --name qdrant -p 6333:6333 qdrant/qdrant:v1.13.0
+          docker run -d --name embed -p 8082:80 ghcr.io/huggingface/text-embeddings-inference:cpu-1.9 \
+            --model-id BAAI/bge-m3 --max-client-batch-size 64
+          for i in $(seq 1 60); do [ "$(docker logs pg 2>&1 | grep -c 'ready to accept connections')" -ge 2 ] && break; sleep 2; done
+          psql -d ksx -c "select version()" -At
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - name: 의존성(dbt-postgres)
@@ -185,8 +188,39 @@ jobs:
           python -m ksxkg infer || { cat mapping/impix/S7_추론결과.md; exit 1; }
           cat mapping/impix/S7_추론결과.md
           psql -d ksx -c "select rule_id, triples, seconds from audit.rule_run order by log_id"
-      - name: S5~S7 실패 시 Fuseki·Ontop 로그
+      - name: S8 속성 그래프 스키마(관리자 — 라벨·인덱스·서비스 계정 권한)
+        run: psql -d ksx -v ON_ERROR_STOP=1 -q -o /dev/null -f ontologies/graph/age_schema.sql
+      - name: S8 임베딩 서버 준비(bge-m3 받기)
+        timeout-minutes: 20
+        run: |
+          for i in $(seq 1 240); do curl -fsS http://localhost:8082/health >/dev/null 2>&1 && break; sleep 5; done
+          curl -fsS http://localhost:8082/info; echo
+          curl -fsS -H 'Content-Type: application/json' -d '{"inputs":["금형온도 상한"]}' http://localhost:8082/embed | python -c "import json,sys; print('dim', len(json.load(sys.stdin)[0]))"
+      - name: S8 동기화(ksxkg sync — AGE 차이 반영·정합·탐색·Qdrant 4종·검색 평가)
+        timeout-minutes: 30
+        env: { FUSEKI_URL: "http://localhost:3030/ksx", ONTOP_URL: "http://localhost:8080/sparql", PYTHONPATH: tools/ksxkg, S5_PLAN: mapping/impix/s8_plan.yaml,
+               QDRANT_URL: "http://localhost:6333", EMBED_URL: "http://localhost:8082" }
+        run: |
+          python -m ksxkg sync | tee s8a.txt || { cat mapping/impix/S8_동기화결과.md; exit 1; }
+          cat mapping/impix/S8_동기화결과.md
+      - name: S8 다시 실행 — 변경 없음 / 원장 1행 변경은 그 노드만
+        timeout-minutes: 20
+        env: { FUSEKI_URL: "http://localhost:3030/ksx", ONTOP_URL: "http://localhost:8080/sparql", PYTHONPATH: tools/ksxkg, S5_PLAN: mapping/impix/s8_plan.yaml,
+               QDRANT_URL: "http://localhost:6333", EMBED_URL: "http://localhost:8082" }
+        run: |
+          python -m ksxkg sync | tee s8b.txt
+          grep -q "속성 그래프 노드 .*(추가 0 · 변경 0 · 삭제 0)" s8b.txt && grep -q "속성 그래프 관계 .*(추가 0 · 변경 0 · 삭제 0)" s8b.txt
+          grep -q "nodes .*(추가 0 · 변경 0 · 삭제 0)" s8b.txt
+          psql -d ksx -c "update ksx.\"Equipment\" set \"EquipmentName\" = '다이캐스팅기 2호(금형 교체)' where \"EquipmentID\" = 'DCM-02'"
+          S5_PLAN=mapping/impix/s5_plan.yaml python -m ksxkg materialize | tail -3
+          python -m ksxkg sync | tee s8c.txt
+          grep -q "속성 그래프 노드 .*(추가 0 · 변경 1 · 삭제 0)" s8c.txt && grep -q "nodes .*(추가 0 · 변경 1 · 삭제 0)" s8c.txt
+          psql -d ksx -c "select target, kind, total, added, updated, removed, seconds from audit.graph_sync order by log_id desc limit 8"
+      - name: S5~S8 실패 시 Fuseki·Ontop·Qdrant·임베딩 로그
         if: failure()
         run: |
           docker logs fuseki 2>&1 | tail -30 || true
           docker logs ontop 2>&1 | grep -v WARN | tail -30 || true
+          docker logs qdrant 2>&1 | tail -20 || true
+          docker logs embed 2>&1 | tail -30 || true
+          docker logs pg 2>&1 | grep -E "ERROR|FATAL" | tail -20 || true

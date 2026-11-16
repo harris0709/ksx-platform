@@ -1,0 +1,262 @@
+# S8 속성 그래프·벡터 인덱스 계획 — IMPIX (구현안내서 11장)
+#   관리자(postgres)로 속성 그래프 스키마를 먼저 적용(라벨·인덱스·서비스 계정 권한, 다시 실행 가능):
+#     docker compose exec -T postgres psql -U postgres -d ksx -v ON_ERROR_STOP=1 < ../../ontologies/graph/age_schema.sql
+#   export S5_PLAN=mapping/impix/s8_plan.yaml
+#   docker compose --profile tools run --rm -e S5_PLAN s5-tools sync          # AGE 차이 반영 + 정합 + 벡터 색인 + 검색 평가 → S8_동기화결과.md
+#   docker compose --profile tools run --rm -e S5_PLAN s5-tools sync --eval   # 검색 평가만
+#   docker compose --profile tools run --rm -e S5_PLAN s5-tools search --collection documents "금형온도 상한 초과 조치"
+base: mapping/impix/s7_plan.yaml     # s7 → s6 → s5: 원장·Fuseki·기업·그래프 설정을 물려받는다
+
+sync:
+  graph: ksx_graph                   # Apache AGE 그래프(ksxgen.yaml graph, S4 D-4)
+  site: HQ
+  qdrant: "${QDRANT_URL:-http://localhost:6333}"
+  qdrant_key: "${QDRANT_API_KEY:-}"
+  embed: "${EMBED_URL:-http://localhost:8082}"   # TEI 호환 임베딩 서버(POST /embed) — compose 서비스 embed
+  model: BAAI/bge-m3                 # 한·영 다국어(구현안내서 표 5 스택), 1024차원
+  dim: 1024
+  batch: 16
+  catalog: ontologies/catalog/nouns  # 명사 카드(S4)
+  collections:
+    nodes:                           # 주요 개체 = 자기 이름·설명이 있는 개체(품목·설비·공정·부서·거래처·파라미터 …)
+      include: []                    # 이름이 없어도 넣을 명사
+      exclude: []
+    cases:                           # 원인–조치 이력(고객 클레임, 공급사 시정조치)
+      nouns: [CustomerComplaint, CorrectiveActionRequest]
+      related: [CorrectiveActionPlan, CorrectiveActionResult]   # 이 이력을 가리키는 계획·결과도 문장에 넣는다
+      approved:                      # payload approved = Y 조건(종결된 이력)
+        CustomerComplaint: {customerComplaintStatusCode: [CLOSED]}
+        CorrectiveActionRequest: {related: CorrectiveActionResult}
+    documents:
+      dir: mapping/impix/sop         # SOP·규정(머리말 doc_id·version·status·links) — README 참조
+      chunk: [500, 800]
+  checks:                            # 탐색 확인(cypher) — 서비스 계정 세션, 다단 경로
+    - id: G01
+      desc: "로트 계보(추론 관계 derivedFrom) — 완제품 E261003A1의 원재료 LOT"
+      cypher: "MATCH (l:Lot {lotID: 'E261003A1'})-[:derivedFrom]->(a:Lot) RETURN a.lotID"
+      expected: [H261003A1]
+    - id: G02
+      desc: "스펙아웃 하우징 LOT → 그 LOT으로 만든 완제품 LOT(추론 이벤트 + 계보 2단)"
+      cypher: "MATCH (e:SpecOutLotEvent)-[:onLot]->(h:Lot)<-[:derivedFrom]-(f:Lot) RETURN DISTINCT f.lotID"
+      expected: [E261003A1, E261005A1, E261006A1, E261007A1]
+    - id: G03
+      desc: "납기 리스크 이벤트(R-100) → 수주"
+      cypher: "MATCH (e:OTDRiskEvent)-[:onSalesOrderLine]->(s) RETURN DISTINCT s.salesDocumentNumber"
+      expected: [SO260926001, SO260928001, SO260929001, SO260930001]
+    - id: G04
+      desc: "BOM 다단 전개(추론 component) — EWP-B200"
+      cypher: "MATCH (p:ItemMaster {itemID: 'EWP-B200'})-[:component]->(c:ItemMaster) RETURN c.itemID"
+      expected: [ALDC12, BLT-M5X16, BOX-EWP, HSG-B200, IMP-B200, MTR-24V, ORG-45, PCB-EWP24, SEAL-M18]
+    - id: G05
+      desc: "가변 길이 경로(표준 관계 refParentDepartment*1..5) — 주조가공팀의 상위 부서"
+      cypher: "MATCH (d:Department {departmentID: 'D110'})-[:refParentDepartment*1..5]->(p:Department) RETURN p.departmentID"
+      expected: [D100]
+
+# 검색 평가(완료 기준 recall@5 ≥ 0.9, 컬렉션마다). 사례마다 recall@k = 상위 k(문서는 문서 단위)에 든 정답 ÷ min(정답 수, k).
+#   noun_cards: S1 업무 질의서(mapping/impix/s1/S1_업무질의서_IMPIX.xlsx)의 질문 → '필요 명사'(헤더·라인은 명사 카드 하나로)
+#   nodes: 업무 질의·현장 표현에 나오는 개체 이름 → 개체(라벨:식별값)
+#   cases: 증상 표현 → 클레임·시정조치 번호
+#   documents: 현장 질문 → 문서 번호. must_not = 나오면 안 되는 판(폐기) — 현행 필터 확인
+search_eval:
+  k: 5
+  threshold: 0.9
+  cases:
+    - {id: N-SC01-01, collection: noun_cards, source: Q-SC01-01, query: "EWP-A100의 현재 유효한 BOM 버전과 자품목 목록은?", expected: ["BOM", "ItemMaster"]}
+    - {id: N-SC01-02, collection: noun_cards, source: Q-SC01-02, query: "하우징 A100의 공정 순서와 공정별 표준 작업시간은?", expected: ["Routing", "Operation"]}
+    - {id: N-SC01-03, collection: noun_cards, source: Q-SC01-03, query: "CNC 가공 공정에 배정된 사용 중 설비와 대수는?", expected: ["OperationEquipment", "Equipment", "Operation"]}
+    - {id: N-SC01-04, collection: noun_cards, source: Q-SC01-04, query: "사용 중인 다이캐스팅기 목록과 제조사·도입일은?", expected: ["Equipment"]}
+    - {id: N-SC01-05, collection: noun_cards, source: Q-SC01-05, query: "품목유형별(제품·반제품·원자재·부자재·포장재·소모품) 사용 품목 수는?", expected: ["ItemMaster", "CommonCodeMaster"]}
+    - {id: N-SC01-06, collection: noun_cards, source: Q-SC01-06, query: "ERP 품목과 MES 품목 사본의 이름·단위가 다른 품목은?", expected: ["ItemMaster"]}
+    - {id: N-SC01-07, collection: noun_cards, source: Q-SC01-07, query: "공장별 생산라인과 일 표준 생산능력은?", expected: ["Plant", "Line"]}
+    - {id: N-SC01-08, collection: noun_cards, source: Q-SC01-08, query: "EWP-B200 1대 생산에 필요한 알루미늄 잉곳(ALDC12) 양은?", expected: ["BOM", "ItemMaster"]}
+    - {id: N-SC01-09, collection: noun_cards, source: Q-SC01-09, query: "단종(사용 중지) 품목이 BOM·라우팅에 남아 있는가?", expected: ["ItemMaster", "BOM", "Routing"]}
+    - {id: N-SC01-10, collection: noun_cards, source: Q-SC01-10, query: "품목마스터에 없는 자품목을 쓰는 BOM 라인은?", expected: ["BOM", "ItemMaster"]}
+    - {id: N-SC01-11, collection: noun_cards, source: Q-SC01-11, query: "대소문자나 공백만 다른 중복 품목코드는?", expected: ["ItemMaster"]}
+    - {id: N-SC01-12, collection: noun_cards, source: Q-SC01-12, query: "설비별 관리자와 소속 부서는?", expected: ["Equipment", "Personnel", "Department"]}
+    - {id: N-SC01-13, collection: noun_cards, source: Q-SC01-13, query: "LOT 관리 대상 품목은?", expected: ["ItemMaster"]}
+    - {id: N-SC01-14, collection: noun_cards, source: Q-SC01-14, query: "수입검사 대상 부품 목록은?", expected: ["ItemMaster"]}
+    - {id: N-SC01-15, collection: noun_cards, source: Q-SC01-15, query: "MES 공정 코드와 ERP 작업장 코드의 대응은?", expected: ["Operation"]}
+    - {id: N-SC01-16, collection: noun_cards, source: Q-SC01-16, query: "기준단위가 표준(EA·KG·L)과 다르게 등록된 품목은?", expected: ["ItemMaster", "UOMGroup"]}
+    - {id: N-SC01-17, collection: noun_cards, source: Q-SC01-17, query: "각 공정의 공정유형(생산·검사·포장)은?", expected: ["Operation", "CommonCodeMaster"]}
+    - {id: N-SC01-18, collection: noun_cards, source: Q-SC01-18, query: "퇴직자가 설비 관리자나 작업자로 남아 있는가?", expected: ["Personnel", "Equipment", "OperationStart"]}
+    - {id: N-SC01-19, collection: noun_cards, source: Q-SC01-19, query: "EWP-A100 BOM이 001에서 002로 바뀌며 추가된 자품목은?", expected: ["BOM"]}
+    - {id: N-SC01-20, collection: noun_cards, source: Q-SC01-20, query: "ERP·MES 공장 코드를 표준 공장 ID로 대응하면?", expected: ["Plant"]}
+    - {id: N-SC02-01, collection: noun_cards, source: Q-SC02-01, query: "지금(10-20 기준) 진행 중인 LOT과 다음 공정은?", expected: ["Lot", "Operation"]}
+    - {id: N-SC02-02, collection: noun_cards, source: Q-SC02-02, query: "제조오더 MO261005001의 LOT별 진행과 누적 양품은?", expected: ["ProductionOrder", "Lot", "OperationEnd"]}
+    - {id: N-SC02-03, collection: noun_cards, source: Q-SC02-03, query: "10-05~10-10 일별 EWP-A100 완성(포장 완공) 수량은?", expected: ["OperationEnd", "ProductionPerformance"]}
+    - {id: N-SC02-04, collection: noun_cards, source: Q-SC02-04, query: "납기 안에 완료되지 못했거나 위험한 제조오더는?", expected: ["ProductionOrder", "Lot", "OperationEnd"]}
+    - {id: N-SC02-05, collection: noun_cards, source: Q-SC02-05, query: "공정별 평균 처리시간(착공~완공)과 표준시간 대비 편차는?", expected: ["OperationStart", "OperationEnd", "Routing"]}
+    - {id: N-SC02-06, collection: noun_cards, source: Q-SC02-06, query: "완제품 LOT E261007A1에 들어간 하우징 LOT과 주조 설비는?", expected: ["Lot", "OperationStart", "Equipment"]}
+    - {id: N-SC02-07, collection: noun_cards, source: Q-SC02-07, query: "보류된 LOT과 보류 직전 공정의 불량률은?", expected: ["Lot", "OperationEnd", "ProductionPerformanceQuality"]}
+    - {id: N-SC02-08, collection: noun_cards, source: Q-SC02-08, query: "작업자별 10월 처리 LOT 수는?", expected: ["OperationStart", "Personnel"]}
+    - {id: N-SC02-09, collection: noun_cards, source: Q-SC02-09, query: "제조오더별 지시 수량 대비 완성 수량 달성률은?", expected: ["ProductionOrder", "OperationEnd"]}
+    - {id: N-SC02-10, collection: noun_cards, source: Q-SC02-10, query: "착공은 있는데 완공이 없는 공정 이력은?", expected: ["OperationStart", "OperationEnd"]}
+    - {id: N-SC02-11, collection: noun_cards, source: Q-SC02-11, query: "완공 시각이 착공보다 빠른 등 시간 오류가 있는 이력은?", expected: ["OperationStart", "OperationEnd"]}
+    - {id: N-SC02-12, collection: noun_cards, source: Q-SC02-12, query: "투입 수량과 양품+불량이 맞지 않는 완공 실적은?", expected: ["OperationStart", "OperationEnd"]}
+    - {id: N-SC02-13, collection: noun_cards, source: Q-SC02-13, query: "ERP에 없는 제조오더 번호를 가진 LOT은?", expected: ["Lot", "ProductionOrder"]}
+    - {id: N-SC02-14, collection: noun_cards, source: Q-SC02-14, query: "B200 라인(AL02)의 일 평균 생산량과 표준능력 대비 비율은?", expected: ["Line", "OperationEnd", "ProductionPerformance"]}
+    - {id: N-SC02-15, collection: noun_cards, source: Q-SC02-15, query: "공정 간 대기시간(이전 완공~다음 착공)이 가장 긴 구간은?", expected: ["OperationStart", "OperationEnd", "Routing"]}
+    - {id: N-SC02-16, collection: noun_cards, source: Q-SC02-16, query: "설비별 10월 처리 LOT 수와 처리 수량은?", expected: ["OperationStart", "Equipment"]}
+    - {id: N-SC02-17, collection: noun_cards, source: Q-SC02-17, query: "취소된 제조오더 MO260930002에 연결된 LOT은 어떻게 처리됐나?", expected: ["ProductionOrder", "Lot"]}
+    - {id: N-SC02-18, collection: noun_cards, source: Q-SC02-18, query: "하우징 LOT 200EA가 최종 포장까지 가는 평균 수율은?", expected: ["Lot", "OperationEnd"]}
+    - {id: N-SC02-19, collection: noun_cards, source: Q-SC02-19, query: "계획 시작일보다 첫 착공이 늦은 제조오더는?", expected: ["ProductionOrder", "OperationStart"]}
+    - {id: N-SC02-20, collection: noun_cards, source: Q-SC02-20, query: "확정 상태로 착수 대기 중인 제조오더와 수량은?", expected: ["ProductionOrder"]}
+    - {id: N-SC02-21, collection: noun_cards, source: Q-SC02-21, query: "10월(1~20일) 공정별 완공 양품 수량은?", expected: ["OperationEnd", "ProductionPerformance"]}
+    - {id: N-SC02-22, collection: noun_cards, source: Q-SC02-22, query: "기준 시점(10-20 17:00) 재공 LOT과 수량·금액은?", expected: ["Lot"]}
+    - {id: N-SC02-23, collection: noun_cards, source: Q-SC02-23, query: "MES에서는 보류(H)인데 ERP에서 입고·출하된 LOT은?", expected: ["Lot", "ProductIncoming", "ProductRelease"]}
+    - {id: N-SC02-24, collection: noun_cards, source: Q-SC02-24, query: "월별 제품 생산계획준수율은? 10월이 낮은 이유는?", expected: ["ProductionPlanning", "ProductIncoming"]}
+    - {id: N-SC02-25, collection: noun_cards, source: Q-SC02-25, query: "10월 완제품 제조 리드타임(조립~포장, 주조~포장)은?", expected: ["Lot", "OperationStart", "OperationEnd"]}
+    - {id: N-SC03-01, collection: noun_cards, source: Q-SC03-01, query: "DCM-02 금형온도가 규격 상한(240℃)을 넘은 기간과 최대값은?", expected: ["TraceParameter", "EquipmentParameter"]}
+    - {id: N-SC03-02, collection: noun_cards, source: Q-SC03-02, query: "금형온도 규격 이탈 중에 주조된 하우징 LOT은?", expected: ["TraceParameter", "OperationStart", "OperationEnd", "Lot"]}
+    - {id: N-SC03-03, collection: noun_cards, source: Q-SC03-03, query: "핵심(A등급) 파라미터와 규격은?", expected: ["EquipmentParameter"]}
+    - {id: N-SC03-04, collection: noun_cards, source: Q-SC03-04, query: "설비별 파라미터 수집 누락률은?", expected: ["TraceParameter", "EquipmentParameter"]}
+    - {id: N-SC03-05, collection: noun_cards, source: Q-SC03-05, query: "10-10 DCM-03 데이터 공백 구간과 원인은?", expected: ["TraceParameter", "Alarm"]}
+    - {id: N-SC03-06, collection: noun_cards, source: Q-SC03-06, query: "CNC-03 진동이 관리상한(3.5mm/s)을 넘기 시작한 시점과 횟수는?", expected: ["TraceParameter", "EquipmentParameter"]}
+    - {id: N-SC03-07, collection: noun_cards, source: Q-SC03-07, query: "LKT-02 누설량의 비정상 스파이크와 원인은?", expected: ["TraceParameter"]}
+    - {id: N-SC03-08, collection: noun_cards, source: Q-SC03-08, query: "LOT별 평균 금형온도와 해당 하우징 기공 불량률의 관계는?", expected: ["TraceParameter", "Lot", "ProductionPerformanceQuality"]}
+    - {id: N-SC03-09, collection: noun_cards, source: Q-SC03-09, query: "다이캐스팅기 4대의 일평균 금형온도 추이는?", expected: ["TraceParameter", "Equipment"]}
+    - {id: N-SC03-10, collection: noun_cards, source: Q-SC03-10, query: "같은 파라미터인데 단위 표기가 다른 항목은?", expected: ["EquipmentParameter", "UOMGroup"]}
+    - {id: N-SC03-11, collection: noun_cards, source: Q-SC03-11, query: "관리한계(UCL·LCL) 이탈이 가장 많은 파라미터는?", expected: ["TraceParameter", "EquipmentParameter"]}
+    - {id: N-SC03-12, collection: noun_cards, source: Q-SC03-12, query: "누설량 평균이 높은 날과 누설 불량률은 같이 움직이는가?", expected: ["TraceParameter", "ProductionPerformanceQuality"]}
+    - {id: N-SC03-13, collection: noun_cards, source: Q-SC03-13, query: "세척수 온도가 규격(50~70℃)을 벗어난 건수는?", expected: ["TraceParameter"]}
+    - {id: N-SC03-14, collection: noun_cards, source: Q-SC03-14, query: "완제품 LOT E261006A1의 하우징이 주조될 때 금형온도 평균은?", expected: ["Lot", "OperationStart", "TraceParameter"]}
+    - {id: N-SC03-15, collection: noun_cards, source: Q-SC03-15, query: "수집 주기(600초)와 실제 수집 간격이 다른 설비는?", expected: ["TraceParameter", "EquipmentParameter"]}
+    - {id: N-SC03-16, collection: noun_cards, source: Q-SC03-16, query: "체결토크가 규격 하한 미만인 시점과 해당 조립 LOT은?", expected: ["TraceParameter", "OperationStart", "Lot"]}
+    - {id: N-SC03-17, collection: noun_cards, source: Q-SC03-17, query: "다이캐스팅 사이클타임 평균은 표준(라우팅)과 어떻게 다른가?", expected: ["TraceParameter", "Routing"]}
+    - {id: N-SC03-18, collection: noun_cards, source: Q-SC03-18, query: "최근 7일 연속 상승 추세를 보이는 파라미터는?", expected: ["TraceParameter"]}
+    - {id: N-SC03-19, collection: noun_cards, source: Q-SC03-19, query: "규격 이탈 측정값을 검증결과코드로 분류하면 몇 건씩인가?", expected: ["TraceParameter", "CommonCodeMaster"]}
+    - {id: N-SC03-20, collection: noun_cards, source: Q-SC03-20, query: "금형온도 이상 전 24시간에 점진 상승 징후가 있었나?", expected: ["TraceParameter"]}
+    - {id: N-SC04-01, collection: noun_cards, source: Q-SC04-01, query: "10월 설비별 가동률(가동시간/계획시간)은?", expected: ["EquipmentState", "Equipment"]}
+    - {id: N-SC04-02, collection: noun_cards, source: Q-SC04-02, query: "고장 건수와 정지시간이 가장 많은 설비는?", expected: ["EquipmentState", "Equipment"]}
+    - {id: N-SC04-03, collection: noun_cards, source: Q-SC04-03, query: "DCM-02 고장의 원인 코드와 정지시간은?", expected: ["EquipmentState", "Alarm"]}
+    - {id: N-SC04-04, collection: noun_cards, source: Q-SC04-04, query: "현재 설비 상태와 미해제 알람은?", expected: ["EquipmentState", "Alarm"]}
+    - {id: N-SC04-05, collection: noun_cards, source: Q-SC04-05, query: "오류코드별 고장 건수는?", expected: ["EquipmentState", "CommonCodeMaster"]}
+    - {id: N-SC04-06, collection: noun_cards, source: Q-SC04-06, query: "계획보전 실시 주기와 1회 시간은?", expected: ["EquipmentState"]}
+    - {id: N-SC04-07, collection: noun_cards, source: Q-SC04-07, query: "고장 직전 30분 안에 발생한 알람 유형은?", expected: ["EquipmentState", "Alarm"]}
+    - {id: N-SC04-08, collection: noun_cards, source: Q-SC04-08, query: "금형온도 상한 초과 알람(A101)의 발생 횟수와 시간대 분포는?", expected: ["Alarm"]}
+    - {id: N-SC04-09, collection: noun_cards, source: Q-SC04-09, query: "설비별 MTBF·MTTR은?", expected: ["EquipmentState"]}
+    - {id: N-SC04-10, collection: noun_cards, source: Q-SC04-10, query: "대기시간이 긴 설비와 대기가 생기는 시간대는?", expected: ["EquipmentState"]}
+    - {id: N-SC04-11, collection: noun_cards, source: Q-SC04-11, query: "상태 구간이 겹치는 기록은?", expected: ["EquipmentState"]}
+    - {id: N-SC04-12, collection: noun_cards, source: Q-SC04-12, query: "고장 중에 처리되던 LOT은?", expected: ["EquipmentState", "OperationStart", "Lot"]}
+    - {id: N-SC04-13, collection: noun_cards, source: Q-SC04-13, query: "알람이 가장 많은 공정은?", expected: ["Alarm", "Equipment", "Operation"]}
+    - {id: N-SC04-14, collection: noun_cards, source: Q-SC04-14, query: "제어모드(원격·로컬)별 운전 비율은?", expected: ["EquipmentState"]}
+    - {id: N-SC04-15, collection: noun_cards, source: Q-SC04-15, query: "비가동 계획을 뺀 실가동률은?", expected: ["EquipmentState"]}
+    - {id: N-SC04-16, collection: noun_cards, source: Q-SC04-16, query: "CNC-03 진동 상승 이후 공구마모 고장까지 얼마나 걸렸나?", expected: ["TraceParameter", "EquipmentState"]}
+    - {id: N-SC04-17, collection: noun_cards, source: Q-SC04-17, query: "중대(H) 알람의 평균 해제 시간은?", expected: ["Alarm"]}
+    - {id: N-SC04-18, collection: noun_cards, source: Q-SC04-18, query: "셋업 상태 기록이 있는가? 없다면 무엇으로 대신하나?", expected: ["EquipmentState"]}
+    - {id: N-SC04-19, collection: noun_cards, source: Q-SC04-19, query: "설비 그룹별(DCM·CNC·…) 고장 빈도는?", expected: ["EquipmentState", "Equipment"]}
+    - {id: N-SC04-20, collection: noun_cards, source: Q-SC04-20, query: "고장이 잦은 설비가 처리한 LOT의 불량률이 더 높은가?", expected: ["EquipmentState", "OperationEnd", "ProductionPerformanceQuality"]}
+    - {id: N-SC04-21, collection: noun_cards, source: Q-SC04-21, query: "10월 설비별 OEE 하위 3대는?", expected: ["EquipmentState", "OperationEnd", "Routing"]}
+    - {id: N-SC04-22, collection: noun_cards, source: Q-SC04-22, query: "10월 DCM-02의 시간가동율·MTBF·MTTR은?", expected: ["EquipmentState"]}
+    - {id: N-SC04-23, collection: noun_cards, source: Q-SC04-23, query: "성능가동율이 100%를 넘는 설비와 그 의미는?", expected: ["Routing", "EquipmentState"]}
+    - {id: N-SC04-24, collection: noun_cards, source: Q-SC04-24, query: "10월 LKT-02의 표준 UPM 대비 분당 생산성은?", expected: ["OperationStart", "OperationEnd", "Routing"]}
+    - {id: N-SC04-25, collection: noun_cards, source: Q-SC04-25, query: "10월 설비별 작업시간(가동시간) 상위 3대는?", expected: ["EquipmentState"]}
+    - {id: N-SC05-01, collection: noun_cards, source: Q-SC05-01, query: "MES 기간(9-21~10-20) 검사 기준 공정별 불량률(PPM)은?", expected: ["ProductionPerformanceQuality"]}
+    - {id: N-SC05-02, collection: noun_cards, source: Q-SC05-02, query: "불량 유형별 수량 순위는?", expected: ["ProductionPerformanceQuality"]}
+    - {id: N-SC05-03, collection: noun_cards, source: Q-SC05-03, query: "누설 불량이 급증한 날과 영향 LOT은?", expected: ["ProductionPerformanceQuality", "Lot"]}
+    - {id: N-SC05-04, collection: noun_cards, source: Q-SC05-04, query: "누설 불량 급증의 근본 원인은?", expected: ["ProductionPerformanceQuality", "Lot", "OperationStart", "TraceParameter", "Alarm"]}
+    - {id: N-SC05-05, collection: noun_cards, source: Q-SC05-05, query: "기공 불량이 난 하우징 LOT과 주조 설비는?", expected: ["ProductionPerformanceQuality", "Lot", "OperationStart"]}
+    - {id: N-SC05-06, collection: noun_cards, source: Q-SC05-06, query: "보류 LOT이 속한 제조오더와 납기 영향은?", expected: ["Lot", "ProductionOrder"]}
+    - {id: N-SC05-07, collection: noun_cards, source: Q-SC05-07, query: "판정이 NG인 검사와 LOT은?", expected: ["ProductionPerformanceQuality", "Lot"]}
+    - {id: N-SC05-08, collection: noun_cards, source: Q-SC05-08, query: "품목별(A100·B200) 종합 수율은?", expected: ["ProductionPerformance", "ItemMaster"]}
+    - {id: N-SC05-09, collection: noun_cards, source: Q-SC05-09, query: "CNC 공정 치수불량 추이는?", expected: ["ProductionPerformanceQuality"]}
+    - {id: N-SC05-10, collection: noun_cards, source: Q-SC05-10, query: "표준 불량유형코드로 대응되지 않는 불량 코드는?", expected: ["ProductionPerformanceQuality", "CommonCodeMaster"]}
+    - {id: N-SC05-11, collection: noun_cards, source: Q-SC05-11, query: "일별 불량 PPM 추이는?", expected: ["ProductionPerformanceQuality"]}
+    - {id: N-SC05-12, collection: noun_cards, source: Q-SC05-12, query: "불량률 3%를 넘은 검사 건수는?", expected: ["ProductionPerformanceQuality"]}
+    - {id: N-SC05-13, collection: noun_cards, source: Q-SC05-13, query: "검사자별 검사 건수와 불량 검출률은?", expected: ["ProductionPerformanceQuality", "Personnel"]}
+    - {id: N-SC05-14, collection: noun_cards, source: Q-SC05-14, query: "같은 날 만든 A100 완제품 LOT 두 개의 불량률 차이는 왜 생기나?", expected: ["Lot", "OperationStart", "ProductionPerformanceQuality"]}
+    - {id: N-SC05-15, collection: noun_cards, source: Q-SC05-15, query: "최종검사의 이음(소음) 불량 비율은?", expected: ["ProductionPerformanceQuality"]}
+    - {id: N-SC05-16, collection: noun_cards, source: Q-SC05-16, query: "하우징 기공 불량이 조립 후 누설로 이어진 비율은?", expected: ["Lot", "ProductionPerformanceQuality"]}
+    - {id: N-SC05-17, collection: noun_cards, source: Q-SC05-17, query: "DCM-02에서 주조한 하우징과 다른 설비 하우징의 누설 불량률 비교는?", expected: ["Lot", "OperationStart", "ProductionPerformanceQuality"]}
+    - {id: N-SC05-18, collection: noun_cards, source: Q-SC05-18, query: "B200의 누설 불량률이 A100보다 낮은 이유는?", expected: ["Lot", "OperationStart", "Equipment"]}
+    - {id: N-SC05-19, collection: noun_cards, source: Q-SC05-19, query: "폐기된 LOT과 수량은?", expected: ["Lot"]}
+    - {id: N-SC05-20, collection: noun_cards, source: Q-SC05-20, query: "10월 품질 실적을 공정별 불량률과 주요 원인 3가지로 요약해 줘", expected: ["ProductionPerformanceQuality", "Lot", "TraceParameter"]}
+    - {id: N-SC05-21, collection: noun_cards, source: Q-SC05-21, query: "10월 공정 PPM 상위 3개 공정은?", expected: ["OperationEnd", "ProductionPerformanceQuality"]}
+    - {id: N-SC05-22, collection: noun_cards, source: Q-SC05-22, query: "직행률(FPY)은 9월과 10월에 각각 얼마인가?", expected: ["OperationEnd"]}
+    - {id: N-SC05-23, collection: noun_cards, source: Q-SC05-23, query: "10월 공정별 불량금액 1위 공정과 금액은?", expected: ["ProductionPerformanceQuality", "GoodsIssue"]}
+    - {id: N-SC05-24, collection: noun_cards, source: Q-SC05-24, query: "10월 불량 유형별 폐기 금액 Top3는?", expected: ["ProductionPerformanceQuality"]}
+    - {id: N-SC05-25, collection: noun_cards, source: Q-SC05-25, query: "10월 누설 불량 폐기 금액이 9월보다 크게 늘어난 원인은?", expected: ["ProductionPerformanceQuality", "Lot", "TraceParameter"]}
+    - {id: N-SC06-01, collection: noun_cards, source: Q-SC06-01, query: "9월·10월 고객 부적합 건수는?", expected: ["Return", "AfterSalesServiceRequest", "CustomerPartyMaster"]}
+    - {id: N-SC06-02, collection: noun_cards, source: Q-SC06-02, query: "10월 고객 라인 중단 클레임의 고객·LOT·손실금액은?", expected: ["Return", "Lot"]}
+    - {id: N-SC06-03, collection: noun_cards, source: Q-SC06-03, query: "CL2610-001 클레임 LOT의 생산 이력(하우징·주조 설비)은?", expected: ["Lot", "OperationStart", "ProductRelease"]}
+    - {id: N-SC06-04, collection: noun_cards, source: Q-SC06-04, query: "10월 고객 부적합 일정 준수율과 미준수 건은?", expected: ["CorrectiveActionRequest", "CorrectiveActionResult"]}
+    - {id: N-SC06-05, collection: noun_cards, source: Q-SC06-05, query: "월별 필드 반송 건수는?", expected: ["Return", "AfterSalesServiceRequest"]}
+    - {id: N-SC06-06, collection: noun_cards, source: Q-SC06-06, query: "LOT 추적이 안 되는 고객 클레임은?", expected: ["Return", "Lot"]}
+    - {id: N-SC06-07, collection: noun_cards, source: Q-SC06-07, query: "10월 Q-COST와 매출 대비 비율은?", expected: ["ProductRelease", "SalesOrder"]}
+    - {id: N-SC06-08, collection: noun_cards, source: Q-SC06-08, query: "10월 Q-COST 구성(P·A·IF·EF)은?", expected: ["ProductRelease"]}
+    - {id: N-SC06-09, collection: noun_cards, source: Q-SC06-09, query: "10월 Q-COST가 급증한 주된 요인은?", expected: ["Return", "Lot"]}
+    - {id: N-SC06-10, collection: noun_cards, source: Q-SC06-10, query: "10월 실패비용(내부·외부) 합계는?", expected: ["Return"]}
+    - {id: N-SC06-11, collection: noun_cards, source: Q-SC06-11, query: "10월 불량 손실액은?", expected: ["ProductionPerformanceQuality", "Return"]}
+    - {id: N-SC06-12, collection: noun_cards, source: Q-SC06-12, query: "협력업체별 부적합 건수(9월·10월)는?", expected: ["CorrectiveActionRequest", "VendorPartyMaster"]}
+    - {id: N-SC06-13, collection: noun_cards, source: Q-SC06-13, query: "시정조치(CAR)가 완료되지 않은 협력업체 부적합은?", expected: ["CorrectiveActionRequest", "CorrectiveActionResult"]}
+    - {id: N-SC06-14, collection: noun_cards, source: Q-SC06-14, query: "10월 수입검사 PPM과 LOT 불합격률은?", expected: ["SupplierInspectionResult", "GoodsReceipt"]}
+    - {id: N-SC06-15, collection: noun_cards, source: Q-SC06-15, query: "10월 수입검사 불합격 LOT과 처리는?", expected: ["SupplierInspectionResult", "GoodsReceipt"]}
+    - {id: N-SC06-16, collection: noun_cards, source: Q-SC06-16, query: "PCB-EWP24 수입검사 불합격이 생산에 준 영향은?", expected: ["SupplierInspectionResult", "AvailableInventory", "ProductionOrder"]}
+    - {id: N-SC06-17, collection: noun_cards, source: Q-SC06-17, query: "CL2609-003(커넥터 접촉불량) 클레임과 연결되는 협력업체 이력은?", expected: ["Return", "CorrectiveActionRequest", "SupplierInspectionResult"]}
+    - {id: N-SC06-18, collection: noun_cards, source: Q-SC06-18, query: "9월 협력업체별 수입검사 PPM 상위는?", expected: ["SupplierInspectionResult"]}
+    - {id: N-SC06-19, collection: noun_cards, source: Q-SC06-19, query: "협력업체 관리 우선순위 1위와 근거는?", expected: ["CorrectiveActionRequest", "SupplierInspectionResult", "VendorPartyMaster"]}
+    - {id: N-SC06-20, collection: noun_cards, source: Q-SC06-20, query: "클레임·품질비용 데이터는 KS X 9101 표준 명사에 어떻게 대응하나?", expected: ["Return", "AfterSalesServiceRequest", "CorrectiveActionRequest"]}
+    - {id: N-SC07-01, collection: noun_cards, source: Q-SC07-01, query: "8·9월 수요예측 정확도(전체·고객별)는?", expected: ["SalesPlan", "SalesOrder"]}
+    - {id: N-SC07-02, collection: noun_cards, source: Q-SC07-02, query: "수요예측 정확도가 가장 낮은 고객과 원인은?", expected: ["SalesPlan", "SalesOrder", "CustomerPartyMaster"]}
+    - {id: N-SC07-03, collection: noun_cards, source: Q-SC07-03, query: "10월(1~20일) 판매계획준수율은?", expected: ["SalesPlan", "ProductRelease"]}
+    - {id: N-SC07-04, collection: noun_cards, source: Q-SC07-04, query: "월별 생산계획준수율은?", expected: ["ProductionPlanning", "ProductIncoming"]}
+    - {id: N-SC07-05, collection: noun_cards, source: Q-SC07-05, query: "10월 자재충족율과 결품 제조오더는?", expected: ["AvailableInventory", "ProductionOrder"]}
+    - {id: N-SC07-06, collection: noun_cards, source: Q-SC07-06, query: "MO261012002 자재 결품의 원인은?", expected: ["AvailableInventory", "PurchaseOrder", "GoodsReceipt"]}
+    - {id: N-SC07-07, collection: noun_cards, source: Q-SC07-07, query: "10월 재고 보유일수(제품·자재·전체)는?", expected: ["Inventory", "GoodsIssue"]}
+    - {id: N-SC07-08, collection: noun_cards, source: Q-SC07-08, query: "10월 재고회전율(연환산)은?", expected: ["Inventory", "GoodsIssue"]}
+    - {id: N-SC07-09, collection: noun_cards, source: Q-SC07-09, query: "9월 재고실사 정확도와 차이 품목은?", expected: ["InventoryCount"]}
+    - {id: N-SC07-10, collection: noun_cards, source: Q-SC07-10, query: "실사 차이는 언제 어떻게 장부에 반영됐나?", expected: ["InventoryCount", "GoodsIssue"]}
+    - {id: N-SC07-11, collection: noun_cards, source: Q-SC07-11, query: "10-20 기준 장기 체화 재고 비율과 대상은?", expected: ["Inventory", "Lot", "GoodsReceipt"]}
+    - {id: N-SC07-12, collection: noun_cards, source: Q-SC07-12, query: "장기 체화 재고 처리 우선순위는?", expected: ["Inventory", "ItemMaster"]}
+    - {id: N-SC07-13, collection: noun_cards, source: Q-SC07-13, query: "10월 납기이행율과 지연 수주는?", expected: ["SalesOrder", "ProductRelease", "Delivery"]}
+    - {id: N-SC07-14, collection: noun_cards, source: Q-SC07-14, query: "10월 제품 품절율과 품절일은?", expected: ["Inventory"]}
+    - {id: N-SC07-15, collection: noun_cards, source: Q-SC07-15, query: "10월 결품율은?", expected: ["SalesOrder", "Delivery"]}
+    - {id: N-SC07-16, collection: noun_cards, source: Q-SC07-16, query: "10월 6~12일 A100 품절·납기 지연의 근본 원인은?", expected: ["Inventory", "ProductIncoming", "Lot", "ProductionPerformanceQuality"]}
+    - {id: N-SC07-17, collection: noun_cards, source: Q-SC07-17, query: "보류 LOT E261003A1을 특채 출하한 결정의 결과는?", expected: ["Lot", "ProductRelease", "Return"]}
+    - {id: N-SC07-18, collection: noun_cards, source: Q-SC07-18, query: "MES 도입 전(8월) 생산 실적은 어디에서 확인하나?", expected: ["ProductIncoming"]}
+    - {id: N-SC07-19, collection: noun_cards, source: Q-SC07-19, query: "월 매출액(출하 × 판매단가)은?", expected: ["ProductRelease", "SalesOrder"]}
+    - {id: N-SC07-20, collection: noun_cards, source: Q-SC07-20, query: "PSI KPI 산출에 필요하지만 KS X 9101 Core에 없는 속성은?", expected: ["SalesPlan", "SalesOrder", "Inventory", "AvailableInventory"]}
+    - {id: V01, collection: nodes, query: "다이캐스팅기 2호", expected: ["Equipment:DCM-02"]}
+    - {id: V02, collection: nodes, query: "누설시험기 1호", expected: ["Equipment:LKT-01"]}
+    - {id: V03, collection: nodes, query: "수직형 머시닝센터 6호기", expected: ["Equipment:CNC-06"]}
+    - {id: V04, collection: nodes, query: "부품 세척기", expected: ["Equipment:WSH-01"]}
+    - {id: V05, collection: nodes, query: "B200 라인 펌프 조립기", expected: ["Equipment:ASM-02"]}
+    - {id: V06, collection: nodes, query: "전동식 워터펌프 A100", expected: ["ItemMaster:EWP-A100"]}
+    - {id: V07, collection: nodes, query: "펌프하우징 B200 가공품", expected: ["ItemMaster:HSG-B200"]}
+    - {id: V08, collection: nodes, query: "임펠러 A100", expected: ["ItemMaster:IMP-A100"]}
+    - {id: V09, collection: nodes, query: "24V BLDC 모터", expected: ["ItemMaster:MTR-24V"]}
+    - {id: V10, collection: nodes, query: "방수형 3핀 커넥터", expected: ["ItemMaster:CON-3P"]}
+    - {id: V11, collection: nodes, query: "메커니컬 씰", expected: ["ItemMaster:SEAL-M18"]}
+    - {id: V12, collection: nodes, query: "알루미늄 합금 잉곳", expected: ["ItemMaster:ALDC12"]}
+    - {id: V13, collection: nodes, query: "하늘전자", expected: ["VendorPartyMaster:V003"]}
+    - {id: V14, collection: nodes, query: "대한정밀", expected: ["VendorPartyMaster:V001"]}
+    - {id: V15, collection: nodes, query: "가온모터스", expected: ["CustomerPartyMaster:C001"]}
+    - {id: V16, collection: nodes, query: "누리EV", expected: ["CustomerPartyMaster:C002"]}
+    - {id: V17, collection: nodes, query: "설비보전팀", expected: ["Department:D130"]}
+    - {id: V18, collection: nodes, query: "품질보증파트", expected: ["Department:D210"]}
+    - {id: V19, collection: nodes, query: "CNC 가공 공정", expected: ["Operation:P200"]}
+    - {id: V20, collection: nodes, query: "누설시험 공정", expected: ["Operation:A200"]}
+    - {id: V21, collection: nodes, query: "다이캐스팅 공정", expected: ["Operation:P100"]}
+    - {id: V22, collection: nodes, query: "최종검사 공정", expected: ["Operation:A300"]}
+    - {id: C01, collection: cases, query: "고객 조립라인에서 펌프 누수로 라인이 멈춘 클레임", expected: ["CL2610-001", "CL2610-002"]}
+    - {id: C02, collection: cases, query: "커넥터 접촉불량 클레임", expected: ["CL2609-003"]}
+    - {id: C03, collection: cases, query: "필드에서 반송된 펌프 소음 불량", expected: ["CL2610-003", "CL2609-002"]}
+    - {id: C04, collection: cases, query: "포장 라벨에 품번이 잘못 표기된 건", expected: ["CL2610-004"]}
+    - {id: C05, collection: cases, query: "임펠러 치수 불량으로 공급사 시정조치", expected: ["NCR2609001"]}
+    - {id: C06, collection: cases, query: "PCB 납땜 불량 수입검사 부적합", expected: ["NCR2610003"]}
+    - {id: C07, collection: cases, query: "하늘전자 커넥터 외관 불량 시정조치 요청", expected: ["NCR2609002", "NCR2609901", "NCR2609902"]}
+    - {id: C08, collection: cases, query: "MES 도입 전 LOT 입고검사 소음", expected: ["CL2609-001"]}
+    - {id: D01, collection: documents, query: "금형온도가 상한을 넘으면 어떻게 조치하나?", expected: ["SOP-DC-001"], must_not: ["SOP-DC-001@2"]}
+    - {id: D02, collection: documents, query: "다이캐스팅 금형온도 규격과 관리 한계", expected: ["SOP-DC-001"], must_not: ["SOP-DC-001@2"]}
+    - {id: D03, collection: documents, query: "누설시험 합격 기준 누설량", expected: ["SOP-LT-005"]}
+    - {id: D04, collection: documents, query: "보류 LOT 판정과 특채 출하 절차", expected: ["SOP-QA-006"]}
+    - {id: D05, collection: documents, query: "고객 클레임 대책 회신 기한", expected: ["SOP-QA-007"]}
+    - {id: D06, collection: documents, query: "공급사 시정조치 회신 기한", expected: ["SOP-QA-008"]}
+    - {id: D07, collection: documents, query: "납기 리스크 판단 기준 불량률", expected: ["SOP-SC-009"]}
+    - {id: D08, collection: documents, query: "CNC 스핀들 진동 관리 한계", expected: ["SOP-MC-002"]}
+    - {id: D09, collection: documents, query: "세척수 온도 조건", expected: ["SOP-WS-003"]}
+    - {id: D10, collection: documents, query: "조립 체결토크 규격", expected: ["SOP-AS-004"]}
+    - {id: D11, collection: documents, query: "설비 알람 A등급 대응", expected: ["SOP-EQ-010"]}
+    - {id: D12, collection: documents, query: "조립할 때 부품 LOT 기록 방법", expected: ["SOP-AS-004"]}
+    - {id: D13, collection: documents, query: "누설 불량이 몰릴 때 원인 조사", expected: ["SOP-LT-005"]}
+    - {id: D14, collection: documents, query: "폐기된 다이캐스팅 구판 작업표준", expected: ["SOP-DC-001"], must_not: ["SOP-DC-001@3"], filter: {"status": "폐기"}}
