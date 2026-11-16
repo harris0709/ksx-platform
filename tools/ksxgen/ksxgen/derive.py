@@ -251,6 +251,7 @@ def age_schema(obda_texts: list[str], graph: str, inf_text: str = "",
           f"  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '{writer}') THEN",
           f"    EXECUTE 'GRANT INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {graph} TO {writer}';",
           f"    EXECUTE 'GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA {graph} TO {writer}';",
+          f"    EXECUTE format('GRANT TEMPORARY ON DATABASE %I TO {writer}', current_database());   -- 차이 계산용 임시 테이블",
           "  END IF;",
           "END $$;"]
     return "\n".join(o) + "\n"

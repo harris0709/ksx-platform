@@ -140,5 +140,6 @@ BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'ksx_owner') THEN
     EXECUTE 'GRANT INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA ksx_graph TO ksx_owner';
     EXECUTE 'GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA ksx_graph TO ksx_owner';
+    EXECUTE format('GRANT TEMPORARY ON DATABASE %I TO ksx_owner', current_database());   -- 차이 계산용 임시 테이블
   END IF;
 END $$;
