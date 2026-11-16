@@ -335,7 +335,10 @@ def psql_at(cfg: Config, sql: str, variables: dict | None = None) -> str:
     args = ["psql", *cfg.owner.args(), "-q", "-A", "-t"]
     for k, v in (variables or {}).items():
         args += ["-v", f"{k}={v}"]
-    p = subprocess.run(args + ["-f", "-"], input=sql, capture_output=True, text=True, env=cfg.owner.environ())
+    e = cfg.owner.environ()
+    # graphid 연산자(=, 비교)가 ag_catalog에 있다 — 표 이름 해석에 영향이 없도록 검색 경로 맨 뒤에 둔다
+    e["PGOPTIONS"] = (e.get("PGOPTIONS", "") + " -c search_path=ksx,ext,stg,audit,public,ag_catalog").strip()
+    p = subprocess.run(args + ["-f", "-"], input=sql, capture_output=True, text=True, env=e)
     if p.returncode != 0:
         raise DbError((p.stderr or p.stdout).strip()[-2000:])
     return p.stdout
