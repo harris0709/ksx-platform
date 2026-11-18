@@ -103,7 +103,9 @@ def derived(m, v, cfg: dict, out: str, quiet: bool) -> bool:
     ob, tt = derive.ontop_files(texts, [open(p, encoding="utf-8").read() for p in ttls])
     w(os.path.join(out, "ontop", "ksx.obda"), ob)
     w(os.path.join(out, "ontop", "ksx.ttl"), tt)
-    w(os.path.join(out, "graph", "age_schema.sql"), derive.age_schema(texts, cfg.get("graph", "ksx_graph")))
+    inf = os.path.join(cfg.get("_dir", "."), cfg.get("inference_vocab", "ontologies/inference/inf.ttl"))   # 손으로 관리(S7 D-5)
+    inf_text = open(inf, encoding="utf-8").read() if os.path.exists(inf) else ""
+    w(os.path.join(out, "graph", "age_schema.sql"), derive.age_schema(texts, cfg.get("graph", "ksx_graph"), inf_text))
     for fn, txt in derive.tools(out, m).items():
         w(os.path.join(out, "catalog", "tools", fn), txt)
     rdir = os.path.join(cfg.get("_dir", "."), cfg.get("business_rules", "ontologies/rules"))

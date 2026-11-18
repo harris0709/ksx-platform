@@ -222,6 +222,28 @@ services:
       retries: 10
 
   # ---------------------------------------------------------------
+  # [S8] 임베딩 서버(TEI, bge-m3 1024차원 한·영) — profile: ai
+  #   docker compose --profile ai up -d embed          # 처음 기동 때 모델(약 2.3GB)을 받는다. 쓰지 않을 때는 stop embed(메모리를 많이 잡는다)
+  #   (rerank는 S8에서 끔 — D-3)
+  #   POST /embed {"inputs": [...]} → 벡터. ksxkg sync·S9 검색이 같은 모델을 쓴다.
+  # ---------------------------------------------------------------
+  embed:
+    profiles: ["ai"]
+    image: ghcr.io/huggingface/text-embeddings-inference:${TEI_VERSION:-cpu-1.9}
+    command: ["--model-id", "BAAI/bge-m3", "--max-client-batch-size", "16", "--max-batch-tokens", "2048"]   # PC 메모리: 예열 묶음을 작게(8192에서 9.7GB 중 8.6GB 사용)
+    volumes:
+      - tei-data:/data
+    ports: ["127.0.0.1:8082:80"]
+
+  rerank:                                     # S8 D-2: 재정렬(bge-reranker-v2-m3) — POST /rerank {query, texts}
+    profiles: ["ai"]
+    image: ghcr.io/huggingface/text-embeddings-inference:${TEI_VERSION:-cpu-1.9}
+    command: ["--model-id", "BAAI/bge-reranker-v2-m3", "--max-client-batch-size", "64", "--max-batch-tokens", "2048"]   # CPU(candle) 예열·메모리를 작게
+    volumes:
+      - tei-data:/data
+    ports: ["127.0.0.1:8083:80"]
+
+  # ---------------------------------------------------------------
   # Keycloak — OIDC, 클레임 enterpriseId·siteId·plantId·plants·roles
   # ---------------------------------------------------------------
   keycloak:
@@ -352,6 +374,7 @@ services:
   # [S5] 지식 그래프 도구(ksxkg + Morph-KGC) — profile: tools
   #   docker compose --profile tools run --rm s5-tools materialize   # 원장 → 사업장 Named Graph → Fuseki
   #   docker compose --profile tools run --rm s5-tools check         # 가상 = SQL, 물질화 = 기대치, 그래프 분리
+  #   (S6 validate · S7 infer · S8 sync/search 도 같은 이미지 — 계획은 -e S5_PLAN 으로 고른다)
   # ---------------------------------------------------------------
   s5-tools:
     profiles: ["tools"]
@@ -367,6 +390,10 @@ services:
       KSX_OWNER_PASSWORD: ${KSX_OWNER_PASSWORD}
       FUSEKI_URL: http://fuseki:3030/ksx
       ONTOP_URL: http://ontop:8080/sparql
+      QDRANT_URL: http://qdrant:6333          # S8 벡터 인덱스
+      QDRANT_API_KEY: ${QDRANT_API_KEY}
+      EMBED_URL: http://embed:80              # S8 임베딩(profile ai)
+      RERANK_URL: http://rerank:80            # S8 재정렬(profile ai)
     volumes:
       - ../..:/repo
     depends_on:
@@ -393,4 +420,5 @@ volumes:
   airflow-logs:
   fuseki-data:
   qdrant-data:
+  tei-data:
   impix-src-data:
