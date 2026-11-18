@@ -494,7 +494,7 @@ class Reranker:
         if self.url.startswith("hash:"):
             qs = set(query)
             return [len(qs & set(t)) / (len(qs) or 1) for t in texts]
-        body = json.dumps({"query": query, "texts": [t[:4000] for t in texts], "truncate": True}).encode()
+        body = json.dumps({"query": query, "texts": [t[:1200] for t in texts], "truncate": True}).encode()
         req = urllib.request.Request(self.url + "/rerank", data=body, method="POST", headers={"Content-Type": "application/json"})
         for attempt in range(5):
             try:

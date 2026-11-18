@@ -87,7 +87,7 @@ jobs:
           docker run -d --name embed -p 8082:80 ghcr.io/huggingface/text-embeddings-inference:cpu-1.9 \
             --model-id BAAI/bge-m3 --max-client-batch-size 64
           docker run -d --name rerank -p 8083:80 ghcr.io/huggingface/text-embeddings-inference:cpu-1.9 \
-            --model-id BAAI/bge-reranker-v2-m3 --max-client-batch-size 64
+            --model-id BAAI/bge-reranker-v2-m3 --max-client-batch-size 64 --max-batch-tokens 4096
           for i in $(seq 1 60); do [ "$(docker logs pg 2>&1 | grep -c 'ready to accept connections')" -ge 2 ] && break; sleep 2; done
           psql -d ksx -c "select version()" -At
       - uses: actions/setup-python@v5
@@ -193,12 +193,12 @@ jobs:
       - name: S8 속성 그래프 스키마(관리자 — 라벨·인덱스·서비스 계정 권한)
         run: psql -d ksx -v ON_ERROR_STOP=1 -q -o /dev/null -f ontologies/graph/age_schema.sql
       - name: S8 임베딩·재정렬 서버 준비(bge-m3 · bge-reranker-v2-m3 받기)
-        timeout-minutes: 20
+        timeout-minutes: 35
         run: |
           for i in $(seq 1 240); do curl -fsS http://localhost:8082/health >/dev/null 2>&1 && break; sleep 5; done
           curl -fsS http://localhost:8082/info; echo
           curl -fsS -H 'Content-Type: application/json' -d '{"inputs":["금형온도 상한"]}' http://localhost:8082/embed | python -c "import json,sys; print('dim', len(json.load(sys.stdin)[0]))"
-          for i in $(seq 1 240); do curl -fsS http://localhost:8083/health >/dev/null 2>&1 && break; sleep 5; done
+          for i in $(seq 1 400); do curl -fsS http://localhost:8083/health >/dev/null 2>&1 && break; sleep 5; done
           curl -fsS -H 'Content-Type: application/json' -d '{"query":"금형온도 상한","texts":["설비 파라미터 수집값 금형온도","품질비용"]}' http://localhost:8083/rerank; echo
       - name: S8 동기화(ksxkg sync — AGE 차이 반영·정합·탐색·Qdrant 4종·검색 평가)
         timeout-minutes: 30
