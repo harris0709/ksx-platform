@@ -1,5 +1,6 @@
 """ksxkg(S5) 회귀 시험: 사업장 그래프 배정·N-Quads 분할·Ontop 합본. pytest 또는 python으로 실행."""
 import os
+import re
 import sys
 import tempfile
 
@@ -324,6 +325,28 @@ def test_s8_plan_and_documents():
     json.dumps(items)
 
 
+def test_s8_business_terms():
+    """명사 카드 업무 용어(D-1): 원천 업무 의미·KPI명·참조 개체 이름·코드 레이블·현업 용어. 평가 질문(S1 업무 질의서)은 쓰지 않는다."""
+    import inspect
+    from ksxkg import sync as S
+    cfg = _s8_cfg()
+    s = S.settings(cfg)
+    s["terms"] = {"Personnel": ["퇴직자"]}
+    cards = S.load_cards(cfg, s)
+    tp = {"label": "TraceParameter", "props": {"parameterID": "P01", "validationResultCode": "OVER_USL"}}
+    ep = {"label": "EquipmentParameter", "props": {"parameterID": "P01", "parameterName": "금형온도"}}
+    kg = {"nodes": {"a": tp, "b": ep}, "edges": {}, "labels": {("validationResultCode", "OVER_USL"): "규격 상한 초과"}}
+    t = S.business_terms(cfg, s, cards, kg)
+    assert t["TraceParameter"]["파라미터 수집값"] == "원천 업무 의미"
+    assert t["TraceParameter"]["금형온도"] == "참조 개체 이름" and t["TraceParameter"]["규격 상한 초과"] == "코드 레이블"
+    assert t["EquipmentState"]["설비 종합효율(OEE)"] == "KPI" and t["Personnel"]["퇴직자"] == "현업"
+    assert all(re.search(r"[가-힣]", x) for v in t.values() for x in v)
+    assert "업무질의서" not in inspect.getsource(S.business_terms)
+    items = S.noun_card_items(cfg, s, cards, t)
+    assert "업무 용어: " in items["TraceParameter"]["text"] and "금형온도" in items["TraceParameter"]["payload"]["terms"]
+    assert s["eval"]["metric"] == {"noun_cards": "hit"}
+
+
 def test_s8_chunks():
     from ksxkg import sync as S
     body = "# 제목\n\n## 1. 가\n\n" + "가" * 450 + "\n\n## 2. 나\n\n" + "나" * 300 + "\n\n## 3. 다\n\n" + "다" * 120 + "\n"
@@ -383,6 +406,18 @@ def test_s8_index_and_eval():
                           {"id": "D2", "collection": "documents", "query": "누설시험 기준", "expected": ["DOC-2"]}]
     ev = S.evaluate(None, s, q, emb, None, out=lambda *_: None)
     assert ev["recall"] == 1.0 and ev["ok"] and ev["by"]["documents"]["cases"] == 2
+    # 컬렉션마다 판정 지표: 정답 2개 중 1개만 상위 k → recall 0.5, 적중 1 (metric hit이면 통과)
+    s["eval"]["k"] = 1
+    s["eval"]["cases"] = [{"id": "D3", "collection": "documents", "query": "누설시험 기준", "expected": ["DOC-2", "DOC-1"]}]
+    ev = S.evaluate(None, s, q, emb, None, out=lambda *_: None)
+    assert ev["by"]["documents"]["recall"] == 1.0          # min(정답 수, k) = 1
+    s["eval"]["k"] = 2
+    s["eval"]["cases"] = [{"id": "D4", "collection": "documents", "query": "누설시험 기준", "expected": ["DOC-2", "DOC-3"]}]
+    ev = S.evaluate(None, s, q, emb, None, out=lambda *_: None)
+    assert ev["by"]["documents"]["recall"] == 0.5 and not ev["ok"]
+    s["eval"]["metric"] = {"documents": "hit"}
+    ev = S.evaluate(None, s, q, emb, None, out=lambda *_: None)
+    assert ev["by"]["documents"]["score"] == 1.0 and ev["ok"]
 
 
 def test_s8_age_schema_labels_and_grants():

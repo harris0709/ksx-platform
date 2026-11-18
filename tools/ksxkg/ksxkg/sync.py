@@ -590,7 +590,86 @@ def identity(card: dict, label: str, props: dict) -> list[str]:
     return vals
 
 
-def noun_card_items(cfg: Config, s: dict, cards: dict) -> dict:
+# ------------------------------------------------------------------ 업무 용어(S8 D-1) — 명사 카드 ↔ 현장 말
+def _xlsx_rows(path: str, sheet: str) -> list[tuple]:
+    try:
+        import openpyxl
+    except ImportError:                                  # 이미지에 없으면 S1 원천은 건너뛴다(리포트에 표시)
+        return []
+    if not os.path.exists(path):
+        return []
+    wb = openpyxl.load_workbook(path, read_only=True)
+    if sheet not in wb.sheetnames:
+        return []
+    return [r for i, r in enumerate(wb[sheet].iter_rows(values_only=True)) if i and any(r)]
+
+
+def business_terms(cfg: Config, s: dict, cards: dict, kg: dict) -> dict:
+    """명사마다 업무 용어를 이미 승인된 산출물에서 모은다 — 평가 질문(S1 업무 질의서)은 쓰지 않는다.
+      원천: S2 매핑의 원천 테이블 업무 의미·컬럼 주석(S1 원천인벤토리), 지식 그래프의 참조 개체 이름(파라미터명·공정명 …),
+            코드 레이블(S4 vocab), S1 KPI정의서의 KPI명, 계획 sync.terms(현업이 더하는 말)."""
+    limit = int(s.get("terms_max_values", 40))
+    out = {}
+
+    def add(noun, term, src):
+        term = str(term or "").strip()
+        if noun in cards and term and len(term) <= 60 and re.search(r"[가-힣]", term):   # 한글 없는 형식 주석(YYYYMMDD 등) 제외
+            d = out.setdefault(cards[noun]["_name"], {})
+            d.setdefault(term, src)
+    s1 = os.path.join(cfg.mapping_dir(), "s1")
+    inv = os.path.join(s1, f"S1_원천인벤토리_{cfg.ent}.xlsx")
+    meaning = {f"{r[1]}.{r[2]}": r[3] for r in _xlsx_rows(inv, "원천인벤토리") if r[1] and r[2] and r[3]}
+    colnote = {(f"{r[1]}.{r[2]}", r[4]): r[9] for r in _xlsx_rows(inv, "컬럼목록") if r[9]}
+    for f in sorted(glob.glob(os.path.join(cfg.mapping_dir(), "*", "*.yaml"))):        # (1) S2 매핑 → 원천 업무 의미·컬럼 주석
+        try:
+            m = yaml.safe_load(open(f, encoding="utf-8"))
+        except yaml.YAMLError:
+            continue
+        if not isinstance(m, dict) or "noun" not in m or not isinstance(m.get("source"), dict):
+            continue
+        noun = m["noun"].split(":")[-1]
+        tab = m["source"].get("table", "")
+        add(noun, meaning.get(tab), "원천 업무 의미")
+        for spec in (m.get("attributes") or {}).values():
+            for col in re.findall(r"[a-z_][a-z0-9_]*", str((spec or {}).get("from", ""))):
+                add(noun, colnote.get((tab, col)), "원천 컬럼 주석")
+    names_by_key = {}                                    # (2) 참조 개체 이름: 식별 속성 값 → 이름(TraceParameter.parameterID → 금형온도)
+    for n in kg["nodes"].values():
+        c = cards.get(n["label"])
+        if not c:
+            continue
+        nm = [n["props"][prop_key(a)] for a in name_attrs(c, n["label"]) if isinstance(n["props"].get(prop_key(a)), str)]
+        if not nm:
+            continue
+        for a in card_attrs(c, n["label"]):
+            if a["en"] in (c.get("identity") or []) and isinstance(n["props"].get(prop_key(a)), str):
+                names_by_key.setdefault(prop_key(a), {})[n["props"][prop_key(a)]] = nm[0]
+    seen = {}
+    for n in kg["nodes"].values():
+        if n["label"] not in cards:
+            continue
+        for k, v in n["props"].items():
+            for x in (v if isinstance(v, list) else [v]):
+                if k in names_by_key and x in names_by_key[k]:
+                    seen.setdefault((n["label"], "참조 개체 이름", k), set()).add(names_by_key[k][x])
+                elif (k, x) in kg["labels"]:                                         # (3) 코드 레이블
+                    seen.setdefault((n["label"], "코드 레이블", k), set()).add(kg["labels"][(k, x)])
+    for (lab, src, k), vals in sorted(seen.items()):
+        if len(vals) <= limit:                           # 값이 너무 많은 것(품목명 수백 개 등)은 넣지 않는다
+            for v in sorted(vals):
+                add(lab, v, src)
+    kpi = os.path.join(s1, f"S1_KPI정의서_{cfg.ent}.xlsx")
+    for r in _xlsx_rows(kpi, "KPI정의서"):              # (4) KPI명 ↔ 표준 명사
+        if len(r) > 11 and r[3] and r[11]:
+            for noun in re.split(r"[,\s]+", str(r[11])):
+                add(noun.strip(), r[3], "KPI")
+    for noun, terms in (s.get("terms") or {}).items():  # (5) 현업이 더하는 말
+        for t in terms or []:
+            add(noun, t, "현업")
+    return out
+
+
+def noun_card_items(cfg: Config, s: dict, cards: dict, terms: dict | None = None) -> dict:
     ver = yaml.safe_load(open(os.path.join(cfg.repo, cfg.raw.get("ksxgen", "ksxgen.yaml")), encoding="utf-8")).get("version", "")
     items = {}
     for name, c in cards.items():
@@ -608,9 +687,11 @@ def noun_card_items(cfg: Config, s: dict, cards: dict) -> dict:
             "식별: " + ", ".join(ident) if ident else "",
             "속성: " + ", ".join(attrs),
             "참조: " + ", ".join(dict.fromkeys(refs)) if refs else "",
-            "코드: " + ", ".join(dict.fromkeys(codes)) if codes else ""] if x)
+            "코드: " + ", ".join(dict.fromkeys(codes)) if codes else "",
+            "업무 용어: " + ", ".join((terms or {}).get(name, {})) if (terms or {}).get(name) else ""] if x)
         items[name] = {"text": text, "payload": {"noun": name, "ko": c["ko"], "layer": "core" if c.get("layer") == "core" else "ext",
-                                                 "ksx_version": ver, "clause": c.get("clause", ""), "key": name}}
+                                                 "ksx_version": ver, "clause": c.get("clause", ""), "key": name,
+                                                 "terms": list((terms or {}).get(name, {}))}}
     return items
 
 
@@ -820,8 +901,12 @@ def top_keys(hits: list[dict], k: int) -> list[str]:
 
 
 def evaluate(cfg: Config, s: dict, q: Qdrant, emb: Embedder, rid: str | None, out=print) -> dict:
+    """사례마다 recall@k(정답 중 상위 k에 든 비율)와 적중@k(정답이 하나라도 들었나)를 잰다.
+    완료 판정은 컬렉션마다 계획 metric(recall | hit, 기본 recall)으로 한다(S8 D-1: 명사 카드 = 출발점 명사 적중,
+    질의에 필요한 명사 전부 찾기는 S9 GraphRAG 평가)."""
     ev = s["eval"]
     k = int(ev["k"])
+    metric = ev.get("metric") or {}
     cases = ev.get("cases") or []
     res = []
     vecs = emb([c["query"] for c in cases]) if cases else []
@@ -834,25 +919,28 @@ def evaluate(cfg: Config, s: dict, q: Qdrant, emb: Embedder, rid: str | None, ou
         rec = len(tp) / min(len(exp), k) if exp else 1.0
         bad = [h["payload"].get("doc_version") or h["payload"].get("key") for h in hits[:k]
                if (h["payload"].get("doc_version") in (c.get("must_not") or [])) or (h["payload"].get("key") in (c.get("must_not") or []))]
+        hit = bool(tp) and not bad
         if bad:
             rec = 0.0
+        m = metric.get(col, "recall")
         res.append({"id": c["id"], "collection": col, "query": c["query"], "expected": exp, "got": keys,
-                    "recall": round(min(rec, 1.0), 4), "hit": bool(tp), "must_not": bad, "source": c.get("source", "")})
+                    "recall": round(min(rec, 1.0), 4), "hit": hit, "metric": m,
+                    "score": float(hit) if m == "hit" else round(min(rec, 1.0), 4), "must_not": bad, "source": c.get("source", "")})
     by = {}
     for r in res:
-        a = by.setdefault(r["collection"], {"cases": 0, "recall": 0.0, "hit": 0})
+        a = by.setdefault(r["collection"], {"cases": 0, "recall": 0.0, "hit": 0, "score": 0.0, "metric": r["metric"]})
         a["cases"] += 1
         a["recall"] += r["recall"]
         a["hit"] += r["hit"]
+        a["score"] += r["score"]
     for a in by.values():
-        a["recall"] = round(a["recall"] / a["cases"], 4)
-        a["hit"] = round(a["hit"] / a["cases"], 4)
+        for x in ("recall", "hit", "score"):
+            a[x] = round(a[x] / a["cases"], 4)
     tot = round(sum(r["recall"] for r in res) / len(res), 4) if res else 0.0
     hit = round(sum(r["hit"] for r in res) / len(res), 4) if res else 0.0
     for col, a in sorted(by.items()):
-        out(f"  {col:11} 사례 {a['cases']:>4} · recall@{k} {a['recall']:.3f} · 적중 {a['hit']:.3f}")
-    ok = bool(res) and tot >= ev["threshold"] and all(a["recall"] >= ev["threshold"] for a in by.values()) \
-        and not any(r["must_not"] for r in res)
+        out(f"  {col:11} 사례 {a['cases']:>4} · recall@{k} {a['recall']:.3f} · 적중@{k} {a['hit']:.3f} → 판정({a['metric']}) {a['score']:.3f}")
+    ok = bool(res) and all(a["score"] >= ev["threshold"] for a in by.values()) and not any(r["must_not"] for r in res)
     if rid and res:
         vals = ", ".join(
             "('{}', '{}', '{}', '{}', '{}'::jsonb, '{}'::jsonb, {})".format(
@@ -913,15 +1001,17 @@ def sync(cfg: Config, eval_only=False, skip_vectors=False, out=print) -> bool:
                 docs_items, docs = document_items(cfg, s, cards, kg)
                 res["docs"] = docs
                 res["vectors"] = {}
-                for name, items in (("noun_cards", noun_card_items(cfg, s, cards)), ("nodes", node_items(cfg, s, cards, kg)),
+                terms = business_terms(cfg, s, cards, kg)
+                res["terms"] = terms
+                for name, items in (("noun_cards", noun_card_items(cfg, s, cards, terms)), ("nodes", node_items(cfg, s, cards, kg)),
                                     ("cases", case_items(cfg, s, cards, kg)), ("documents", docs_items)):
                     st = index(q, emb, s, name, items, out)
                     res["vectors"][name] = st
                     log(cfg, rid, name, "vector", st)
         ev = evaluate(cfg, s, q, emb, rid, out)
         res["eval"] = ev
-        out(f"  검색 평가: recall@{ev['k']} {ev['recall']:.3f} (기준 ≥ {ev['threshold']}, 컬렉션마다) · 적중 {ev['hit']:.3f} → "
-            f"{'충족' if ev['ok'] else '미충족'}")
+        out(f"  검색 평가: 컬렉션마다 판정 지표 ≥ {ev['threshold']} → {'충족' if ev['ok'] else '미충족'} "
+            f"(전체 recall@{ev['k']} {ev['recall']:.3f} · 적중 {ev['hit']:.3f})")
         ok = ev["ok"] and (eval_only or (res["consistency"]["ok"] and all(g["ok"] for g in res["checks"])
                                          and not any(d["missing"] for d in res.get("docs", []))))
         report(cfg, res, eval_only)
@@ -959,8 +1049,8 @@ def report(cfg: Config, res: dict, eval_only: bool):
                f"| RDF와 속성 그래프의 노드·관계 수 정합 오차 0 | RDF 노드 {c['rdf_v']:,} · 관계 {c['rdf_e']:,} / "
                f"AGE 노드 {c['age_v']:,} · 관계 {c['age_e']:,} · 오차 **{c['error']}** (다중 클래스 {c['multi']} · 끊긴 관계 {c['broken']}) | "
                f"{'충족' if c['ok'] else '미충족'} |",
-               f"| 검색 평가셋 recall@{ev['k']} ≥ {ev['threshold']} | 전체 **{ev['recall']:.3f}** (" +
-               ", ".join(f"{k} {a['recall']:.3f}" for k, a in sorted(ev['by'].items())) + ") | "
+               f"| 검색 평가셋 recall@{ev['k']} ≥ {ev['threshold']} (명사 카드는 적중@{ev['k']}, D-1) | " +
+               ", ".join(f"{k} {a['score']:.3f}({'적중' if a['metric'] == 'hit' else 'recall'})" for k, a in sorted(ev['by'].items())) + " | "
                f"{'충족' if ev['ok'] else '미충족'} |",
                f"| 현행 문서 필터(부록 A) | documents 검색 기본 필터 status=현행 · 폐기 판 노출 "
                f"{sum(1 for r in ev['cases'] if r['must_not'])}건 | "
@@ -978,6 +1068,14 @@ def report(cfg: Config, res: dict, eval_only: bool):
         md += ["", "### 탐색 확인 (cypher, 서비스 계정 세션)", "", "| ID | 내용 | 기대 | 결과 | 판정 |", "|---|---|---|---|---|"]
         md += [f"| {g['id']} | {g['desc']} | {', '.join(g['expected'])} | {', '.join(g['got']) or g['error'][:80]} | {'✔' if g['ok'] else '✘'} |"
                for g in res["checks"]]
+        if res.get("terms") is not None:
+            tt = res["terms"]
+            md += ["", "### 명사 카드 업무 용어 (D-1 — 승인된 산출물에서 모음, 평가 질문은 쓰지 않음)", "",
+                   f"용어가 붙은 명사 {len(tt)}개 · 용어 {sum(len(v) for v in tt.values())}개. 출처: 원천 업무 의미·컬럼 주석(S1), "
+                   "참조 개체 이름·코드 레이블(지식 그래프), KPI명(S1 KPI정의서), 현업(계획 sync.terms).", "",
+                   "| 명사 | 용어 수 | 용어(출처) |", "|---|---:|---|"]
+            md += [f"| {n} | {len(v)} | " + ", ".join(f"{t}({src})" for t, src in list(v.items())[:25]) + (" …" if len(v) > 25 else "") + " |"
+                   for n, v in sorted(tt.items())]
         if res.get("vectors"):
             md += ["", "## 벡터 인덱스 (Qdrant)", "", "| 컬렉션 | 점 | 추가 | 변경 | 삭제 | 소요(초) |", "|---|---:|---:|---:|---:|---:|"]
             md += [f"| {k} | {v['total']:,} | {v['added']:,} | {v['updated']:,} | {v['removed']:,} | {v['seconds']} |"
@@ -988,13 +1086,15 @@ def report(cfg: Config, res: dict, eval_only: bool):
                    f"{min(d['sizes']) if d['sizes'] else 0}~{max(d['sizes']) if d['sizes'] else 0} | {d['iris']} | {', '.join(d['missing']) or '—'} |"
                    for d in res.get("docs", [])]
         md.append("")
-    md += [f"## 검색 평가 (recall@{ev['k']})", "",
-           f"사례마다 recall@{ev['k']} = 상위 {ev['k']}개(문서는 문서 단위)에 든 정답 수 ÷ min(정답 수, {ev['k']}). "
-           f"전체 **{ev['recall']:.3f}** · 적중(정답 하나 이상) {ev['hit']:.3f} → **{'충족' if ev['ok'] else '미충족'}**", "",
-           "| 컬렉션 | 사례 | recall@k | 적중 |", "|---|---:|---:|---:|"]
-    md += [f"| {k} | {a['cases']} | {a['recall']:.3f} | {a['hit']:.3f} |" for k, a in sorted(ev["by"].items())]
-    miss = [r for r in ev["cases"] if r["recall"] < 1.0]
-    md += ["", f"### 정답을 다 찾지 못한 사례 ({len(miss)}건)", "", "| 사례 | 컬렉션 | 질의 | 정답 | 상위 결과 | recall |", "|---|---|---|---|---|---:|"]
+    md += [f"## 검색 평가 (상위 {ev['k']})", "",
+           f"사례마다 recall@{ev['k']} = 상위 {ev['k']}개(문서는 문서 단위)에 든 정답 수 ÷ min(정답 수, {ev['k']}), "
+           f"적중@{ev['k']} = 정답이 하나라도 들었나. 판정은 컬렉션마다 계획의 지표로 ≥ {ev['threshold']} → **{'충족' if ev['ok'] else '미충족'}**", "",
+           f"명사 카드의 판정 지표는 적중(검색은 질의의 출발점 명사를 찾는다). 질의에 필요한 명사 전부를 찾는 recall은 S9 GraphRAG 평가 기준선으로 넘긴다(S8 D-1).", "",
+           "| 컬렉션 | 사례 | recall@k | 적중@k | 판정 지표 | 판정 값 |", "|---|---:|---:|---:|---|---:|"]
+    md += [f"| {k} | {a['cases']} | {a['recall']:.3f} | {a['hit']:.3f} | {'적중' if a['metric'] == 'hit' else 'recall'} | {a['score']:.3f} |"
+           for k, a in sorted(ev["by"].items())]
+    miss = [r for r in ev["cases"] if r["score"] < 1.0]
+    md += ["", f"### 판정 지표에서 놓친 사례 ({len(miss)}건)", "", "| 사례 | 컬렉션 | 질의 | 정답 | 상위 결과 | recall |", "|---|---|---|---|---|---:|"]
     md += [f"| {r['id']} | {r['collection']} | {r['query']} | {', '.join(r['expected'])} | {', '.join(r['got'])} | {r['recall']:.2f} |"
            for r in miss]
     with open(p, "w", encoding="utf-8", newline="\n") as f:
