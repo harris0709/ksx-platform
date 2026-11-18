@@ -1068,7 +1068,7 @@ def sync(cfg: Config, eval_only=False, skip_vectors=False, out=print) -> bool:
     psql_at(cfg, AUDIT_SQL)
     q, emb = Qdrant(s["qdrant"], s["qdrant_key"]), Embedder(s["embed"], int(s["dim"]), int(s["batch"]))
     out(f"S8 동기화 run_id={rid} (속성 그래프 {s['graph']}, Qdrant {s['qdrant']}, 임베딩 {s['model']} {s['dim']}차원"
-        + (f", 재정렬 {s['rerank'].get('model', '')} 상위 {s['rerank']['top']}" if s["rerank"] else "") + ")")
+        + (f", 재정렬 {s['rerank'].get('model', '')} 상위 {s['rerank']['top']}" if s["rerank"] and s["rerank"]["collections"] else "") + ")")
     res = {"rid": rid, "s": s}
     try:
         if not eval_only:
@@ -1112,7 +1112,7 @@ def sync(cfg: Config, eval_only=False, skip_vectors=False, out=print) -> bool:
                     res["vectors"][name] = st
                     log(cfg, rid, name, "vector", st)
         s["ext_answers"] = extension_answers(cfg, load_cards(cfg, s))
-        rr = Reranker(s["rerank"]) if s["rerank"] else None
+        rr = Reranker(s["rerank"]) if s["rerank"] and s["rerank"]["collections"] else None
         ev = evaluate(cfg, s, q, emb, rid, out, rr)
         res["eval"] = ev
         out(f"  검색 평가: 컬렉션마다 판정 지표 ≥ {ev['threshold']} → {'충족' if ev['ok'] else '미충족'} "
@@ -1131,7 +1131,7 @@ def sync(cfg: Config, eval_only=False, skip_vectors=False, out=print) -> bool:
 def search_cli(cfg: Config, collection: str, text: str, k: int, flt: dict | None = None, out=print) -> int:
     s = settings(cfg)
     q, emb = Qdrant(s["qdrant"], s["qdrant_key"]), Embedder(s["embed"], int(s["dim"]), int(s["batch"]))
-    rr = Reranker(s["rerank"]) if s["rerank"] else None
+    rr = Reranker(s["rerank"]) if s["rerank"] and s["rerank"]["collections"] else None
     for i, h in enumerate(top_hits(search(q, emb, collection, text, k, flt, rr), k), 1):
         p = h["payload"]
         out(f"{i}. {h['score']:.3f}  {p.get('key')}  {p.get('doc_version', '')} {p.get('status', '')}  "
@@ -1143,7 +1143,7 @@ def report(cfg: Config, res: dict, eval_only: bool):
     s, ev = res["s"], res["eval"]
     md = [f"# S8 속성 그래프·벡터 인덱스 결과 ({cfg.ent}) — ksxkg sync", "",
           f"- 실행: `{res['rid']}` · 속성 그래프 `{s['graph']}` · 임베딩 {s['model']}({s['dim']}차원, 코사인) · "
-          f"검색 평가 상위 {ev['k']}" + (f" · 재정렬 {s['rerank'].get('model', '')}(벡터 상위 {s['rerank']['top']} → {', '.join(ev.get('rerank') or [])})" if s.get("rerank") else "")
+          f"검색 평가 상위 {ev['k']}" + (f" · 재정렬 {s['rerank'].get('model', '')}(벡터 상위 {s['rerank']['top']} → {', '.join(ev.get('rerank') or [])})" if ev.get("rerank") else " · 재정렬 끔(D-3)")
           + (" · 명사 카드 정답에 S2 확장 명사 포함(D-2)" if ev.get("ext_on") else ""), ""]
     p = os.path.join(cfg.mapping_dir(), "S8_동기화결과.md")
     if eval_only and os.path.exists(p):                 # 평가만 다시 — 앞부분(동기화)은 그대로 두고 평가 절만 바꾼다

@@ -20,7 +20,7 @@ sync:
     url: "${RERANK_URL:-http://localhost:8083}"
     model: BAAI/bge-reranker-v2-m3
     top: 20
-    collections: []                  # CPU에서 질의당 약 50초(상위 20) — 판단 대기. 컬렉션을 적으면 켜진다
+    collections: []                  # D-3: S8은 끔(CPU 질의당 약 50초). S9에서 응답 목표·GPU를 정한 뒤 컬렉션을 적어 켠다
   catalog: ontologies/catalog/nouns  # 명사 카드(S4)
   collections:
     noun_cards:
