@@ -345,6 +345,8 @@ def test_s8_business_terms():
     items = S.noun_card_items(cfg, s, cards, t)
     assert "업무 용어: " in items["TraceParameter"]["text"] and "금형온도" in items["TraceParameter"]["payload"]["terms"]
     assert s["eval"]["metric"] == {"noun_cards": "hit"}
+    e = S.extension_answers(cfg, cards)                  # S1 KPI정의서 Extension → 관련 질의의 확장 명사(참고 지표, D-2)
+    assert e["Q-SC06-09"] == ["QualityCost"] and "CustomerComplaint" in e["Q-SC06-02"] and "InventorySnapshot" in e["Q-SC07-07"]
 
 
 def test_s8_chunks():

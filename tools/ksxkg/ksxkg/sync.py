@@ -663,10 +663,37 @@ def business_terms(cfg: Config, s: dict, cards: dict, kg: dict) -> dict:
         if len(r) > 11 and r[3] and r[11]:
             for noun in re.split(r"[,\s]+", str(r[11])):
                 add(noun.strip(), r[3], "KPI")
-    for noun, terms in (s.get("terms") or {}).items():  # (5) 현업이 더하는 말
+    spread = {}                                          # 여러 카드에 두루 붙는 말(사업장·공장·품목명 등)은 명사를 가르지 못한다
+    for d in out.values():
+        for t in d:
+            spread[t] = spread.get(t, 0) + 1
+    most = int(s.get("terms_max_cards", 3))
+    out = {n: {t: src for t, src in d.items() if spread[t] <= most or src == "KPI"} for n, d in out.items()}   # KPI는 여러 명사로 산출
+    for noun, terms in (s.get("terms") or {}).items():  # (5) 현업이 더하는 말 — 거르지 않는다
         for t in terms or []:
             add(noun, t, "현업")
-    return out
+    return {n: d for n, d in out.items() if d}
+
+
+def extension_answers(cfg: Config, cards: dict) -> dict:
+    """S1 KPI정의서의 '원천 공백·Extension'이 S2 확장 명사를 가리키면, 그 KPI의 관련 질의에 확장 명사를 정답으로 더한다.
+    (S1 업무 질의서의 필요 명사는 Core만 — 확장 명사는 S2에서 생겼다.) 'XX와 같음'은 그 KPI를 따른다."""
+    rows = _xlsx_rows(os.path.join(cfg.mapping_dir(), "s1", f"S1_KPI정의서_{cfg.ent}.xlsx"), "KPI정의서")
+    ext = {c["_name"]: c["ko"].replace(" ", "") for c in cards.values() if c.get("layer") != "core"}
+    kpi = {r[0]: (str(r[14] or ""), str(r[16] or "")) for r in rows if r and r[0] and len(r) > 16}
+
+    def nouns(kid, depth=0):
+        gap = kpi.get(kid, ("", ""))[0]
+        found = {n for n, ko in ext.items() if re.search(rf"\b{n}\b", gap) or ko in gap.replace(" ", "")}   # 영문 이름 또는 한글 이름(일별재고)
+        for ref in re.findall(r"([A-Z]{2}\d{2})(?:과|와)? 같음", gap):
+            if depth < 3 and ref != kid:
+                found |= nouns(ref, depth + 1)
+        return found
+    out = {}
+    for kid, (_, qs) in kpi.items():
+        for q in re.findall(r"Q-[A-Z0-9-]+", qs):
+            out.setdefault(q, set()).update(nouns(kid))
+    return {q: sorted(v) for q, v in out.items() if v}
 
 
 def noun_card_items(cfg: Config, s: dict, cards: dict, terms: dict | None = None) -> dict:
@@ -923,7 +950,9 @@ def evaluate(cfg: Config, s: dict, q: Qdrant, emb: Embedder, rid: str | None, ou
         if bad:
             rec = 0.0
         m = metric.get(col, "recall")
-        res.append({"id": c["id"], "collection": col, "query": c["query"], "expected": exp, "got": keys,
+        alt = [x for x in (s.get("ext_answers") or {}).get(c.get("source", ""), []) if x not in exp] if col == "noun_cards" else []
+        alt_hit = bool(tp) or any(x in keys for x in alt)
+        res.append({"id": c["id"], "collection": col, "query": c["query"], "expected": exp, "got": keys, "ext": alt, "alt_hit": alt_hit and not bad,
                     "recall": round(min(rec, 1.0), 4), "hit": hit, "metric": m,
                     "score": float(hit) if m == "hit" else round(min(rec, 1.0), 4), "must_not": bad, "source": c.get("source", "")})
     by = {}
@@ -936,10 +965,14 @@ def evaluate(cfg: Config, s: dict, q: Qdrant, emb: Embedder, rid: str | None, ou
     for a in by.values():
         for x in ("recall", "hit", "score"):
             a[x] = round(a[x] / a["cases"], 4)
+    nc = [r for r in res if r["collection"] == "noun_cards"]
+    alt_hit = round(sum(r["alt_hit"] for r in nc) / len(nc), 4) if nc else None      # 참고: S2 확장 명사를 정답에 더하면(D-2)
     tot = round(sum(r["recall"] for r in res) / len(res), 4) if res else 0.0
     hit = round(sum(r["hit"] for r in res) / len(res), 4) if res else 0.0
     for col, a in sorted(by.items()):
         out(f"  {col:11} 사례 {a['cases']:>4} · recall@{k} {a['recall']:.3f} · 적중@{k} {a['hit']:.3f} → 판정({a['metric']}) {a['score']:.3f}")
+    if alt_hit is not None:
+        out(f"  (참고) 명사 카드 적중@{k} — S2 확장 명사를 정답에 더하면 {alt_hit:.3f} ({sum(1 for r in nc if r['ext'])}건에 확장 명사)")
     ok = bool(res) and all(a["score"] >= ev["threshold"] for a in by.values()) and not any(r["must_not"] for r in res)
     if rid and res:
         vals = ", ".join(
@@ -948,7 +981,7 @@ def evaluate(cfg: Config, s: dict, q: Qdrant, emb: Embedder, rid: str | None, ou
                 json.dumps(r["expected"], ensure_ascii=False).replace("'", "''"),
                 json.dumps(r["got"], ensure_ascii=False).replace("'", "''"), r["recall"]) for r in res)
         psql_at(cfg, f"insert into audit.search_eval(run_id, case_id, collection, query, expected, got, recall) values {vals}")
-    return {"cases": res, "by": by, "recall": tot, "hit": hit, "k": k, "threshold": ev["threshold"], "ok": ok}
+    return {"cases": res, "by": by, "recall": tot, "hit": hit, "k": k, "threshold": ev["threshold"], "ok": ok, "alt_hit": alt_hit}
 
 
 # ------------------------------------------------------------------ 진입점
@@ -1008,6 +1041,7 @@ def sync(cfg: Config, eval_only=False, skip_vectors=False, out=print) -> bool:
                     st = index(q, emb, s, name, items, out)
                     res["vectors"][name] = st
                     log(cfg, rid, name, "vector", st)
+        s["ext_answers"] = extension_answers(cfg, load_cards(cfg, s))
         ev = evaluate(cfg, s, q, emb, rid, out)
         res["eval"] = ev
         out(f"  검색 평가: 컬렉션마다 판정 지표 ≥ {ev['threshold']} → {'충족' if ev['ok'] else '미충족'} "
@@ -1095,7 +1129,9 @@ def report(cfg: Config, res: dict, eval_only: bool):
            for k, a in sorted(ev["by"].items())]
     miss = [r for r in ev["cases"] if r["score"] < 1.0]
     md += ["", f"### 판정 지표에서 놓친 사례 ({len(miss)}건)", "", "| 사례 | 컬렉션 | 질의 | 정답 | 상위 결과 | recall |", "|---|---|---|---|---|---:|"]
-    md += [f"| {r['id']} | {r['collection']} | {r['query']} | {', '.join(r['expected'])} | {', '.join(r['got'])} | {r['recall']:.2f} |"
-           for r in miss]
+    md += [f"| {r['id']} | {r['collection']} | {r['query']} | {', '.join(r['expected'])}{' (+확장 ' + ', '.join(r['ext']) + ')' if r.get('ext') else ''} | "
+           f"{', '.join(r['got'])} | {r['recall']:.2f} |" for r in miss]
+    if ev.get("alt_hit") is not None:
+        md += ["", f"참고: S1 KPI정의서의 확장 명사(S2)를 해당 질의의 정답에 더하면 명사 카드 적중@{ev['k']} = **{ev['alt_hit']:.3f}**."]
     with open(p, "w", encoding="utf-8", newline="\n") as f:
         f.write("\n".join(md) + "\n")
