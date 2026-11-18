@@ -20,9 +20,11 @@ sync:
     url: "${RERANK_URL:-http://localhost:8083}"
     model: BAAI/bge-reranker-v2-m3
     top: 20
-    collections: [noun_cards, nodes, cases, documents]
+    collections: []                  # CPU에서 질의당 약 50초(상위 20) — 판단 대기. 컬렉션을 적으면 켜진다
   catalog: ontologies/catalog/nouns  # 명사 카드(S4)
   collections:
+    noun_cards:
+      text: compact                  # 정의·식별·구조·참조·코드·업무 용어(속성 목록 생략 — 긴 목록이 뜻을 묻는다)
     nodes:                           # 주요 개체 = 자기 이름·설명이 있는 개체(품목·설비·공정·부서·거래처·파라미터 …)
       include: []                    # 이름이 없어도 넣을 명사
       exclude: []

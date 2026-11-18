@@ -348,6 +348,7 @@ def test_s8_business_terms():
     assert "업무 용어: " in items["TraceParameter"]["text"] and "금형온도" in items["TraceParameter"]["payload"]["terms"]
     assert s["eval"]["metric"] == {"noun_cards": "hit"} and s["eval"]["extension_answers"] is True
     assert s["rerank"]["model"] == "BAAI/bge-reranker-v2-m3" and s["rerank"]["top"] == 20
+    assert "속성: " not in items["TraceParameter"]["text"]          # compact 카드
     e = S.extension_answers(cfg, cards)                  # S1 KPI정의서 Extension → 관련 질의의 확장 명사(참고 지표, D-2)
     assert e["Q-SC06-09"] == ["QualityCost"] and "CustomerComplaint" in e["Q-SC06-02"] and "InventorySnapshot" in e["Q-SC07-07"]
 

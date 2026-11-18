@@ -762,12 +762,13 @@ def noun_card_items(cfg: Config, s: dict, cards: dict, terms: dict | None = None
         refs = [r.get("ko") or r.get("target") or r.get("noun") or str(r) for r in (c.get("references") or []) if isinstance(r, dict)]
         codes = [x.get("ko") or x.get("en") or str(x) for x in (c.get("codes") or []) if isinstance(x, dict)]
         st = c.get("struct")
+        compact = ((s["collections"].get("noun_cards") or {}).get("text") == "compact")   # 속성 목록이 길면 뜻이 묻힌다
         text = "\n".join(x for x in [
             f"{c['ko']} ({c['_name']}) — {c.get('definition', '')}",
             f"영역: {c.get('area', '')} · KS X 9101 {c.get('clause', '')} {c.get('table', '')}",
             f"구조: 헤더 {st['header']} · 라인 {st['line']}" if st else "",
             "식별: " + ", ".join(ident) if ident else "",
-            "속성: " + ", ".join(attrs),
+            "" if compact else "속성: " + ", ".join(attrs),
             "참조: " + ", ".join(dict.fromkeys(refs)) if refs else "",
             "코드: " + ", ".join(dict.fromkeys(codes)) if codes else "",
             "업무 용어: " + ", ".join((terms or {}).get(name, {})) if (terms or {}).get(name) else ""] if x)
