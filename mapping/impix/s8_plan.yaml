@@ -16,6 +16,11 @@ sync:
   model: BAAI/bge-m3                 # 한·영 다국어(구현안내서 표 5 스택), 1024차원
   dim: 1024
   batch: 16
+  rerank:                            # D-2: 벡터 상위 top개를 질의–문장 쌍으로 다시 채점(안내서 표 5 스택) — compose 서비스 rerank
+    url: "${RERANK_URL:-http://localhost:8083}"
+    model: BAAI/bge-reranker-v2-m3
+    top: 20
+    collections: [noun_cards, nodes, cases, documents]
   catalog: ontologies/catalog/nouns  # 명사 카드(S4)
   collections:
     nodes:                           # 주요 개체 = 자기 이름·설명이 있는 개체(품목·설비·공정·부서·거래처·파라미터 …)
@@ -63,6 +68,7 @@ sync:
 search_eval:
   k: 5
   threshold: 0.9
+  extension_answers: true           # D-2: S1 KPI정의서 '원천 공백·Extension'의 S2 확장 명사를 관련 질의의 정답에 더한다(S1 정답은 그대로)
   metric: {noun_cards: hit}          # D-1: 명사 카드는 출발점 명사 적중@5, 필요한 명사 전부(recall)는 S9 GraphRAG 평가 — 나머지는 recall@5
   cases:
     - {id: N-SC01-01, collection: noun_cards, source: Q-SC01-01, query: "EWP-A100의 현재 유효한 BOM 버전과 자품목 목록은?", expected: ["BOM", "ItemMaster"]}

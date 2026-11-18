@@ -346,7 +346,8 @@ def test_s8_business_terms():
     assert "업무질의서" not in inspect.getsource(S.business_terms)
     items = S.noun_card_items(cfg, s, cards, t)
     assert "업무 용어: " in items["TraceParameter"]["text"] and "금형온도" in items["TraceParameter"]["payload"]["terms"]
-    assert s["eval"]["metric"] == {"noun_cards": "hit"}
+    assert s["eval"]["metric"] == {"noun_cards": "hit"} and s["eval"]["extension_answers"] is True
+    assert s["rerank"]["model"] == "BAAI/bge-reranker-v2-m3" and s["rerank"]["top"] == 20
     e = S.extension_answers(cfg, cards)                  # S1 KPI정의서 Extension → 관련 질의의 확장 명사(참고 지표, D-2)
     assert e["Q-SC06-09"] == ["QualityCost"] and "CustomerComplaint" in e["Q-SC06-02"] and "InventorySnapshot" in e["Q-SC07-07"]
 
@@ -422,6 +423,17 @@ def test_s8_index_and_eval():
     s["eval"]["metric"] = {"documents": "hit"}
     ev = S.evaluate(None, s, q, emb, None, out=lambda *_: None)
     assert ev["by"]["documents"]["score"] == 1.0 and ev["ok"]
+    # 재정렬: 벡터 상위를 질의–문장 점수로 다시 줄 세운다
+    rr = S.Reranker({"url": "hash:", "top": 3, "collections": ["documents"]})
+    hits = S.retrieve(q, rr, "documents", emb(["누설시험"])[0], "누설시험 합격 기준 2.0", 2, None)
+    assert hits[0]["payload"]["key"] == "DOC-2" and "vector_score" in hits[0]
+    # 확장 명사 정답(D-2): 원래 정답이 아니어도 확장 명사가 들면 적중
+    s.update({"ext_answers": {"Q-X": ["DOC-1"]}})
+    s["eval"].update({"k": 1, "metric": {"noun_cards": "hit"}, "extension_answers": True,
+                      "cases": [{"id": "N1", "collection": "noun_cards", "source": "Q-X", "query": "금형온도 상한", "expected": ["DOC-9"]}]})
+    q.c["noun_cards"] = q.c["documents"]
+    ev = S.evaluate(None, s, q, emb, None, out=lambda *_: None)
+    assert ev["cases"][0]["expected"] == ["DOC-9", "DOC-1"] and ev["cases"][0]["hit"]
 
 
 def test_s8_age_schema_labels_and_grants():

@@ -95,6 +95,12 @@ def settings(cfg: Config) -> dict:
     s.setdefault("dim", 1024)
     s.setdefault("batch", 16)
     s.setdefault("collections", {})
+    rr = dict(s.get("rerank") or {})                     # 재정렬(D-2): 벡터 상위 top개를 질의–문장 쌍으로 다시 채점
+    if rr:
+        rr["url"] = env(rr.get("url", "${RERANK_URL:-http://localhost:8083}")).rstrip("/")
+        rr.setdefault("top", 20)
+        rr.setdefault("collections", ["noun_cards", "nodes", "cases", "documents"])
+    s["rerank"] = rr
     ev = dict(cfg.raw.get("search_eval") or {})
     ev.setdefault("k", 5)
     ev.setdefault("threshold", 0.9)
@@ -474,6 +480,50 @@ def hash_vector(text: str, dim: int) -> list[float]:
             v[h % dim] += 1.0 if h & 1 else -1.0
     norm = math.sqrt(sum(x * x for x in v)) or 1.0
     return [x / norm for x in v]
+
+
+class Reranker:
+    """TEI 호환 재정렬 서버(POST /rerank {query, texts}) — 기본 bge-reranker-v2-m3. url이 'hash:'면 시험용(글자 겹침)."""
+
+    def __init__(self, conf: dict):
+        self.url, self.top, self.collections = conf.get("url", ""), int(conf.get("top", 20)), set(conf.get("collections") or [])
+
+    def __call__(self, query: str, texts: list[str]) -> list[float]:
+        if not texts:
+            return []
+        if self.url.startswith("hash:"):
+            qs = set(query)
+            return [len(qs & set(t)) / (len(qs) or 1) for t in texts]
+        body = json.dumps({"query": query, "texts": [t[:4000] for t in texts], "truncate": True}).encode()
+        req = urllib.request.Request(self.url + "/rerank", data=body, method="POST", headers={"Content-Type": "application/json"})
+        for attempt in range(5):
+            try:
+                with urllib.request.urlopen(req, timeout=600) as r:
+                    res = json.load(r)
+                break
+            except urllib.error.HTTPError as e:
+                if e.code in (424, 429, 503) and attempt < 4:
+                    time.sleep(2 * (attempt + 1))
+                    continue
+                raise RuntimeError(f"재정렬 {self.url} {e.code}: {e.read().decode(errors='replace')[:300]}") from e
+            except urllib.error.URLError as e:
+                raise RuntimeError(f"재정렬 서버 접속 실패 {self.url}: {e.reason}") from e
+        sc = [0.0] * len(texts)
+        for x in res:
+            sc[x["index"]] = x["score"]
+        return sc
+
+
+def retrieve(q, rr, collection: str, vector: list[float], query: str, k: int, flt: dict | None) -> list[dict]:
+    """벡터 검색(상위 max(k, rr.top)) → 재정렬(설정된 컬렉션)."""
+    use = rr is not None and collection in rr.collections
+    hits = q.search(collection, vector, max(k, rr.top) if use else k, flt)
+    if use and hits:
+        sc = rr(query, [h["payload"].get("text", "") for h in hits])
+        for h, x in zip(hits, sc):
+            h["vector_score"], h["score"] = h.get("score"), x
+        hits = sorted(hits, key=lambda h: -h["score"])
+    return hits
 
 
 class Qdrant:
@@ -919,8 +969,18 @@ def default_filter(collection: str, flt: dict | None) -> dict | None:
     return {"must": must} if must else None
 
 
-def search(q: Qdrant, emb: Embedder, collection: str, text: str, k: int, flt: dict | None = None) -> list[dict]:
-    return q.search(collection, emb([text])[0], k, default_filter(collection, flt))
+def search(q: Qdrant, emb: Embedder, collection: str, text: str, k: int, flt: dict | None = None, rr=None) -> list[dict]:
+    return retrieve(q, rr, collection, emb([text])[0], text, k * 4, default_filter(collection, flt))[:k * 4]
+
+
+def top_hits(hits: list[dict], k: int) -> list[dict]:
+    out, seen = [], set()
+    for h in hits:
+        key = h["payload"].get("key")
+        if key not in seen:
+            seen.add(key)
+            out.append(h)
+    return out[:k]
 
 
 def top_keys(hits: list[dict], k: int) -> list[str]:
@@ -932,7 +992,7 @@ def top_keys(hits: list[dict], k: int) -> list[str]:
     return keys[:k]
 
 
-def evaluate(cfg: Config, s: dict, q: Qdrant, emb: Embedder, rid: str | None, out=print) -> dict:
+def evaluate(cfg: Config, s: dict, q: Qdrant, emb: Embedder, rid: str | None, out=print, rr=None) -> dict:
     """사례마다 recall@k(정답 중 상위 k에 든 비율)와 적중@k(정답이 하나라도 들었나)를 잰다.
     완료 판정은 컬렉션마다 계획 metric(recall | hit, 기본 recall)으로 한다(S8 D-1: 명사 카드 = 출발점 명사 적중,
     질의에 필요한 명사 전부 찾기는 S9 GraphRAG 평가)."""
@@ -944,9 +1004,12 @@ def evaluate(cfg: Config, s: dict, q: Qdrant, emb: Embedder, rid: str | None, ou
     vecs = emb([c["query"] for c in cases]) if cases else []
     for c, v in zip(cases, vecs):
         col = c["collection"]
-        hits = q.search(col, v, k * 4, default_filter(col, c.get("filter")))      # 문서는 청크가 여러 개 — 문서 단위 상위 k
+        hits = retrieve(q, rr, col, v, c["query"], k * 4, default_filter(col, c.get("filter")))   # 문서는 청크가 여러 개 — 문서 단위 상위 k
         keys = top_keys(hits, k)
         exp = [str(x) for x in c["expected"]]
+        alt = [x for x in (s.get("ext_answers") or {}).get(c.get("source", ""), []) if x not in exp] if col == "noun_cards" else []
+        if ev.get("extension_answers") and alt:          # D-2: S1 KPI정의서의 S2 확장 명사도 정답(원래 S1 정답은 expected에 그대로)
+            exp, alt = exp + alt, []
         tp = [x for x in exp if x in keys]
         rec = len(tp) / min(len(exp), k) if exp else 1.0
         bad = [h["payload"].get("doc_version") or h["payload"].get("key") for h in hits[:k]
@@ -955,7 +1018,6 @@ def evaluate(cfg: Config, s: dict, q: Qdrant, emb: Embedder, rid: str | None, ou
         if bad:
             rec = 0.0
         m = metric.get(col, "recall")
-        alt = [x for x in (s.get("ext_answers") or {}).get(c.get("source", ""), []) if x not in exp] if col == "noun_cards" else []
         alt_hit = bool(tp) or any(x in keys for x in alt)
         res.append({"id": c["id"], "collection": col, "query": c["query"], "expected": exp, "got": keys, "ext": alt, "alt_hit": alt_hit and not bad,
                     "recall": round(min(rec, 1.0), 4), "hit": hit, "metric": m,
@@ -976,7 +1038,7 @@ def evaluate(cfg: Config, s: dict, q: Qdrant, emb: Embedder, rid: str | None, ou
     hit = round(sum(r["hit"] for r in res) / len(res), 4) if res else 0.0
     for col, a in sorted(by.items()):
         out(f"  {col:11} 사례 {a['cases']:>4} · recall@{k} {a['recall']:.3f} · 적중@{k} {a['hit']:.3f} → 판정({a['metric']}) {a['score']:.3f}")
-    if alt_hit is not None:
+    if alt_hit is not None and not ev.get("extension_answers"):
         out(f"  (참고) 명사 카드 적중@{k} — S2 확장 명사를 정답에 더하면 {alt_hit:.3f} ({sum(1 for r in nc if r['ext'])}건에 확장 명사)")
     ok = bool(res) and all(a["score"] >= ev["threshold"] for a in by.values()) and not any(r["must_not"] for r in res)
     if rid and res:
@@ -986,7 +1048,8 @@ def evaluate(cfg: Config, s: dict, q: Qdrant, emb: Embedder, rid: str | None, ou
                 json.dumps(r["expected"], ensure_ascii=False).replace("'", "''"),
                 json.dumps(r["got"], ensure_ascii=False).replace("'", "''"), r["recall"]) for r in res)
         psql_at(cfg, f"insert into audit.search_eval(run_id, case_id, collection, query, expected, got, recall) values {vals}")
-    return {"cases": res, "by": by, "recall": tot, "hit": hit, "k": k, "threshold": ev["threshold"], "ok": ok, "alt_hit": alt_hit}
+    return {"cases": res, "by": by, "recall": tot, "hit": hit, "k": k, "threshold": ev["threshold"], "ok": ok, "alt_hit": alt_hit,
+            "ext_on": bool(ev.get("extension_answers")), "rerank": sorted(rr.collections) if rr else []}
 
 
 # ------------------------------------------------------------------ 진입점
@@ -1003,7 +1066,8 @@ def sync(cfg: Config, eval_only=False, skip_vectors=False, out=print) -> bool:
     rid = start_run(cfg, "kg_search_eval" if eval_only else "kg_sync", stage="S8")
     psql_at(cfg, AUDIT_SQL)
     q, emb = Qdrant(s["qdrant"], s["qdrant_key"]), Embedder(s["embed"], int(s["dim"]), int(s["batch"]))
-    out(f"S8 동기화 run_id={rid} (속성 그래프 {s['graph']}, Qdrant {s['qdrant']}, 임베딩 {s['model']} {s['dim']}차원)")
+    out(f"S8 동기화 run_id={rid} (속성 그래프 {s['graph']}, Qdrant {s['qdrant']}, 임베딩 {s['model']} {s['dim']}차원"
+        + (f", 재정렬 {s['rerank'].get('model', '')} 상위 {s['rerank']['top']}" if s["rerank"] else "") + ")")
     res = {"rid": rid, "s": s}
     try:
         if not eval_only:
@@ -1047,7 +1111,8 @@ def sync(cfg: Config, eval_only=False, skip_vectors=False, out=print) -> bool:
                     res["vectors"][name] = st
                     log(cfg, rid, name, "vector", st)
         s["ext_answers"] = extension_answers(cfg, load_cards(cfg, s))
-        ev = evaluate(cfg, s, q, emb, rid, out)
+        rr = Reranker(s["rerank"]) if s["rerank"] else None
+        ev = evaluate(cfg, s, q, emb, rid, out, rr)
         res["eval"] = ev
         out(f"  검색 평가: 컬렉션마다 판정 지표 ≥ {ev['threshold']} → {'충족' if ev['ok'] else '미충족'} "
             f"(전체 recall@{ev['k']} {ev['recall']:.3f} · 적중 {ev['hit']:.3f})")
@@ -1065,7 +1130,8 @@ def sync(cfg: Config, eval_only=False, skip_vectors=False, out=print) -> bool:
 def search_cli(cfg: Config, collection: str, text: str, k: int, flt: dict | None = None, out=print) -> int:
     s = settings(cfg)
     q, emb = Qdrant(s["qdrant"], s["qdrant_key"]), Embedder(s["embed"], int(s["dim"]), int(s["batch"]))
-    for i, h in enumerate(search(q, emb, collection, text, k, flt), 1):
+    rr = Reranker(s["rerank"]) if s["rerank"] else None
+    for i, h in enumerate(top_hits(search(q, emb, collection, text, k, flt, rr), k), 1):
         p = h["payload"]
         out(f"{i}. {h['score']:.3f}  {p.get('key')}  {p.get('doc_version', '')} {p.get('status', '')}  "
             f"{(p.get('text') or '').splitlines()[0][:90]}")
@@ -1076,7 +1142,8 @@ def report(cfg: Config, res: dict, eval_only: bool):
     s, ev = res["s"], res["eval"]
     md = [f"# S8 속성 그래프·벡터 인덱스 결과 ({cfg.ent}) — ksxkg sync", "",
           f"- 실행: `{res['rid']}` · 속성 그래프 `{s['graph']}` · 임베딩 {s['model']}({s['dim']}차원, 코사인) · "
-          f"검색 평가 recall@{ev['k']}", ""]
+          f"검색 평가 상위 {ev['k']}" + (f" · 재정렬 {s['rerank'].get('model', '')}(벡터 상위 {s['rerank']['top']} → {', '.join(ev.get('rerank') or [])})" if s.get("rerank") else "")
+          + (" · 명사 카드 정답에 S2 확장 명사 포함(D-2)" if ev.get("ext_on") else ""), ""]
     p = os.path.join(cfg.mapping_dir(), "S8_동기화결과.md")
     if eval_only and os.path.exists(p):                 # 평가만 다시 — 앞부분(동기화)은 그대로 두고 평가 절만 바꾼다
         old = open(p, encoding="utf-8").read()
@@ -1136,7 +1203,7 @@ def report(cfg: Config, res: dict, eval_only: bool):
     md += ["", f"### 판정 지표에서 놓친 사례 ({len(miss)}건)", "", "| 사례 | 컬렉션 | 질의 | 정답 | 상위 결과 | recall |", "|---|---|---|---|---|---:|"]
     md += [f"| {r['id']} | {r['collection']} | {r['query']} | {', '.join(r['expected'])}{' (+확장 ' + ', '.join(r['ext']) + ')' if r.get('ext') else ''} | "
            f"{', '.join(r['got'])} | {r['recall']:.2f} |" for r in miss]
-    if ev.get("alt_hit") is not None:
+    if ev.get("alt_hit") is not None and not ev.get("ext_on"):
         md += ["", f"참고: S1 KPI정의서의 확장 명사(S2)를 해당 질의의 정답에 더하면 명사 카드 적중@{ev['k']} = **{ev['alt_hit']:.3f}**."]
     with open(p, "w", encoding="utf-8", newline="\n") as f:
         f.write("\n".join(md) + "\n")
