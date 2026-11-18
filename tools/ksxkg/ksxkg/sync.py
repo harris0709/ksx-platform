@@ -1111,6 +1111,11 @@ def sync(cfg: Config, eval_only=False, skip_vectors=False, out=print) -> bool:
                     st = index(q, emb, s, name, items, out)
                     res["vectors"][name] = st
                     log(cfg, rid, name, "vector", st)
+        if skip_vectors and not eval_only:               # 속성 그래프만 — 리포트(S8_동기화결과.md)는 덮어쓰지 않는다
+            ok = res["consistency"]["ok"] and all(g["ok"] for g in res["checks"])
+            end_run(cfg, rid, ok, {"error": res["consistency"]["error"], "vectors": "skipped"})
+            out(f"ksxkg sync --skip-vectors: 속성 그래프 {'완료' if ok else '완료 기준 미충족'} (벡터 색인·검색 평가는 건너뜀)")
+            return ok
         s["ext_answers"] = extension_answers(cfg, load_cards(cfg, s))
         rr = Reranker(s["rerank"]) if s["rerank"] and s["rerank"]["collections"] else None
         ev = evaluate(cfg, s, q, emb, rid, out, rr)
