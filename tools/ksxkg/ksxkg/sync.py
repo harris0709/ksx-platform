@@ -654,6 +654,11 @@ def business_terms(cfg: Config, s: dict, cards: dict, kg: dict) -> dict:
                     seen.setdefault((n["label"], "참조 개체 이름", k), set()).add(names_by_key[k][x])
                 elif (k, x) in kg["labels"]:                                         # (3) 코드 레이블
                     seen.setdefault((n["label"], "코드 레이블", k), set()).add(kg["labels"][(k, x)])
+    for lab, c in cards.items():                         # 카드가 식별값으로 참조하는 개체의 이름 전부(데이터가 적게 물질화돼도 — TraceParameter.ParameterID → 파라미터명)
+        for a in card_attrs(c, lab):
+            k = prop_key(a)
+            if a["type"] == "IDREF" and k in names_by_key:
+                seen.setdefault((c["_name"], "참조 개체 이름", k), set()).update(names_by_key[k].values())
     for (lab, src, k), vals in sorted(seen.items()):
         if len(vals) <= limit:                           # 값이 너무 많은 것(품목명 수백 개 등)은 넣지 않는다
             for v in sorted(vals):

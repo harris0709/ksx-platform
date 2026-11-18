@@ -335,10 +335,12 @@ def test_s8_business_terms():
     cards = S.load_cards(cfg, s)
     tp = {"label": "TraceParameter", "props": {"parameterID": "P01", "validationResultCode": "OVER_USL"}}
     ep = {"label": "EquipmentParameter", "props": {"parameterID": "P01", "parameterName": "금형온도"}}
-    kg = {"nodes": {"a": tp, "b": ep}, "edges": {}, "labels": {("validationResultCode", "OVER_USL"): "규격 상한 초과"}}
+    ep2 = {"label": "EquipmentParameter", "props": {"parameterID": "P02", "parameterName": "누설량"}}   # 측정값이 물질화되지 않은 파라미터도
+    kg = {"nodes": {"a": tp, "b": ep, "c": ep2}, "edges": {}, "labels": {("validationResultCode", "OVER_USL"): "규격 상한 초과"}}
     t = S.business_terms(cfg, s, cards, kg)
     assert t["TraceParameter"]["파라미터 수집값"] == "원천 업무 의미"
     assert t["TraceParameter"]["금형온도"] == "참조 개체 이름" and t["TraceParameter"]["규격 상한 초과"] == "코드 레이블"
+    assert t["TraceParameter"]["누설량"] == "참조 개체 이름"
     assert t["EquipmentState"]["설비 종합효율(OEE)"] == "KPI" and t["Personnel"]["퇴직자"] == "현업"
     assert all(re.search(r"[가-힣]", x) for v in t.values() for x in v)
     assert "업무질의서" not in inspect.getsource(S.business_terms)
