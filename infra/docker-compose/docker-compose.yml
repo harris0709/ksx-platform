@@ -237,7 +237,7 @@ services:
   rerank:                                     # S8 D-2: 재정렬(bge-reranker-v2-m3) — POST /rerank {query, texts}
     profiles: ["ai"]
     image: ghcr.io/huggingface/text-embeddings-inference:${TEI_VERSION:-cpu-1.9}
-    command: ["--model-id", "BAAI/bge-reranker-v2-m3", "--max-client-batch-size", "64", "--max-batch-tokens", "4096"]   # CPU(candle) 예열이 짧게
+    command: ["--model-id", "BAAI/bge-reranker-v2-m3", "--max-client-batch-size", "64", "--max-batch-tokens", "2048"]   # CPU(candle) 예열·메모리를 작게
     volumes:
       - tei-data:/data
     ports: ["127.0.0.1:8083:80"]
