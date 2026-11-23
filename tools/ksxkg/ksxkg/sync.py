@@ -467,7 +467,8 @@ def _agtype(text: str):
 
 
 def age_dump(cfg: Config, s: dict) -> dict:
-    """속성 그래프의 노드(iri → 라벨·속성)·관계((s iri, 라벨, o iri) → 속성) 전부."""
+    """속성 그래프의 노드(iri → 라벨·속성)·관계((s iri, 라벨, o iri) → 속성) 전부.
+    agtype → text 형 변환은 스칼라만 되므로 format('%s')(출력 함수)로 읽는다."""
     g = s["graph"]
     labels = [x.split("|") for x in psql_at(cfg, (
         "SELECT l.name || '|' || l.kind::text FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph gg ON l.graph = gg.graphid "
@@ -476,7 +477,7 @@ def age_dump(cfg: Config, s: dict) -> dict:
     el = [n for n, k in labels if k == "e"]
     nodes, ids, dup = {}, {}, []
     if vl:
-        q = " UNION ALL ".join(f"SELECT json_build_array('{n}', id::text, properties::text)::text FROM ONLY {g}.\"{n}\"" for n in vl)
+        q = " UNION ALL ".join(f"SELECT json_build_array('{n}', format('%s', id), format('%s', properties))::text FROM ONLY {g}.\"{n}\"" for n in vl)
         for line in psql_at(cfg, q).splitlines():
             if not line.strip():
                 continue
@@ -489,7 +490,7 @@ def age_dump(cfg: Config, s: dict) -> dict:
             nodes[iri] = {"label": lab, "props": pr}
     edges, orphan = {}, 0
     if el:
-        q = " UNION ALL ".join(f"SELECT json_build_array('{n}', start_id::text, end_id::text, properties::text)::text FROM ONLY {g}.\"{n}\"" for n in el)
+        q = " UNION ALL ".join(f"SELECT json_build_array('{n}', format('%s', start_id), format('%s', end_id), format('%s', properties))::text FROM ONLY {g}.\"{n}\"" for n in el)
         for line in psql_at(cfg, q).splitlines():
             if not line.strip():
                 continue
