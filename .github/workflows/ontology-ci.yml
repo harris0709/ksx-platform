@@ -224,6 +224,15 @@ jobs:
           python -m ksxkg sync | tee s8c.txt
           grep -q "속성 그래프 노드 .*(추가 0 · 변경 1 · 삭제 0)" s8c.txt && grep -q "nodes .*(추가 0 · 변경 1 · 삭제 0)" s8c.txt
           psql -d ksx -c "select target, kind, total, added, updated, removed, seconds from audit.graph_sync order by log_id desc limit 8"
+      - name: S8 기능 점검(ksxkg sync-check — 삭제·라벨 변경 동기화·반영 지연 p95 E2E-07, 바꾼 뒤 되돌림)
+        timeout-minutes: 20
+        env: { FUSEKI_URL: "http://localhost:3030/ksx", ONTOP_URL: "http://localhost:8080/sparql", PYTHONPATH: tools/ksxkg, S5_PLAN: mapping/impix/s8_plan.yaml }
+        run: |
+          set -o pipefail
+          python -m ksxkg sync-check | tee s8d.txt || { cat mapping/impix/S8_기능점검결과.md; exit 1; }
+          cat mapping/impix/S8_기능점검결과.md
+          python -m ksxkg sync --skip-vectors | tee s8e.txt
+          grep -q "속성 그래프 노드 .*(추가 0 · 변경 0 · 삭제 0)" s8e.txt && grep -q "속성 그래프 관계 .*(추가 0 · 변경 0 · 삭제 0)" s8e.txt
       - name: S5~S8 실패 시 Fuseki·Ontop·Qdrant·임베딩 로그
         if: failure()
         run: |
