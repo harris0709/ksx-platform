@@ -450,6 +450,21 @@ def test_s8_age_schema_labels_and_grants():
     assert "CREATE EXTENSION IF NOT EXISTS age;" in age and "session_preload_libraries = ''age''" in age
     assert "GRANT INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA ksx_graph TO ksx_owner" in age
 
+def test_s8_templates():
+    """S8 양식: 계획·승인 기록·결정 카드·SOP 머리말. 계획 양식의 설정 키가 IMPIX 계획과 같다."""
+    import yaml
+    from ksxkg import sync as S
+    T = os.path.join(ROOT, "mapping", "_template")
+    for f in ("s8_plan.yaml", "S8_승인기록_양식.md", "S8_판단사항_결정카드_양식.md", "sop_양식.md"):
+        assert os.path.exists(os.path.join(T, f)), f
+    tp = yaml.safe_load(open(os.path.join(T, "s8_plan.yaml"), encoding="utf-8"))
+    ip = yaml.safe_load(open(os.path.join(ROOT, "mapping", "impix", "s8_plan.yaml"), encoding="utf-8"))
+    assert set(tp["sync"]) == set(ip["sync"]) and set(tp["search_eval"]) == set(ip["search_eval"])
+    assert {c["collection"] for c in tp["search_eval"]["cases"]} == {"noun_cards", "nodes", "cases", "documents"}
+    m, body = S.front_matter(open(os.path.join(T, "sop_양식.md"), encoding="utf-8").read())
+    assert {"doc_id", "version", "status", "title", "links"} <= set(m) and "## 1." in body
+    assert os.path.exists(os.path.join(ROOT, "docs", "S8_속성그래프벡터인덱스_실행가이드.docx"))
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

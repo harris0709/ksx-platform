@@ -1,0 +1,77 @@
+# S8 속성 그래프·벡터 인덱스 계획 — <기업> (구현안내서 11장) · 양식
+#   복사: mapping/_template/s8_plan.yaml → mapping/<기업 소문자>/s8_plan.yaml
+#   실행(infra/docker-compose):
+#     docker compose exec -T postgres psql -U postgres -d ksx -v ON_ERROR_STOP=1 -q < ../../ontologies/graph/age_schema.sql   # 관리자, 라벨이 바뀌면 다시
+#     docker compose --profile ai up -d embed                                       # 임베딩 서버(bge-m3) — 끝나면 stop embed
+#     export S5_PLAN=mapping/<기업 소문자>/s8_plan.yaml
+#     docker compose --profile tools run --rm -e S5_PLAN s5-tools sync                 # 속성 그래프 + 정합 + 탐색 + 벡터 + 검색 평가 → S8_동기화결과.md
+#     docker compose --profile tools run --rm -e S5_PLAN s5-tools sync --skip-vectors  # 속성 그래프·정합·탐색만(임베딩 서버 없이)
+#     docker compose --profile tools run --rm -e S5_PLAN s5-tools sync --eval          # 검색 평가만
+#     docker compose --profile tools run --rm -e S5_PLAN s5-tools search --collection documents "<질문>"
+#     unset S5_PLAN
+base: mapping/<기업 소문자>/s7_plan.yaml   # s7 → s6 → s5: 원장·Fuseki·기업·그래프 설정을 물려받는다
+
+sync:
+  graph: ksx_graph                   # Apache AGE 그래프(ksxgen.yaml graph)
+  site: <사업장 ID>
+  qdrant: "${QDRANT_URL:-http://localhost:6333}"
+  qdrant_key: "${QDRANT_API_KEY:-}"
+  embed: "${EMBED_URL:-http://localhost:8082}"   # TEI 호환 임베딩 서버(POST /embed)
+  model: BAAI/bge-m3                 # 한·영 다국어, 1024차원 — 바꾸면 컬렉션을 지우고 다시 색인
+  dim: 1024
+  batch: 16
+  rerank:                            # 재정렬 — CPU에서는 질의당 수십 초(IMPIX 약 50초). GPU에서 컬렉션을 적어 켠다(S8 D-3)
+    url: "${RERANK_URL:-http://localhost:8083}"
+    model: BAAI/bge-reranker-v2-m3
+    top: 20
+    collections: []
+  catalog: ontologies/catalog/nouns  # 명사 카드(S4)
+  collections:
+    noun_cards:
+      text: compact                  # 정의·식별·구조·참조·코드·업무 용어(속성 목록 생략, S8 D-2)
+    nodes:                           # 주요 개체 = 자기 이름·설명이 있는 개체
+      include: []                    # 이름이 없어도 넣을 명사
+      exclude: []
+    cases:                           # 원인–조치 이력 — 기업 명사(확장 포함)
+      nouns: [<고객 클레임 명사>, CorrectiveActionRequest]
+      related: [CorrectiveActionPlan, CorrectiveActionResult]   # 이 이력을 가리키는 계획·결과도 문장에 넣는다
+      approved:                      # payload approved = Y 조건(종결된 이력)
+        <고객 클레임 명사>: {<상태 속성>: [<종결 코드값>]}
+        CorrectiveActionRequest: {related: CorrectiveActionResult}
+    documents:
+      dir: mapping/<기업 소문자>/sop   # SOP·규정(머리말 doc_id·version·status·links) — mapping/_template/sop_양식.md
+      chunk: [500, 800]
+  terms: {}                          # 명사 카드 업무 용어 — 자동 수집에 더해 현업이 넣는 말. 예) Personnel: [퇴직자]
+  terms_max_values: 40               # 참조 개체 이름·코드 레이블이 이보다 많으면 넣지 않는다
+  terms_max_cards: 3                 # 이보다 많은 카드에 두루 붙는 말(사업장·공장·품목명)은 뺀다
+  checks:                            # 탐색 확인(cypher) — 기대값은 S7 정답 사례·원천 조회에서. 다단 경로를 꼭 하나 넣는다
+    - id: G01
+      desc: "<로트 계보 — 완제품 LOT의 원재료 LOT>"
+      cypher: "MATCH (l:Lot {lotID: '<완제품 LOT>'})-[:derivedFrom]->(a:Lot) RETURN a.lotID"
+      expected: [<원재료 LOT>]
+    - id: G02
+      desc: "<추론 이벤트 → 대상 — 예: 납기 리스크 → 수주>"
+      cypher: "MATCH (e:OTDRiskEvent)-[:onSalesOrderLine]->(s) RETURN DISTINCT s.salesDocumentNumber"
+      expected: [<수주 번호>]
+    - id: G03
+      desc: "<가변 길이 경로 — 상위 부서>"
+      cypher: "MATCH (d:Department {departmentID: '<부서>'})-[:refParentDepartment*1..5]->(p:Department) RETURN p.departmentID"
+      expected: [<상위 부서>]
+
+# 검색 평가(완료 기준: 컬렉션마다 판정 지표 ≥ 0.9). 평가 질문은 색인 문장에 넣지 않는다.
+#   recall@k = 상위 k(문서는 문서 단위)에 든 정답 ÷ min(정답 수, k), 적중@k = 정답이 하나라도 들었나
+#   noun_cards: S1 업무 질의서 질문 → '필요 명사'(헤더·라인은 명사 카드 하나로). source = 질의 ID(확장 명사 정답 연결에 쓴다)
+#   nodes: 현장 표현(설비·품목·거래처·부서·공정 이름) → '라벨:식별값'
+#   cases: 증상 표현 → 클레임·시정조치 번호
+#   documents: 현장 질문 → 문서 번호. must_not = 나오면 안 되는 판('문서번호@판') — 현행 필터 확인. filter로 폐기 판 검색도 한 건
+search_eval:
+  k: 5
+  threshold: 0.9
+  extension_answers: true            # S1 KPI정의서 '원천 공백·Extension'의 S2 확장 명사를 관련 질의 정답에 더한다(S8 D-2)
+  metric: {noun_cards: hit}          # 명사 카드는 출발점 명사 적중@5, 나머지는 recall@5(S8 D-1)
+  cases:
+    - {id: N-<질의 ID>, collection: noun_cards, source: Q-<질의 ID>, query: "<S1 질문>", expected: [<명사>, <명사>]}
+    - {id: V01, collection: nodes, query: "<현장 표현 — 예: 다이캐스팅기 2호>", expected: ["<라벨>:<식별값>"]}
+    - {id: C01, collection: cases, query: "<증상 표현>", expected: [<클레임·시정조치 번호>]}
+    - {id: D01, collection: documents, query: "<현장 질문>", expected: [<문서 번호>], must_not: ["<문서 번호>@<폐기 판>"]}
+    - {id: D02, collection: documents, query: "<폐기 판을 찾는 질문>", expected: [<문서 번호>], must_not: ["<문서 번호>@<현행 판>"], filter: {status: 폐기}}
