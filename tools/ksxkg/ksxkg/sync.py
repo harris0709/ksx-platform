@@ -449,13 +449,17 @@ def reader_checks(cfg: Config, s: dict) -> dict:
     for wid, sql in (("cypher CREATE", f"SELECT x FROM cypher('{g}', $q$ CREATE (n:{lab} {{iri: 'urn:ksx:s8:reader-write-test'}}) RETURN n $q$) AS (x agtype);"),
                      ("SQL UPDATE", f'UPDATE {g}."{lab}" SET properties = properties WHERE false;'),
                      ("pgsync DELETE", "DELETE FROM pgsync.node WHERE false;")):
-        q = f"BEGIN;\nSET search_path = ag_catalog, \"$user\", public;\n{sql}\nROLLBACK;"
-        try:
-            psql_at(cfg, q, dsn=cfg.reader)
-            writes.append({"id": wid, "denied": False, "error": ""})
-        except DbError as e:
-            msg = str(e)
-            writes.append({"id": wid, "denied": "permission denied" in msg or "권한" in msg, "error": msg.splitlines()[0][:160]})
+        # 두 겹: ① 계정 기본값 읽기 전용 트랜잭션(default_transaction_read_only) ② 권한(GRANT) — 읽기·쓰기 트랜잭션으로 바꿔도 거부
+        for layer, pre, needle in (("읽기 전용", "", "read-only transaction"),
+                                   ("권한", "SET TRANSACTION READ WRITE;\n", "permission denied")):
+            q = f"BEGIN;\n{pre}SET search_path = ag_catalog, \"$user\", public;\n{sql}\nROLLBACK;"
+            try:
+                psql_at(cfg, q, dsn=cfg.reader)
+                writes.append({"id": f"{wid}({layer})", "denied": False, "error": ""})
+            except DbError as e:
+                msg = str(e)
+                line = next((x for x in msg.splitlines() if "ERROR" in x), msg.splitlines()[0])
+                writes.append({"id": f"{wid}({layer})", "denied": needle in msg, "error": line.split("ERROR:", 1)[-1].strip()[:160]})
     ok = all(c["ok"] for c in checks) and all(w["denied"] for w in writes)
     return {"user": cfg.reader.user, "checks": checks, "writes": writes, "ok": ok}
 
