@@ -1,6 +1,8 @@
--- Apache AGE 속성 그래프 스키마(ksxgen 생성물, 구현안내서 11.1) — 노드 라벨 81 · 관계 라벨 70
+-- Apache AGE 속성 그래프 스키마(ksxgen 생성물, 구현안내서 11.1) — 노드 라벨 81 · 관계 라벨 70 + 추론 노드 라벨 4 · 관계 라벨 26
 -- 노드 = 명사 개체(키: iri), 관계 = 객체 관계(ref*·hasLine·lineOf). 코드·단위는 노드 속성으로 둔다.
--- 다시 실행해도 된다(있으면 건너뜀). 이 세션에서만 AGE를 쓴다.
+-- 추론(S7) 이벤트·관계는 inference/inf.ttl의 클래스·객체 관계로 라벨을 만든다.
+-- 관리자(superuser)로 적용한다. 다시 실행해도 된다(있으면 건너뜀).
+CREATE EXTENSION IF NOT EXISTS age;
 LOAD 'age';
 SET search_path = ag_catalog, "$user", public;
 
@@ -19,6 +21,15 @@ BEGIN
                    WHERE g.name = 'ksx_graph' AND l.name = x) THEN PERFORM ag_catalog.create_vlabel('ksx_graph', x); END IF;
   END LOOP;
   FOREACH x IN ARRAY ARRAY['refEnterprise', 'refCreator', 'refModifier', 'refSite', 'refPlant', 'refParentDepartment', 'refDepartment', 'refCommonCodeMaster', 'hasLine', 'lineOf', 'refMainCustomer', 'refMainVendor', 'refReceiptWarehouse', 'refIssueWarehouse', 'refReplacementItem', 'refItem', 'refRouting', 'refChildItem', 'refParentLot', 'refChildLot', 'refCarrier', 'refProductionOrder', 'refCurrentOperation', 'refNextOperation', 'refPersonnel', 'refOperation', 'refParentEquipment', 'refDepartmentInCharge', 'refPersonInCharge', 'refEquipment', 'refLot', 'refAlternateStocker', 'refParentBatch', 'refBOM', 'refParentLine', 'refCalendar', 'refParentEnterprise', 'refResponsibleDepartment', 'refSalesOrderLine', 'refDivision', 'refCustomer', 'refVendor', 'refRequesterDepartment', 'refRequesterPersonnel', 'refPurchaseOrderLine', 'refWarehouse', 'refLine', 'refTransferCommand', 'refLastProcessedLot', 'refLastProcessedOperation', 'refProject', 'refBatch', 'refInspectionPlan', 'refApplicationPersonnel', 'refInspectionApplication', 'refCorrectiveActionRequestIssuer', 'refCorrectiveActionRequest', 'refCorrectiveActionPlan', 'refCorrectiveActionConfirmor', 'refParameter', 'refRoutingToRoutingLine', 'refProductionPerformance', 'refReplacementChildItem', 'refWarehouseToWarehouseLocationLine', 'refProductReleaseRequest', 'refProductRelease', 'refAfterSalesServiceRequest', 'refCauseOperation', 'refGoodsReceipt', 'refInspectionResult'] LOOP
+    IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph g ON l.graph = g.graphid
+                   WHERE g.name = 'ksx_graph' AND l.name = x) THEN PERFORM ag_catalog.create_elabel('ksx_graph', x); END IF;
+  END LOOP;
+  -- 추론 이벤트 라벨(inf: 클래스)과 추론 관계 라벨(inf: 객체 관계)
+  FOREACH x IN ARRAY ARRAY['InferenceEvent', 'SpecOutLotEvent', 'OTDRiskEvent', 'RiskCause'] LOOP
+    IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph g ON l.graph = g.graphid
+                   WHERE g.name = 'ksx_graph' AND l.name = x) THEN PERFORM ag_catalog.create_vlabel('ksx_graph', x); END IF;
+  END LOOP;
+  FOREACH x IN ARRAY ARRAY['consumedLot', 'derivedFrom', 'directComponent', 'component', 'processedOn', 'affectedSalesOrderLine', 'affectedSalesOrder', 'onLot', 'onEquipment', 'onParameter', 'hasHeldLot', 'onSalesOrderLine', 'onProductionOrder', 'cause', 'performance', 'lot', 'operation', 'refParentDepartmentClosure', 'refCommonCodeMasterClosure', 'refReplacementItemClosure', 'refChildLotClosure', 'refParentEquipmentClosure', 'refAlternateStockerClosure', 'refParentBatchClosure', 'refParentLineClosure', 'refParentEnterpriseClosure'] LOOP
     IF NOT EXISTS (SELECT 1 FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph g ON l.graph = g.graphid
                    WHERE g.name = 'ksx_graph' AND l.name = x) THEN PERFORM ag_catalog.create_elabel('ksx_graph', x); END IF;
   END LOOP;
@@ -106,3 +117,29 @@ CREATE INDEX IF NOT EXISTS "ix_CustomerComplaint_props" ON ksx_graph."CustomerCo
 CREATE INDEX IF NOT EXISTS "ix_QualityCost_props" ON ksx_graph."QualityCost" USING gin (properties);
 CREATE INDEX IF NOT EXISTS "ix_InventorySnapshot_props" ON ksx_graph."InventorySnapshot" USING gin (properties);
 CREATE INDEX IF NOT EXISTS "ix_LotInventory_props" ON ksx_graph."LotInventory" USING gin (properties);
+CREATE INDEX IF NOT EXISTS "ix_InferenceEvent_props" ON ksx_graph."InferenceEvent" USING gin (properties);
+CREATE INDEX IF NOT EXISTS "ix_SpecOutLotEvent_props" ON ksx_graph."SpecOutLotEvent" USING gin (properties);
+CREATE INDEX IF NOT EXISTS "ix_OTDRiskEvent_props" ON ksx_graph."OTDRiskEvent" USING gin (properties);
+CREATE INDEX IF NOT EXISTS "ix_RiskCause_props" ON ksx_graph."RiskCause" USING gin (properties);
+
+-- 서비스 계정 권한(구현안내서 11.1·15장) — 계정이 있을 때만(S0 init이 만든 원장 DB)
+--   ksx_owner: pg-sync(ksxkg sync)가 라벨 테이블에 직접 쓴다(cypher 해석기를 쓰지 않으므로 LOAD 없이 동작).
+--   ksx_reader: 탐색(MCP 도구, S9). 관리자가 아니면 LOAD 'age'를 쓸 수 없으므로($libdir/plugins 밖)
+--   접속할 때 미리 로드한다(session_preload_libraries — 서버 전체 미리 로드는 하지 않는다, 3.1).
+DO $$
+DECLARE r text;
+BEGIN
+  FOREACH r IN ARRAY ARRAY['ksx_owner', 'ksx_reader'] LOOP
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = r) THEN
+      EXECUTE format('GRANT USAGE ON SCHEMA ag_catalog, ksx_graph TO %I', r);
+      EXECUTE format('GRANT SELECT ON ag_catalog.ag_graph, ag_catalog.ag_label TO %I', r);
+      EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA ksx_graph TO %I', r);
+      EXECUTE format('ALTER ROLE %I SET session_preload_libraries = ''age''', r);
+    END IF;
+  END LOOP;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'ksx_owner') THEN
+    EXECUTE 'GRANT INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA ksx_graph TO ksx_owner';
+    EXECUTE 'GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA ksx_graph TO ksx_owner';
+    EXECUTE format('GRANT TEMPORARY ON DATABASE %I TO ksx_owner', current_database());   -- 차이 계산용 임시 테이블
+  END IF;
+END $$;
