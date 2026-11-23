@@ -7,6 +7,7 @@
   python -m ksxkg validate    --plan mapping/impix/s6_plan.yaml [--seed]  # S6 SHACL 검증 / 의도적 위반 시험
   python -m ksxkg infer       --plan mapping/impix/s7_plan.yaml [--eval]  # S7 규칙 추론(+정확도 평가) / 평가만
   python -m ksxkg sync        --plan mapping/impix/s8_plan.yaml [--eval]  # S8 속성 그래프(AGE)·벡터(Qdrant) 동기화+정합·검색 평가
+  python -m ksxkg sync-check  --plan mapping/impix/s8_plan.yaml         # S8 기능 점검: 삭제·라벨 변경·반영 지연(E2E-07) — 바꾼 뒤 되돌림
   python -m ksxkg search      --plan … --collection documents "질문"      # 벡터 검색 한 건(확인용, 문서는 현행만)
 --plan을 생략하면 환경변수 S5_PLAN(기본 mapping/impix/s5_plan.yaml)을 쓴다.
 """
@@ -21,7 +22,7 @@ from .base import DbError, SparqlError, load_config, sparql
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="ksxkg")
-    ap.add_argument("cmd", choices=["materialize", "check", "query", "validate", "infer", "sync", "search"])
+    ap.add_argument("cmd", choices=["materialize", "check", "query", "validate", "infer", "sync", "sync-check", "search"])
     ap.add_argument("text", nargs="?", help="query: SPARQL")
     ap.add_argument("--plan", default=os.environ.get("S5_PLAN", "mapping/impix/s5_plan.yaml"))
     ap.add_argument("--repo", default=os.getcwd())
@@ -51,6 +52,9 @@ def main(argv=None) -> int:
         if a.cmd == "sync":
             from .sync import sync
             return 0 if sync(cfg, eval_only=a.eval, skip_vectors=a.skip_vectors) else 1
+        if a.cmd == "sync-check":
+            from .synccheck import sync_check
+            return 0 if sync_check(cfg) else 1
         if a.cmd == "search":
             from .sync import search_cli
             return search_cli(cfg, a.collection, a.text or sys.stdin.read(), a.k)

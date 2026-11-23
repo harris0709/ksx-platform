@@ -64,6 +64,12 @@ sync:
 #   nodes: 현장 표현(설비·품목·거래처·부서·공정 이름) → '라벨:식별값'
 #   cases: 증상 표현 → 클레임·시정조치 번호
 #   documents: 현장 질문 → 문서 번호. must_not = 나오면 안 되는 판('문서번호@판') — 현행 필터 확인. filter로 폐기 판 검색도 한 건
+sync_check:                          # ksxkg sync-check — 지식 그래프를 잠깐 바꿔 속성 그래프가 따라오는지 본 뒤 되돌린다(벡터·임베딩 안 씀)
+  delete: <라벨>                     # ① 관계가 걸린 노드가 있는 라벨(지웠다가 되돌림)
+  relabel: [<라벨>, <다른 라벨>]     # ② 두 라벨 모두 age_schema.sql에 있어야 한다
+  rounds: 10                         # ③ 반영 지연(E2E-07) 회차
+  latency_p95: 10                    #    목표(초) — 배치 기준, 실시간은 S11
+
 search_eval:
   k: 5
   threshold: 0.9

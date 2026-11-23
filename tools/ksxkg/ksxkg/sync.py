@@ -337,11 +337,13 @@ SELECT json_build_object(
 """
 
 
-def psql_at(cfg: Config, sql: str, variables: dict | None = None) -> str:
-    args = ["psql", *cfg.owner.args(), "-q", "-A", "-t"]
+def psql_at(cfg: Config, sql: str, variables: dict | None = None, dsn=None) -> str:
+    """psql 한 번(기본 소유자 계정, dsn=cfg.reader면 조회 계정)."""
+    dsn = dsn or cfg.owner
+    args = ["psql", *dsn.args(), "-q", "-A", "-t"]
     for k, v in (variables or {}).items():
         args += ["-v", f"{k}={v}"]
-    e = cfg.owner.environ()
+    e = dsn.environ()
     # graphid 연산자(=, 비교)가 ag_catalog에 있다 — 표 이름 해석에 영향이 없도록 검색 경로 맨 뒤에 둔다
     e["PGOPTIONS"] = (e.get("PGOPTIONS", "") + " -c search_path=ksx,ext,stg,audit,public,ag_catalog").strip()
     p = subprocess.run(args + ["-f", "-"], input=sql, capture_output=True, text=True, env=e)
@@ -419,14 +421,14 @@ def consistency(cfg: Config, s: dict) -> dict:
             "ok": err == 0 and r["multi"] == 0 and a["broken"] == 0}
 
 
-def graph_checks(cfg: Config, s: dict) -> list[dict]:
+def graph_checks(cfg: Config, s: dict, dsn=None) -> list[dict]:
     """계획의 탐색 확인(cypher) — 서비스 계정 세션에서 LOAD 없이(session_preload_libraries) 실행된다."""
     res = []
     for c in s.get("checks") or []:
         q = (f"SET search_path = ag_catalog, \"$user\", public;\n"
              f"SELECT x FROM cypher('{s['graph']}', $q$ {c['cypher']} $q$) AS (x agtype);")
         try:
-            got = sorted({line.strip().strip('"') for line in psql_at(cfg, q).splitlines() if line.strip()})
+            got = sorted({line.strip().strip('"') for line in psql_at(cfg, q, dsn=dsn).splitlines() if line.strip()})
             err = ""
         except DbError as e:
             got, err = [], str(e)[-300:]
@@ -434,6 +436,145 @@ def graph_checks(cfg: Config, s: dict) -> list[dict]:
         res.append({"id": c["id"], "desc": c.get("desc", ""), "cypher": c["cypher"], "expected": exp, "got": got,
                     "ok": got == exp, "error": err})
     return res
+
+
+def reader_checks(cfg: Config, s: dict) -> dict:
+    """조회 계정(ksx_reader — S9 MCP 도구·GraphRAG가 쓸 계정): 탐색 cypher가 같은 답을 내고, 쓰기는 거부되어야 한다."""
+    checks = graph_checks(cfg, s, dsn=cfg.reader)
+    g = s["graph"]
+    lab = next((x for x in (psql_at(cfg, (
+        "SELECT l.name FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph gg ON l.graph = gg.graphid "
+        f"WHERE gg.name = '{g}' AND l.kind = 'v' AND l.name NOT LIKE '\\_ag\\_label\\_%' ORDER BY 1 LIMIT 1")).split()) if x), None)
+    writes = []
+    for wid, sql in (("cypher CREATE", f"SELECT x FROM cypher('{g}', $q$ CREATE (n:{lab} {{iri: 'urn:ksx:s8:reader-write-test'}}) RETURN n $q$) AS (x agtype);"),
+                     ("SQL UPDATE", f'UPDATE {g}."{lab}" SET properties = properties WHERE false;'),
+                     ("pgsync DELETE", "DELETE FROM pgsync.node WHERE false;")):
+        # 두 겹: ① 계정 기본값 읽기 전용 트랜잭션(default_transaction_read_only) ② 권한(GRANT) — 읽기·쓰기 트랜잭션으로 바꿔도 거부
+        for layer, pre, needle in (("읽기 전용", "", "read-only transaction"),
+                                   ("권한", "SET TRANSACTION READ WRITE;\n", "permission denied")):
+            q = f"BEGIN;\n{pre}SET search_path = ag_catalog, \"$user\", public;\n{sql}\nROLLBACK;"
+            try:
+                psql_at(cfg, q, dsn=cfg.reader)
+                writes.append({"id": f"{wid}({layer})", "denied": False, "error": ""})
+            except DbError as e:
+                msg = str(e)
+                line = next((x for x in msg.splitlines() if "ERROR" in x), msg.splitlines()[0])
+                writes.append({"id": f"{wid}({layer})", "denied": needle in msg, "error": line.split("ERROR:", 1)[-1].strip()[:160]})
+    ok = all(c["ok"] for c in checks) and all(w["denied"] for w in writes)
+    return {"user": cfg.reader.user, "checks": checks, "writes": writes, "ok": ok}
+
+
+# ------------------------------------------------------------------ (2-1) 전수 비교 — 노드·관계·속성 값 하나하나
+def _agtype(text: str):
+    """agtype 출력 → 파이썬 값(숫자 형 표기 ::numeric 등 제거)."""
+    return json.loads(re.sub(r"::(numeric|float|integer)\b", "", text))
+
+
+def age_dump(cfg: Config, s: dict) -> dict:
+    """속성 그래프의 노드(iri → 라벨·속성)·관계((s iri, 라벨, o iri) → 속성) 전부.
+    agtype → text 형 변환은 스칼라만 되므로 format('%s')(출력 함수)로 읽는다."""
+    g = s["graph"]
+    labels = [x.split("|") for x in psql_at(cfg, (
+        "SELECT l.name || '|' || l.kind::text FROM ag_catalog.ag_label l JOIN ag_catalog.ag_graph gg ON l.graph = gg.graphid "
+        f"WHERE gg.name = '{g}' AND l.name NOT LIKE '\\_ag\\_label\\_%' ORDER BY 1")).split()]
+    vl = [n for n, k in labels if k == "v"]
+    el = [n for n, k in labels if k == "e"]
+    nodes, ids, dup = {}, {}, []
+    if vl:
+        q = " UNION ALL ".join(f"SELECT json_build_array('{n}', format('%s', id), format('%s', properties))::text FROM ONLY {g}.\"{n}\"" for n in vl)
+        for line in psql_at(cfg, q).splitlines():
+            if not line.strip():
+                continue
+            lab, gid, props = json.loads(line)
+            pr = _agtype(props)
+            iri = pr.get("iri")
+            ids[gid] = iri
+            if iri in nodes:
+                dup.append(iri)
+            nodes[iri] = {"label": lab, "props": pr}
+    edges, orphan = {}, 0
+    if el:
+        q = " UNION ALL ".join(f"SELECT json_build_array('{n}', format('%s', start_id), format('%s', end_id), format('%s', properties))::text FROM ONLY {g}.\"{n}\"" for n in el)
+        for line in psql_at(cfg, q).splitlines():
+            if not line.strip():
+                continue
+            lab, a, b, props = json.loads(line)
+            if a not in ids or b not in ids:
+                orphan += 1
+                continue
+            k = (ids[a], lab, ids[b])
+            if k in edges:
+                dup.append("|".join(k))
+            edges[k] = _agtype(props)
+    return {"nodes": nodes, "edges": edges, "dup": dup, "orphan": orphan}
+
+
+def vtype(v) -> str:
+    if isinstance(v, bool):
+        return "참거짓"
+    if isinstance(v, int):
+        return "정수"
+    if isinstance(v, float):
+        return "실수"
+    if isinstance(v, list):
+        return "목록"
+    if isinstance(v, str) and re.match(r"^\d{4}-\d{2}-\d{2}", v):
+        return "날짜·시각"
+    return "문자·코드"
+
+
+def _same(a, b) -> bool:
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)) and not isinstance(a, bool) and not isinstance(b, bool):
+        return math.isclose(a, b, rel_tol=1e-12, abs_tol=0.0)
+    if isinstance(a, list) and isinstance(b, list):
+        return len(a) == len(b) and all(_same(x, y) for x, y in zip(a, b))
+    return a == b
+
+
+def compare(kg: dict, dump: dict, samples: int = 5) -> dict:
+    """지식 그래프에서 만든 노드·관계(기대)와 속성 그래프에 실제로 있는 것을 하나하나 비교."""
+    want_n = {i: {"label": n["label"], "props": json.loads(_j(n["props"]))} for i, n in kg["nodes"].items()}
+    want_e = {k: json.loads(_j(v)) for k, v in kg["edges"].items()}
+    got_n, got_e = dump["nodes"], dump["edges"]
+    miss_n = sorted(set(want_n) - set(got_n))
+    extra_n = sorted(set(got_n) - set(want_n))
+    label_diff, prop_diff, types = [], [], {}
+    for iri in sorted(set(want_n) & set(got_n)):
+        w, a = want_n[iri], got_n[iri]
+        if w["label"] != a["label"]:
+            label_diff.append(f"{iri} {w['label']}→{a['label']}")
+        for k in sorted(set(w["props"]) | set(a["props"])):
+            t = vtype(w["props"].get(k, a["props"].get(k)))
+            st = types.setdefault(t, {"values": 0, "diff": 0})
+            st["values"] += 1
+            if k not in w["props"] or k not in a["props"] or not _same(w["props"][k], a["props"][k]):
+                st["diff"] += 1
+                prop_diff.append(f"{iri} {k}: {w['props'].get(k, '∅')!r} ≠ {a['props'].get(k, '∅')!r}")
+    miss_e = sorted(set(want_e) - set(got_e))
+    extra_e = sorted(set(got_e) - set(want_e))
+    eprop_diff, ekeys = [], 0
+    for k in sorted(set(want_e) & set(got_e)):
+        ekeys += len(set(want_e[k]) | set(got_e[k]))
+        if not all(_same(want_e[k].get(x), got_e[k].get(x)) for x in set(want_e[k]) | set(got_e[k])):
+            eprop_diff.append(f"{'|'.join(k)}: {want_e[k]} ≠ {got_e[k]}")
+    counts = {"nodes": len(want_n), "edges": len(want_e), "age_nodes": len(got_n), "age_edges": len(got_e),
+              "node_values": sum(x["values"] for x in types.values()), "edge_values": ekeys,
+              "miss_nodes": len(miss_n), "extra_nodes": len(extra_n), "label_diff": len(label_diff), "prop_diff": len(prop_diff),
+              "miss_edges": len(miss_e), "extra_edges": len(extra_e), "edge_prop_diff": len(eprop_diff),
+              "dup": len(dump.get("dup") or []), "orphan": dump.get("orphan", 0)}
+    err = sum(v for k, v in counts.items() if k not in ("nodes", "edges", "age_nodes", "age_edges", "node_values", "edge_values"))
+    fmt_e = lambda k: "|".join(k)  # noqa: E731
+    return {**counts, "error": err, "ok": err == 0, "types": types,
+            "samples": {"miss_nodes": miss_n[:samples], "extra_nodes": extra_n[:samples], "label_diff": label_diff[:samples],
+                        "prop_diff": prop_diff[:samples], "miss_edges": [fmt_e(k) for k in miss_e[:samples]],
+                        "extra_edges": [fmt_e(k) for k in extra_e[:samples]], "edge_prop_diff": eprop_diff[:samples],
+                        "dup": (dump.get("dup") or [])[:samples]}}
+
+
+def compare_line(f: dict) -> str:
+    return (f"  전수 비교: 노드 {f['nodes']:,}(속성 값 {f['node_values']:,}) · 관계 {f['edges']:,}(속성 값 {f['edge_values']:,}) → "
+            f"누락 {f['miss_nodes']}/{f['miss_edges']} · 초과 {f['extra_nodes']}/{f['extra_edges']} · 라벨 {f['label_diff']} · "
+            f"속성 {f['prop_diff']}/{f['edge_prop_diff']} · 중복 {f['dup']} · 끊김 {f['orphan']} {'OK' if f['ok'] else '불일치'}")
 
 
 # ------------------------------------------------------------------ (3) 벡터 — 임베딩·Qdrant(REST)
@@ -1061,6 +1202,11 @@ def log(cfg: Config, rid: str, target: str, kind: str, st: dict, detail: dict | 
                  f"'{json.dumps(detail or {}, ensure_ascii=False).replace(chr(39), chr(39) * 2)}'::jsonb)")
 
 
+def graph_ok(res: dict) -> bool:
+    """속성 그래프 판정 — 라벨별 수 정합 + 전수 비교 + 탐색 확인 + 조회 계정."""
+    return (res["consistency"]["ok"] and res["full"]["ok"] and all(g["ok"] for g in res["checks"]) and res["reader"]["ok"])
+
+
 def sync(cfg: Config, eval_only=False, skip_vectors=False, out=print) -> bool:
     s = settings(cfg)
     psql_at(cfg, "select 1")
@@ -1096,9 +1242,26 @@ def sync(cfg: Config, eval_only=False, skip_vectors=False, out=print) -> bool:
                 f"(다중 클래스 {c['multi']} · 끊긴 관계 {c['broken']}) {'OK' if c['ok'] else '불일치'}")
             log(cfg, rid, s["graph"], "consistency", {"total": c["age_v"] + c["age_e"]},
                 {"error": c["error"], "multi": c["multi"], "broken": c["broken"]})
+            t2 = time.time()
+            f = compare(kg, age_dump(cfg, s))
+            f["seconds"] = round(time.time() - t2, 1)
+            res["full"] = f
+            out(compare_line(f) + f" {f['seconds']}초")
+            for k, v in f["samples"].items():
+                if v:
+                    out(f"    {k}: {v}")
+            log(cfg, rid, s["graph"], "full_compare", {"total": f["nodes"] + f["edges"]},
+                {k: f[k] for k in ("error", "miss_nodes", "extra_nodes", "label_diff", "prop_diff", "miss_edges", "extra_edges", "edge_prop_diff")})
             res["checks"] = graph_checks(cfg, s)
             for g in res["checks"]:
                 out(f"  탐색 {g['id']} {'OK' if g['ok'] else '불일치'} — {g['desc']} {g['got'][:5]}{' ' + g['error'] if g['error'] else ''}")
+            rd = reader_checks(cfg, s)
+            res["reader"] = rd
+            out(f"  조회 계정 {rd['user']}: 탐색 {sum(c['ok'] for c in rd['checks'])}/{len(rd['checks'])} 같은 답 · "
+                f"쓰기 거부 {sum(w['denied'] for w in rd['writes'])}/{len(rd['writes'])} {'OK' if rd['ok'] else '불일치'}")
+            for w in rd["writes"]:
+                if not w["denied"]:
+                    out(f"    {w['id']}: 거부되지 않음 {w['error']}")
             if not skip_vectors:
                 cards = load_cards(cfg, s)
                 docs_items, docs = document_items(cfg, s, cards, kg)
@@ -1112,7 +1275,7 @@ def sync(cfg: Config, eval_only=False, skip_vectors=False, out=print) -> bool:
                     res["vectors"][name] = st
                     log(cfg, rid, name, "vector", st)
         if skip_vectors and not eval_only:               # 속성 그래프만 — 리포트(S8_동기화결과.md)는 덮어쓰지 않는다
-            ok = res["consistency"]["ok"] and all(g["ok"] for g in res["checks"])
+            ok = graph_ok(res)
             end_run(cfg, rid, ok, {"error": res["consistency"]["error"], "vectors": "skipped"})
             out(f"ksxkg sync --skip-vectors: 속성 그래프 {'완료' if ok else '완료 기준 미충족'} (벡터 색인·검색 평가는 건너뜀)")
             return ok
@@ -1122,7 +1285,7 @@ def sync(cfg: Config, eval_only=False, skip_vectors=False, out=print) -> bool:
         res["eval"] = ev
         out(f"  검색 평가: 컬렉션마다 판정 지표 ≥ {ev['threshold']} → {'충족' if ev['ok'] else '미충족'} "
             f"(전체 recall@{ev['k']} {ev['recall']:.3f} · 적중 {ev['hit']:.3f})")
-        ok = ev["ok"] and (eval_only or (res["consistency"]["ok"] and all(g["ok"] for g in res["checks"])
+        ok = ev["ok"] and (eval_only or (graph_ok(res)
                                          and not any(d["missing"] for d in res.get("docs", []))))
         report(cfg, res, eval_only)
         end_run(cfg, rid, ok, {"recall": ev["recall"], **({"error": res["consistency"]["error"]} if not eval_only else {})})
@@ -1161,6 +1324,10 @@ def report(cfg: Config, res: dict, eval_only: bool):
                f"| RDF와 속성 그래프의 노드·관계 수 정합 오차 0 | RDF 노드 {c['rdf_v']:,} · 관계 {c['rdf_e']:,} / "
                f"AGE 노드 {c['age_v']:,} · 관계 {c['age_e']:,} · 오차 **{c['error']}** (다중 클래스 {c['multi']} · 끊긴 관계 {c['broken']}) | "
                f"{'충족' if c['ok'] else '미충족'} |",
+               f"| 전수 비교(노드·관계·속성 값 하나하나, 라벨 변경·삭제 포함) | 노드 {res['full']['nodes']:,}(값 {res['full']['node_values']:,}) · "
+               f"관계 {res['full']['edges']:,}(값 {res['full']['edge_values']:,}) · 차이 **{res['full']['error']}** | {'충족' if res['full']['ok'] else '미충족'} |",
+               f"| 조회 계정({res['reader']['user']}) 탐색·쓰기 거부 | 탐색 {sum(c['ok'] for c in res['reader']['checks'])}/{len(res['reader']['checks'])} · "
+               f"쓰기 거부 {sum(w['denied'] for w in res['reader']['writes'])}/{len(res['reader']['writes'])} | {'충족' if res['reader']['ok'] else '미충족'} |",
                f"| 검색 평가셋 recall@{ev['k']} ≥ {ev['threshold']} (명사 카드는 적중@{ev['k']}, D-1) | " +
                ", ".join(f"{k} {a['score']:.3f}({'적중' if a['metric'] == 'hit' else 'recall'})" for k, a in sorted(ev['by'].items())) + " | "
                f"{'충족' if ev['ok'] else '미충족'} |",
@@ -1177,9 +1344,23 @@ def report(cfg: Config, res: dict, eval_only: bool):
                "### 라벨별 정합 (RDF = SPARQL 집계, AGE = 라벨 테이블 행 수)", "",
                "| 구분 | 라벨 | RDF | AGE | 차이 |", "|---|---|---:|---:|---:|"]
         md += [f"| {r['kind']} | {r['label']} | {r['rdf']:,} | {r['age']:,} | {r['age'] - r['rdf']} |" for r in c["rows"]]
+        f = res["full"]
+        md += ["", "### 전수 비교 (지식 그래프에서 만든 기대값 ↔ 속성 그래프 실제값)", "",
+               "| 항목 | 노드 | 관계 |", "|---|---:|---:|",
+               f"| 대상 | {f['nodes']:,} | {f['edges']:,} |", f"| 비교한 속성 값 | {f['node_values']:,} | {f['edge_values']:,} |",
+               f"| 누락(RDF에만) | {f['miss_nodes']} | {f['miss_edges']} |", f"| 초과(AGE에만) | {f['extra_nodes']} | {f['extra_edges']} |",
+               f"| 라벨 다름 | {f['label_diff']} | — |", f"| 속성 값 다름 | {f['prop_diff']} | {f['edge_prop_diff']} |",
+               f"| 중복·끊긴 관계 | {f['dup']} | {f['orphan']} |", "",
+               "| 속성 값 유형 | 비교 값 | 다름 |", "|---|---:|---:|"]
+        md += [f"| {k} | {v['values']:,} | {v['diff']} |" for k, v in sorted(f["types"].items())]
+        md += [f"", f"차이 예시: " + ("; ".join(f"{k} {v}" for k, v in f["samples"].items() if v) or "없음")]
         md += ["", "### 탐색 확인 (cypher, 서비스 계정 세션)", "", "| ID | 내용 | 기대 | 결과 | 판정 |", "|---|---|---|---|---|"]
         md += [f"| {g['id']} | {g['desc']} | {', '.join(g['expected'])} | {', '.join(g['got']) or g['error'][:80]} | {'✔' if g['ok'] else '✘'} |"
                for g in res["checks"]]
+        rd = res["reader"]
+        md += ["", f"### 조회 계정({rd['user']}) — S9 MCP 도구가 쓸 계정", "", "| 확인 | 결과 | 판정 |", "|---|---|---|"]
+        md += [f"| 탐색 {c['id']} | {', '.join(c['got']) or c['error'][:80]} | {'✔' if c['ok'] else '✘'} |" for c in rd["checks"]]
+        md += [f"| 쓰기 {w['id']} | {w['error'] or '실행됨'} | {'✔ 거부' if w['denied'] else '✘ 허용'} |" for w in rd["writes"]]
         if res.get("terms") is not None:
             tt = res["terms"]
             md += ["", "### 명사 카드 업무 용어 (D-1 — 승인된 산출물에서 모음, 평가 질문은 쓰지 않음)", "",

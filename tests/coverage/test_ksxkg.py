@@ -470,3 +470,40 @@ if __name__ == "__main__":
         if name.startswith("test_"):
             fn()
             print("PASS", name)
+
+def test_s8_full_compare():
+    """전수 비교: 기대(지식 그래프) ↔ 실제(AGE)의 누락·초과·라벨·속성 값·관계 속성 차이를 하나하나 센다. agtype 숫자 표기도 읽는다."""
+    from ksxkg import sync as S
+    kg = {"nodes": {"a": {"label": "Lot", "props": {"iri": "a", "q": 12.0, "n": 3, "ok": True, "d": "2026-10-01", "v": ["Q-01"]}},
+                    "b": {"label": "Lot", "props": {"iri": "b"}}},
+          "edges": {("a", "derivedFrom", "b"): {"inferred": True, "ruleId": "R-001"}}}
+    same = {"nodes": {"a": {"label": "Lot", "props": S._agtype('{"iri": "a", "q": 12.0, "n": 3, "ok": true, "d": "2026-10-01", "v": ["Q-01"]}')},
+                      "b": {"label": "Lot", "props": {"iri": "b"}}},
+            "edges": {("a", "derivedFrom", "b"): {"inferred": True, "ruleId": "R-001"}}, "dup": [], "orphan": 0}
+    f = S.compare(kg, same)
+    assert f["ok"] and f["error"] == 0 and f["node_values"] == 7 and f["edge_values"] == 2
+    assert {k: v["values"] for k, v in f["types"].items()} == {"문자·코드": 2, "실수": 1, "정수": 1, "참거짓": 1, "날짜·시각": 1, "목록": 1}
+    assert S._agtype('{"x": 1.5::numeric}') == {"x": 1.5}
+    bad = {"nodes": {"a": {"label": "Equipment", "props": {"iri": "a", "q": 12.5, "n": 3, "ok": True, "d": "2026-10-01", "v": ["Q-01"]}},
+                     "z": {"label": "Lot", "props": {"iri": "z"}}},
+           "edges": {("a", "derivedFrom", "z"): {}}, "dup": [], "orphan": 1}
+    f = S.compare(kg, bad)
+    assert (f["miss_nodes"], f["extra_nodes"], f["label_diff"], f["prop_diff"], f["miss_edges"], f["extra_edges"], f["orphan"]) == (1, 1, 1, 1, 1, 1, 1)
+    assert not f["ok"] and f["samples"]["prop_diff"][0].startswith("a q:") and f["samples"]["miss_edges"] == ["a|derivedFrom|b"]
+    assert "누락 1/1" in S.compare_line(f)
+
+
+def test_s8_sync_check_helpers():
+    """기능 점검 도우미: SPARQL 값 → 표기(되돌릴 때 같은 트리플), p95(최근접 순위), 관계가 걸린 노드 고르기."""
+    from ksxkg import synccheck as C
+    assert C.term({"type": "uri", "value": "http://x/a"}) == "<http://x/a>"
+    assert C.term({"type": "literal", "value": 'a"b\nc'}) == '"a\\"b\\nc"'
+    assert C.term({"type": "literal", "value": "금형", "xml:lang": "ko"}) == '"금형"@ko'
+    assert C.term({"type": "literal", "value": "1.5", "datatype": "http://www.w3.org/2001/XMLSchema#decimal"}) == \
+        '"1.5"^^<http://www.w3.org/2001/XMLSchema#decimal>'
+    assert C.p95([float(i) for i in range(1, 21)]) == 19.0 and C.p95([3.0]) == 3.0 and C.p95([]) == 0.0
+    q = [("g1", {"type": "uri", "value": "s"}, {"type": "uri", "value": "p"}, {"type": "literal", "value": "v"})]
+    assert C.data_block(q) == 'GRAPH <g1> { <s> <p> "v" . }'
+    kg = {"nodes": {"x1": {"label": "OperationEnd"}, "x2": {"label": "OperationEnd"}, "o": {"label": "Operation"}},
+          "edges": {("x2", "refOperation", "o"): {}}}
+    assert C.pick(None, kg, "OperationEnd", set()) == "x2" and C.edges_of(kg, "o") == 1
