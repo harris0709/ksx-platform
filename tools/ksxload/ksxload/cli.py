@@ -36,8 +36,16 @@ def main(argv=None) -> int:
         args = rest or ["build"]
         # dbt-core(1.8)를 파이썬 모듈로 직접 부른다 — PATH의 다른 dbt(예: dbt Fusion, postgres 미지원)를 피함
         runner = "import sys; from dbt.cli.main import cli; sys.argv[0] = 'dbt'; cli()"
-        return subprocess.call([sys.executable, "-c", runner, *args, "--project-dir", cfg.dbt_dir,
-                                "--profiles-dir", cfg.dbt_dir])
+
+        def dbt(xs):
+            return subprocess.call([sys.executable, "-c", runner, *xs, "--project-dir", cfg.dbt_dir,
+                                    "--profiles-dir", cfg.dbt_dir])
+        if args[0] == "build" and not any(x in ("--select", "-s", "--exclude", "--resource-type") for x in args):
+            # 대응표 seed(xfm.xref 등)는 모델이 함수(xfm.xref())로 읽어 dbt가 의존을 모른다 → build가 seed를 테스트와
+            # 동시에 다시 만들면 테스트가 "relation xfm.xref does not exist"로 가끔 실패한다. seed를 먼저 끝내고 나머지를 만든다.
+            rc = dbt(["seed", *args[1:]])
+            return rc or dbt([*args, "--exclude", "resource_type:seed"])
+        return dbt(args)
     if rest:
         ap.error(f"알 수 없는 인자: {rest}")
     try:
