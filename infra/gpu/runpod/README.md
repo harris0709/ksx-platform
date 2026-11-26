@@ -5,7 +5,7 @@ S9 개발·검증용 GPU는 RunPod 시간제로 쓴다(`mapping/impix/S9_판단�
 
 | 항목 | 값 |
 |---|---|
-| GPU | L40S 48GB(개발·검증 공용 — L4 재고 없음, RTX 4090은 L40S 데이터센터에 없음) |
+| GPU | 개발: 재고 있는 24GB GPU(RTX 3090·4090·L4 등)를 볼륨 없이 Any region / 검증: L40S 48GB(D-1 사용 방식 조정, 2026-11-26) |
 | 데이터센터 | US-TX-3 |
 | 네트워크 볼륨 | `ksx-models` 100GB($7/월) — /workspace에 붙음: 가상환경 /workspace/venv, 모델 /workspace/hf |
 | Pod 템플릿 | RunPod 공식 PyTorch(SSH 내장), 볼륨 `ksx-models`, TCP 22 노출 |
@@ -14,14 +14,14 @@ S9 개발·검증용 GPU는 RunPod 시간제로 쓴다(`mapping/impix/S9_판단�
 
 ## 쓰는 순서 (PC, MSYS2 UCRT64, 저장소 최상위)
 
-1. RunPod 콘솔 → Storage → `ksx-models` → **Configure Pod with volume** → GPU **L40S** × 1, 템플릿 **Runpod PyTorch**, **Deploy On-Demand**.
+1. RunPod 콘솔 → Pods → Deploy → 템플릿 **Runpod PyTorch**, Region **Any region**, 볼륨 없음(검증 L40S는 US-TX-3 재고가 있으면 `ksx-models`), GPU 1개, **On-Demand** → Deploy. 계정의 SSH 키가 자동으로 들어간다.
 2. Pod → **Connect** → "SSH over exposed TCP"의 `root@<IP> -p <PORT>`를 확인.
 3. 설치·예열: `bash infra/gpu/runpod/gpu.sh up <IP> <PORT>` (처음 수 분 — 모델 약 5GB 받기, 이후 1분)
 4. 새 창에서 터널: `bash infra/gpu/runpod/gpu.sh tunnel <IP> <PORT>` (열어 둔다)
 5. 확인: `bash infra/gpu/runpod/gpu.sh check`
 6. 도구가 GPU를 쓰게: `export EMBED_URL=http://host.docker.internal:8082 RERANK_URL=http://host.docker.internal:8082`
    → `cd infra/docker-compose && docker compose --profile tools run --rm -e S5_PLAN -e EMBED_URL -e RERANK_URL s5-tools sync`
-7. 끝나면 **콘솔에서 Pod Stop**(볼륨은 남음). 잊어도 30분 유휴면 스스로 멈춘다.
+7. 끝나면 **⋮ → Terminate Pod**(Stop 아님 — 멈춘 Pod도 디스크 요금이 나간다). 잊어도 30분 유휴면 스스로 멈춘다(그 뒤 Terminate).
 
 ## 종료 점검표 (개발·검증 끝날 때 — D-1)
 결과가 PC·GitHub에 있는지 → (미세조정했다면) 결과물 내려받기 → Pod 삭제 → 볼륨 `ksx-models` 삭제 → SSH 키 회수(Credentials) → 다음 달 청구서 0 확인.
