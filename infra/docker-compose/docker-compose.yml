@@ -392,8 +392,8 @@ services:
       ONTOP_URL: http://ontop:8080/sparql
       QDRANT_URL: http://qdrant:6333          # S8 벡터 인덱스
       QDRANT_API_KEY: ${QDRANT_API_KEY}
-      EMBED_URL: http://embed:80              # S8 임베딩(profile ai)
-      RERANK_URL: http://rerank:80            # S8 재정렬(profile ai)
+      EMBED_URL: ${EMBED_URL:-http://embed:80}     # S8 임베딩(profile ai). GPU 서버(S9 D-1): export EMBED_URL=http://host.docker.internal:8082
+      RERANK_URL: ${RERANK_URL:-http://rerank:80}  # S8 재정렬(profile ai). GPU 서버: export RERANK_URL=http://host.docker.internal:8082
     volumes:
       - ../..:/repo
     depends_on:
