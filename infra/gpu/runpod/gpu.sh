@@ -27,11 +27,11 @@ case "$cmd" in
     need
     echo "터널 $BIND:$LPORT → Pod 8082 (Ctrl+C로 끊음). 도구는 EMBED_URL=http://host.docker.internal:$LPORT 로 붙는다"
     exec "$SSH" "${opts[@]}" -N -L "$BIND:$LPORT:127.0.0.1:8082" -p "$port" "root@$ip";;
-  check)
+  check)   # 본문의 한글은 \u 표기 — Windows curl이 명령줄 한글을 UTF-8이 아닌 코드페이지로 보내 400이 났다
     curl -fsS "http://127.0.0.1:$LPORT/health"; echo
-    curl -fsS -H 'Content-Type: application/json' -d '{"inputs":["금형온도 상한 초과"]}' "http://127.0.0.1:$LPORT/embed" \
+    curl -fsS -H 'Content-Type: application/json' -d '{"inputs":["\uae08\ud615\uc628\ub3c4 \uc0c1\ud55c \ucd08\uacfc"]}' "http://127.0.0.1:$LPORT/embed" \
       | python -c "import json,sys; v=json.load(sys.stdin); print('임베딩', len(v), 'x', len(v[0]))"
-    curl -fsS -H 'Content-Type: application/json' -d '{"query":"금형온도 상한","texts":["설비 파라미터 수집값 금형온도","품질비용"]}' "http://127.0.0.1:$LPORT/rerank"; echo;;
+    curl -fsS -H 'Content-Type: application/json' -d '{"query":"\uae08\ud615\uc628\ub3c4 \uc0c1\ud55c","texts":["\uc124\ube44 \ud30c\ub77c\ubbf8\ud130 \uae08\ud615\uc628\ub3c4","\ud488\uc9c8\ube44\uc6a9"]}' "http://127.0.0.1:$LPORT/rerank"; echo;;
   log)
     need
     "$SSH" "${opts[@]}" -p "$port" "root@$ip" "tail -20 /workspace/ksx-gpu/server.log; echo ---; tail -5 /workspace/ksx-gpu/idle.log; nvidia-smi --query-gpu=name,memory.used,memory.total,utilization.gpu --format=csv";;
