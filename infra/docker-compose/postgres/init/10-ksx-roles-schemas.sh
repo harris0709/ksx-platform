@@ -9,7 +9,7 @@ psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d ksx \
 -- 1. 계정
 --   ksx_owner  : 스키마·테이블 소유자. S3 DDL(ksxgen ddl/ksx.sql, ddl/ext.sql) 적용
 --   ksx_loader : dbt·Airflow 적재. 전 사업장 일괄 적재이므로 BYPASSRLS
---   ksx_reader : Ontop·MCP 도구. 읽기 전용, RLS 적용(사업장 세션 변수 필수)
+--   ksx_reader : MCP 도구. 읽기 전용, RLS 적용(범위 세션 변수 필수 — S9 D-5)
 --   ksx_bod    : BOD Gateway. 런타임 원장 쓰기의 유일 계정, RLS 적용
 --   ksx_audit  : 실행·적재·검증·추론·AI 실행 기록
 -- ---------------------------------------------------------------
@@ -69,3 +69,14 @@ ALTER ROLE ksx_owner  SET search_path = ksx, ext, stg, audit;
 ALTER ROLE ksx_reader SET statement_timeout = '60s';
 ALTER ROLE ksx_reader SET default_transaction_read_only = on;
 SQL
+
+# 배치 읽기 계정(S9 D-5): 물질화·검사·Ontop — 전 범위 읽기(BYPASSRLS), 읽기 전용. 권한은 ksxload ddl이 부여한다.
+#   비밀번호가 없으면 만들지 않는다(기존 환경은 ksxload ddl이 관리자 계정으로 만든다).
+if [ -n "${KSX_BATCH_PASSWORD:-}" ]; then
+  psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d ksx -v batch_pw="$KSX_BATCH_PASSWORD" <<'SQL'
+CREATE ROLE ksx_batch LOGIN PASSWORD :'batch_pw' BYPASSRLS;
+GRANT CONNECT ON DATABASE ksx TO ksx_batch;
+ALTER ROLE ksx_batch SET search_path = ksx, ext;
+ALTER ROLE ksx_batch SET default_transaction_read_only = on;
+SQL
+fi

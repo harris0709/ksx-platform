@@ -105,7 +105,7 @@ pre{font-family:var(--mono);font-size:12px;background:var(--bg);border:1px solid
       <button role="tab" id="tab-infer" aria-selected="false" data-view="infer">추론 결과</button>
     </nav>
   </header>
-  <p class="note">harris0709/ksx-platform의 생성물(명사 카드 68개)과 E2E 시험 결과로 만든 화면 시안입니다. 추론 결과 탭의 데이터는 시험용 시드(가상 공장 ACME)이며 실제 고객 데이터가 아닙니다.</p>
+  <p class="note">harris0709/ksx-platform의 생성물(명사 카드 68개)과 E2E 시험 결과로 만든 화면 시안입니다. 추론 결과 탭의 데이터는 시험용 시드(가상 기업 IMPIX)이며 실제 고객 데이터가 아닙니다.</p>
 
   <section id="v-nouns" class="grid">
     <aside>
@@ -177,7 +177,7 @@ function renderDetail(){
     <div class="head"><h2>${esc(n.ko)}</h2><span class="cls">ksx:${esc(n.noun)}</span></div>
     <div class="meta"><span class="pill">${esc(n.area)}</span><span class="pill">${esc(n.clause)} · ${esc(n.table)}</span><span class="pill">속성 ${n.attrs.length}</span><span class="pill">참조 ${n.refs.length} · 피참조 ${(incoming[n.noun]||[]).length}</span>${n.struct?`<span class="pill struct">헤더·라인 구조체 · ${esc(n.struct.line)}</span>`:''}</div>
     <p class="def">${esc(n.definition)}</p>
-    <dl class="kv"><dt>식별 속성</dt><dd>${esc(n.identity.join(' + '))}${n.struct?` · 라인 키 ${esc(n.struct.lineKey.join(' + '))}`:''}</dd><dt>물리 테이블</dt><dd style="white-space:pre-line">${esc(tables)}</dd><dt>IRI 예</dt><dd>https://data.impix.co.kr/ACME/${esc(n.noun)}/{${esc(n.identity.join('}_{'))}}</dd>${n.codes.length?`<dt>코드 그룹</dt><dd>${esc(n.codes.map(c=>c[1]).join(', '))}</dd>`:''}</dl>
+    <dl class="kv"><dt>식별 속성</dt><dd>${esc(n.identity.join(' + '))}${n.struct?` · 라인 키 ${esc(n.struct.lineKey.join(' + '))}`:''}</dd><dt>물리 테이블</dt><dd style="white-space:pre-line">${esc(tables)}</dd><dt>IRI 예</dt><dd>https://data.impix.co.kr/IMPIX/${esc(n.noun)}/{${esc(n.identity.join('}_{'))}}</dd>${n.codes.length?`<dt>코드 그룹</dt><dd>${esc(n.codes.map(c=>c[1]).join(', '))}</dd>`:''}</dl>
   </div>
   <div class="card graph"><h3>참조 관계 · 왼쪽 = 이 명사를 참조, 오른쪽 = 이 명사가 참조</h3>${graphSVG(n)}<div class="legend"><span>노드를 누르면 해당 명사로 이동</span><span>기본 속성(회사·사업장·공장·등록자·수정자) 참조는 생략</span></div></div>
   <div class="card"><h3>명사 속성 · 기본 속성 제외</h3><div class="scroll" style="max-height:480px"><table><thead><tr><th>국문</th><th>영문</th><th>타입</th><th>온톨로지 속성</th><th>비고</th></tr></thead><tbody>${rows}</tbody></table></div></div>
@@ -219,7 +219,7 @@ document.getElementById('v-infer').innerHTML=`
 <div class="card" style="margin-top:16px"><h3>납기 리스크 이벤트 · inf:OTDRiskEvent</h3>
  <p><span class="sev" style="background:var(--warn)"></span><b>수주 SO-0412 라인 1</b> — 불량률 3.0%, 요청 납기 2026-10-24(4일 남음)</p>
  <div class="flow"><span>생산실적 PP-5001 (생산 1,000 · 불량 30)</span><i>→ refProductionOrder →</i><span>생산지시 PO-1001</span><i>→ refSalesOrderLine →</i><span>수주라인 SO-0412/1</span><i>→ lineOf →</i><span>수주 SO-0412</span></div>
- <p class="note">근거: graph:inferred/ACME/HQ/R-010, R-100 · 같은 데이터에서 기준일을 2026-10-01로 바꾸면 납기가 7일 밖이라 이벤트가 생기지 않습니다.</p></div>
+ <p class="note">근거: graph:inferred/IMPIX/HQ/R-010, R-100 · 같은 데이터에서 기준일을 2026-10-01로 바꾸면 납기가 7일 밖이라 이벤트가 생기지 않습니다.</p></div>
 <div class="two" style="margin-top:16px">
  <div class="card"><h3>로트 계보 · R-001</h3><div class="flow"><span>LOT-0731</span><i>→ derivedFrom →</i><span>LOT-0712</span></div></div>
  <div class="card"><h3>BOM 전개 · R-002·R-003</h3><div class="flow"><span>제품 A (ITM-A100)</span><i>→ component →</i><span>부품 C (ITM-C200)</span></div><p class="note">BOM-A100 rev 2의 라인 10·20이 모두 부품 C를 사용</p></div>

@@ -20,7 +20,7 @@ import urllib.request
 
 from .base import Config, sparql, update
 from .materialize import end_run, start_run
-from .sync import (AUDIT_SQL, RDF_TYPE, age_dump, apply_age, build, code_labels, compare, compare_line, fetch, graph_filter,
+from .sync import (AUDIT_SQL, RDF_TYPE, age_dump, apply_age, build, code_labels, compare, compare_line, fetch, graph_filter, quality_filter,
                    local, log, psql_at, settings)
 
 PROBE = "http://ksx.local/s8check#syncProbe"
@@ -47,7 +47,7 @@ def p95(xs: list[float]) -> float:
 def quads_of(cfg: Config, iri: str) -> list[tuple]:
     """노드가 주어·목적어인 트리플 전부(데이터·추론·위반 표식 그래프) — 지웠다가 되돌릴 원본."""
     q = (f"SELECT ?g ?s ?p ?o WHERE {{ GRAPH ?g {{ {{ ?s ?p ?o FILTER(?s = <{iri}>) }} UNION {{ ?s ?p ?o FILTER(?o = <{iri}>) }} }} "
-         f"FILTER({graph_filter(cfg)} || ?g = <{cfg.graph('quality')}>) }}")
+         f"FILTER({graph_filter(cfg)} || {quality_filter(cfg)}) }}")
     data = urllib.parse.urlencode({"query": q}).encode()
     req = urllib.request.Request(cfg.query, data=data, method="POST", headers={
         "Accept": "application/sparql-results+json", "Content-Type": "application/x-www-form-urlencoded"})
@@ -171,7 +171,7 @@ def sync_check(cfg: Config, out=print) -> bool:
         full("L5", kg4)
 
         # ③ 반영 지연(E2E-07) — 추론 그래프의 값 하나를 바꿔 조회 계정에서 보일 때까지
-        inf = cfg.graph(f"inferred/{cfg.ent}/")
+        inf = cfg.inferred_prefix
         r = sparql(cfg.query, f"SELECT ?g ?s WHERE {{ GRAPH ?g {{ ?s <{RDF_TYPE}> ?c }} FILTER(STRSTARTS(STR(?g), \"{inf}\")) }} ORDER BY ?s LIMIT 1")
         if not r:
             raise RuntimeError("추론 그래프에 노드가 없습니다 — S7 infer를 먼저 실행하세요")

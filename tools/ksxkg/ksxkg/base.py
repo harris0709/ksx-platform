@@ -156,6 +156,11 @@ class Config:
     ontop: str
     out: str
     common: tuple = ()          # 기업 공통 그래프에 두는 기준정보 명사(ksxgen.yaml common_graph_nouns, S5 D-2)
+    batch_dsn: Dsn | None = None   # 배치 읽기(물질화·검사 — 전 범위, BYPASSRLS, S9 D-5). 없으면 reader
+
+    @property
+    def batch(self) -> Dsn:
+        return self.batch_dsn or self.reader
 
     @property
     def query(self):
@@ -179,6 +184,39 @@ class Config:
     @property
     def data_graph_prefix(self):
         return self.graph(self.ent)
+
+    # ---- 범위별 그래프(S9 D-5 공장 단위 격리) ------------------------------------------------
+    # 데이터 그래프 키 K = {기업} | {기업}/{사업장}/{사업장}(사업장 공통) | {기업}/{사업장}/{공장}
+    # 추론 결과·위반 표식은 **주어가 속한 데이터 그래프의 범위**를 따른다:
+    #   graph/inferred/{K}/{규칙 ID} · graph/quality/{K}
+    # → 범위가 같은 그래프 묶음만 허용하면(OPA) 공장 경계가 추론·품질 결과에도 그대로 적용된다.
+    def data_key(self, g: str) -> str | None:
+        """데이터 그래프 IRI → 키 K(이 기업의 데이터 그래프가 아니면 None)."""
+        pre = self.data_graph_prefix
+        if g == pre:
+            return self.ent
+        if g.startswith(pre + "/"):
+            k = g[len(self.data_ns) + len("graph/"):]
+            return k if k.count("/") == 2 else None
+        return None
+
+    def inferred_graph(self, key: str, rule: str) -> str:
+        return self.graph(f"inferred/{key}/{rule}")
+
+    def quality_graph(self, key: str) -> str:
+        return self.graph(f"quality/{key}")
+
+    @property
+    def inferred_prefix(self) -> str:
+        return self.graph(f"inferred/{self.ent}/")
+
+    @property
+    def quality_prefix(self) -> str:
+        return self.graph(f"quality/{self.ent}")
+
+    def is_quality(self, g: str) -> bool:
+        q = self.quality_prefix
+        return g == q or g.startswith(q + "/")
 
     def rml_files(self):
         return sorted(glob.glob(os.path.join(self.onto, "mappings", "rml", "*.rml.ttl")))
@@ -207,7 +245,8 @@ def load_config(path: str, repo: str) -> Config:
     host, port, db = env(t["host"]), env(t["port"]), env(t["dbname"])
     rd = Dsn(host, port, db, env(t["reader"]["user"]), env(t["reader"].get("password", "")))
     ow = Dsn(host, port, db, env(t["owner"]["user"]), env(t["owner"].get("password", "")))
+    bt = Dsn(host, port, db, env(t["batch"]["user"]), env(t["batch"].get("password", ""))) if t.get("batch") else None
     onto = os.path.join(repo, raw.get("ontologies", "ontologies"))
     out = os.path.join(repo, env(raw.get("out", "out/kg")))
     return Config(repo, raw, raw["enterprise"], gen["data_ns"], gen["ns"], onto, rd, ow,
-                  env(raw["fuseki"]), env(raw["ontop"]), out, tuple(gen.get("common_graph_nouns") or ()))
+                  env(raw["fuseki"]), env(raw["ontop"]), out, tuple(gen.get("common_graph_nouns") or ()), bt)

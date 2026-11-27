@@ -64,8 +64,8 @@ RLS는 S3에서 표준 테이블을 만든 뒤 `SELECT ksx.enable_site_rls('ksx.
 | allow_graph | input.graph 허용 여부 |
 | ledger_session | PostgreSQL RLS 세션 변수 |
 
-그래프 IRI 기준 주소는 `opa/policies/ksx/config/data.json` 의 `graph_base`
-(기본 `https://data.acme.example/graph/`). D8(네임스페이스 호스트) 결정 후 이 값만 바꿉니다.
+그래프 IRI 기준 주소는 `opa/policies/ksx/config/data.json` 의 `graph_base`에 **기업별로** 둡니다
+(예 `{"IMPIX": "https://data.impix.co.kr/graph/"}` — `ksxgen.yaml` data_ns + `graph/`). 등록되지 않은 기업은 아무 그래프도 허용하지 않습니다(S9 D-5).
 
 ## 운영(Helm) 전환 시
 

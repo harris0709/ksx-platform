@@ -7,7 +7,7 @@ base: mapping/impix/s6_plan.yaml     # s6 → s5: 원장·Fuseki·기업·그래
 infer:
   rules: ontologies/rules            # A-*(자동 전이) → R-*(업무 규칙) 파일명 순. 파라미터는 rules/params.yaml
   today: "2026-10-20"                # 기준일 — IMPIX KPI 기준 일시(2026-10-20 17:00)와 같은 날. 운영에서는 비우면 오늘
-  site: HQ                           # 결과 그래프 graph/inferred/IMPIX/HQ/{규칙 ID}
+  site: HQ                           # 범위를 못 정한 새 노드를 둘 사업장 공통 범위. 결과 그래프 graph/inferred/{범위}/{규칙 ID}(S9 D-5)
   batch_target_seconds: 600          # 야간 배치 목표(완료 기준) — 규칙 전체 실행 시간
   thresholds: {precision: 0.9, recall: 0.95}   # 완료 기준(표 25) — 규칙마다
 

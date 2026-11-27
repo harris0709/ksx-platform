@@ -35,10 +35,39 @@ comment on table audit.quarantine is 'S3 정제 규칙으로 격리·수정·표
 
 XFM_GRANTS = """
 create schema if not exists xfm;
-grant usage on schema xfm to ksx_loader, ksx_reader;
-alter default privileges for role ksx_owner in schema xfm grant select on tables to ksx_loader, ksx_reader;
-grant usage on schema stg to ksx_reader;
+grant usage on schema xfm to ksx_loader;
+alter default privileges for role ksx_owner in schema xfm grant select on tables to ksx_loader;
 """
+
+
+def ensure_batch_role(cfg: Config, out=print):
+    """배치 읽기 계정 ksx_batch(물질화·검사·Ontop — 전 범위 읽기, BYPASSRLS, 읽기 전용). 없으면 관리자 계정으로 만든다."""
+    import os
+    if scalar(cfg.owner, "select count(*) from pg_roles where rolname = 'ksx_batch'"):
+        return
+    pw = os.environ.get("KSX_BATCH_PASSWORD", "")
+    if cfg.admin is None or not cfg.admin.password or not pw:
+        raise DbError("ksx_batch 계정이 없음 — KSX_BATCH_PASSWORD와 target.admin(POSTGRES_SUPERUSER_PASSWORD)을 주고 ddl을 다시 실행")
+    db = cfg.owner.dbname
+    psql(cfg.admin, f"create role ksx_batch login password '{pw.replace(chr(39), chr(39) * 2)}' bypassrls; "
+                    f"grant connect on database {db} to ksx_batch; "
+                    "alter role ksx_batch set search_path = ksx, ext; "
+                    "alter role ksx_batch set default_transaction_read_only = on")
+    out("  계정: ksx_batch(배치 읽기, BYPASSRLS·읽기 전용) 생성 — S9 D-5")
+
+
+def scope_rls(cfg: Config, out=print) -> dict:
+    """표준·확장 테이블 전부에 범위 RLS(S9 D-5) + 배치 계정 권한. 다시 실행 가능."""
+    import yaml
+    from .rls import BATCH_GRANTS, build_sql
+    gen = yaml.safe_load(open(rel(cfg.repo, cfg.raw.get("ksxgen", "ksxgen.yaml")), encoding="utf-8"))
+    common = set(gen.get("common_graph_nouns") or [])
+    texts = [open(rel(cfg.repo, p), encoding="utf-8").read() for p in cfg.raw["ddl"]]
+    sql, kinds = build_sql(texts, common)
+    psql(cfg.owner, BATCH_GRANTS)
+    psql(cfg.owner, sql)
+    out("  범위 격리(RLS): " + " · ".join(f"{k} {n}" for k, n in sorted(kinds.items())) + " — 조회 계정은 세션 범위의 행만")
+    return kinds
 
 
 def start_run(cfg: Config, job: str, dsn=None) -> str:
@@ -76,6 +105,7 @@ def ddl(cfg: Config, recreate=False, out=print):
             raise DbError("ksx_owner에 스키마 생성 권한이 없음 — target.admin(POSTGRES_SUPERUSER_PASSWORD) 필요")
         psql(cfg.admin, f"grant create on database {cfg.owner.dbname} to {cfg.owner.user}")
         out("  권한: ksx_owner에 스키마 생성 권한 부여(최초 1회)")
+    ensure_batch_role(cfg, out)
     psql(cfg.owner, XFM_GRANTS)
     psql(cfg.owner, AUDIT_SQL)
     out("  스키마: xfm(변환 뷰) · audit.load_log · audit.quarantine 준비")
@@ -96,6 +126,7 @@ def ddl(cfg: Config, recreate=False, out=print):
             raise DbError(f"{p}: 일부 테이블만 있음 {sorted(mine & have)[:3]}… — --recreate로 다시 만든다")
         psql(cfg.owner, file=p)
         out(f"  적용: {p.split('/')[-1]} — 테이블 {len(mine)}개")
+    scope_rls(cfg, out)
     n = scalar(cfg.owner, "select count(*) from information_schema.tables where table_schema in ('ksx','ext') and table_type='BASE TABLE'")
     fk = scalar(cfg.owner, "select count(*) from information_schema.table_constraints where table_schema in ('ksx','ext') "
                            "and constraint_type='FOREIGN KEY'")
@@ -152,7 +183,7 @@ def stage(cfg: Config, only: list[str] | None = None, out=print) -> bool:
         if not ok:
             bad.append(name)
         out(f"  {'OK ' if ok else '불일치'} {t['schema']}.{t['table']:<18} → stg.{name:<22} {n_src:>7,} → {n_stg:>7,}")
-    psql(cfg.owner, "grant select on all tables in schema stg to ksx_reader")
+    psql(cfg.owner, "grant select on all tables in schema stg to ksx_batch")
     end_run(cfg, run_id, not bad, {"tables": len(tables), "rows": total, "mismatch": bad})
     if dropped_views:
         out("  원천 구조가 바뀐 테이블이 있어 참조하는 xfm 뷰를 함께 지웠다 — gen → dbt build를 다시 실행")

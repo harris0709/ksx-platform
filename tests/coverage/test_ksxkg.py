@@ -272,7 +272,7 @@ def test_s8_build_nodes_edges():
     from ksxkg import sync as S
     cfg = _s8_cfg()
     d, ns, inf = cfg.data_ns, cfg.ns, "https://ontology.impix.co.kr/inference/"
-    g1, gi, gq = cfg.graph("IMPIX/HQ/P2"), cfg.graph("inferred/IMPIX/HQ/R-001"), cfg.graph("quality")
+    g1, gi, gq = cfg.graph("IMPIX/HQ/P2"), cfg.inferred_graph("IMPIX/HQ/P2", "R-001"), cfg.quality_graph("IMPIX/HQ/P2")
     U = lambda v: {"type": "uri", "value": v}  # noqa: E731
     L = lambda v, dt=None: {"type": "literal", "value": v, **({"datatype": dt} if dt else {})}  # noqa: E731
     a, b, c = d + "IMPIX/HQ/P2/Lot/E1", d + "IMPIX/HQ/P2/Lot/H1", d + "IMPIX/HQ/P2/Lot/X"
@@ -286,7 +286,7 @@ def test_s8_build_nodes_edges():
     assert n["props"]["lotState"] == "H" and kg["labels"][("lotState", "H")] == "보류"
     assert n["props"]["plant"] == "P2" and n["props"]["graph"] == "IMPIX/HQ/P2" and n["props"]["violates"] == ["Q-01"]
     assert n["props"]["refParentLot"] == c and kg["dangling"] == 1          # 대상 없는 참조는 IRI 속성
-    assert kg["edges"] == {(a, "derivedFrom", b): {"graph": "inferred/IMPIX/HQ/R-001", "inferred": True, "ruleId": "R-001"}}
+    assert kg["edges"] == {(a, "derivedFrom", b): {"graph": "inferred/IMPIX/HQ/P2/R-001", "inferred": True, "ruleId": "R-001"}}
     assert S.fmt("H", "lotState", kg["labels"]) == "보류(H)"
 
 
@@ -465,11 +465,6 @@ def test_s8_templates():
     assert {"doc_id", "version", "status", "title", "links"} <= set(m) and "## 1." in body
     assert os.path.exists(os.path.join(ROOT, "docs", "S8_속성그래프벡터인덱스_실행가이드.docx"))
 
-if __name__ == "__main__":
-    for name, fn in list(globals().items()):
-        if name.startswith("test_"):
-            fn()
-            print("PASS", name)
 
 def test_s8_full_compare():
     """전수 비교: 기대(지식 그래프) ↔ 실제(AGE)의 누락·초과·라벨·속성 값·관계 속성 차이를 하나하나 센다. agtype 숫자 표기도 읽는다."""
@@ -507,3 +502,42 @@ def test_s8_sync_check_helpers():
     kg = {"nodes": {"x1": {"label": "OperationEnd"}, "x2": {"label": "OperationEnd"}, "o": {"label": "Operation"}},
           "edges": {("x2", "refOperation", "o"): {}}}
     assert C.pick(None, kg, "OperationEnd", set()) == "x2" and C.edges_of(kg, "o") == 1
+
+
+def test_s9_scope_graphs_and_split():
+    """S9 D-5: 추론 결과·위반 표식을 주어가 속한 데이터 그래프 범위로 나눈다. 새 노드는 연결된 노드의 가장 좁은 범위."""
+    from ksxkg import scope as SC
+    from ksxkg import sync as S
+    cfg = _s8_cfg()
+    d = cfg.data_ns
+    assert cfg.data_key(cfg.graph("IMPIX")) == "IMPIX" and cfg.data_key(cfg.graph("IMPIX/HQ/P1")) == "IMPIX/HQ/P1"
+    assert cfg.data_key(cfg.graph("inferred/IMPIX/HQ/P1/R-001")) is None and cfg.data_key(cfg.graph("IMPIX/HQ")) is None
+    assert cfg.inferred_graph("IMPIX/HQ/P1", "R-020") == cfg.graph("inferred/IMPIX/HQ/P1/R-020")
+    assert cfg.is_quality(cfg.quality_graph("IMPIX/HQ/P2")) and not cfg.is_quality(cfg.graph("IMPIX/HQ/P2"))
+    assert S.scope(cfg, cfg.graph("inferred/IMPIX/HQ/P1/R-020")) == {"ent": "IMPIX", "site": "HQ", "plant": "P1", "ruleId": "R-020"}
+    assert S.scope(cfg, cfg.graph("inferred/IMPIX/HQ/HQ/R-100")) == {"ent": "IMPIX", "site": "HQ", "ruleId": "R-100"}
+    assert S.scope(cfg, cfg.graph("inferred/IMPIX/R-002")) == {"ent": "IMPIX", "ruleId": "R-002"}
+    assert S.scope(cfg, cfg.graph("inferred/IMPIX/HQ/R-001")) == {"ent": "IMPIX", "site": "HQ", "ruleId": "R-001"}   # 옛 이름
+    assert S.scope(cfg, cfg.graph("IMPIX/HQ/HQ")) == {"ent": "IMPIX", "site": "HQ"}
+    assert S.kind_of(cfg, cfg.quality_graph("IMPIX/HQ/P1")) == "quality" and S.kind_of(cfg, cfg.graph("inferred/IMPIX/HQ/P1/R-1")) == "inferred"
+    assert SC.rank("IMPIX/HQ/P1") == 2 and SC.rank("IMPIX/HQ/HQ") == 1 and SC.rank("IMPIX") == 0
+    assert SC.narrow("IMPIX", "IMPIX/HQ/P2") == "IMPIX/HQ/P2" and SC.narrow("IMPIX/HQ/P2", "IMPIX/HQ/P1") == "IMPIX/HQ/P1"
+    lot1, lot2, item, ev, ev2 = d + "L1", d + "L2", d + "I1", d + "EV1", d + "EV2"
+    home = {lot1: "IMPIX/HQ/P1", lot2: "IMPIX/HQ/P2", item: "IMPIX"}
+    nt = "\n".join([
+        f"<{lot1}> <{d}p> <{lot2}> .",                    # 주어 범위 P1, 목적어 P2 → 공장 넘는 관계 1
+        f"<{ev}> <{d}onLot> <{lot2}> .", f'<{ev}> <{d}note> "x" .',   # 새 노드 → P2
+        f"<{ev2}> <{d}about> <{ev}> .",                   # 새 노드가 새 노드를 가리킴 → P2
+        f"<{item}> <{d}q> <{lot1}> .",                    # 기업 공통 주어 → IMPIX
+        f"<{d}EV3> <{d}r> \"y\" ."])                     # 연결 없음 → 사업장 공통
+    parts, st = SC.split(cfg, nt, home, "HQ")
+    assert sorted(parts) == ["IMPIX", "IMPIX/HQ/HQ", "IMPIX/HQ/P1", "IMPIX/HQ/P2"]
+    assert len(parts["IMPIX/HQ/P2"]) == 3 and len(parts["IMPIX/HQ/P1"]) == 1
+    assert home[ev] == "IMPIX/HQ/P2" and home[ev2] == "IMPIX/HQ/P2" and st == {"mixed": 0, "unresolved": 1, "cross": 1}
+
+
+if __name__ == "__main__":
+    for name, fn in list(globals().items()):
+        if name.startswith("test_"):
+            fn()
+            print("PASS", name)

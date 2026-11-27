@@ -111,6 +111,25 @@ def test_topo_order():
     assert o.index("ksx.Alarm") < o.index("ext.AlarmExt")
 
 
+def test_scope_rls_sql():
+    """S9 D-5: 표준·확장 테이블 98개 전부에 범위 RLS — 공장·기업 공통·사업장·기업·부모 행(*Ext) 정책을 DDL에서 판정."""
+    import yaml
+    from ksxload.rls import build_sql, tables_from_ddl
+    texts = [open(os.path.join(ROOT, f), encoding="utf-8").read() for f in ("ontologies/ddl/ksx.sql", "ontologies/ddl/ext_impix.sql")]
+    common = set(yaml.safe_load(open(os.path.join(ROOT, "ksxgen.yaml"), encoding="utf-8"))["common_graph_nouns"])
+    sql, kinds = build_sql(texts, common)
+    tabs = tables_from_ddl(texts)
+    assert sum(kinds.values()) == len(tabs) == 98, kinds
+    assert kinds["기업 공통"] == 3 and kinds["사업장"] == 1 and kinds["기업"] == 1 and kinds["부모 행"] == 17
+    assert sql.count("CREATE POLICY scope_isolation") == 98 and sql.count("ENABLE ROW LEVEL SECURITY") == 98
+    lot = next(l for l in sql.splitlines() if l.startswith('CREATE POLICY scope_isolation ON ksx."Lot" '))
+    assert "\"PlantID\" = \"SiteID\" OR \"PlantID\" = ANY(" in lot and "app.plant_ids" in lot
+    item = next(l for l in sql.splitlines() if l.startswith('CREATE POLICY scope_isolation ON ksx."ItemMaster" '))
+    assert "PlantID" not in item and "app.enterprise_id" in item
+    ext = next(l for l in sql.splitlines() if l.startswith('CREATE POLICY scope_isolation ON ext."LotExt" '))
+    assert 'EXISTS (SELECT 1 FROM ksx."Lot" p WHERE p."EnterpriseID" = ext."LotExt"."EnterpriseID" AND p."LotID" = ext."LotExt"."LotID")' in ext
+
+
 if __name__ == "__main__":
     fails = 0
     for name, fn in sorted(globals().items()):

@@ -35,6 +35,8 @@ jobs:
           for n in 1 2; do PGPASSWORD=ci psql -h localhost -p 5434 -U postgres -v ON_ERROR_STOP=1 -q -o /dev/null -f ontologies/graph/age_schema.sql; done
           PGPASSWORD=ci psql -h localhost -p 5434 -U postgres -At -c "select kind, count(*) from ag_catalog.ag_label l join ag_catalog.ag_graph g on l.graph = g.graphid where g.name = 'ksx_graph' group by 1 order by 1" | tee age.txt
           grep -q "^v|86$" age.txt && grep -q "^e|97$" age.txt   # 노드 81 + 추론 4 · 관계 70 + 추론 26 + AGE 기본 라벨 각 1
+      - name: OPA 정책 시험(회사·사업장·공장 경계, S9 D-5)
+        run: docker run --rm -v "$PWD/infra/docker-compose/opa/policies:/policies:ro" openpolicyagent/opa:1.0.0 test /policies -v
       - name: 웹 콘솔 데이터 최신 여부
         run: python tools/build_web.py && git diff --exit-code web/
       - name: 생성기 회귀 시험
@@ -73,6 +75,7 @@ jobs:
       KSX_OWNER_PASSWORD: ci-owner
       KSX_LOADER_PASSWORD: ci-loader
       KSX_READER_PASSWORD: ci-reader2
+      KSX_BATCH_PASSWORD: ci-batch
       KSX_BOD_PASSWORD: ci-bod
       KSX_AUDIT_PASSWORD: ci-audit
       PYTHONPATH: tools/ksxload
@@ -118,6 +121,9 @@ jobs:
           sed 's/\x1b\[[0-9;]*m//g' dbt.out | grep -v "^\s*$" | tail -45 | while IFS= read -r l; do echo "::error::$l"; done
       - name: ksxload publish
         run: python -m ksxload publish
+      - name: S9 원장 범위 격리(RLS — 조회 계정은 세션 범위의 행만, 적재 계정 기준값과 대조)
+        run: bash tests/e2e/check_scope_rls.sh IMPIX HQ
+        env: { PGUSER: "", PGPASSWORD: "" }
       - name: SC06-03 LOT 추적(표준 원장)
         run: |
           psql -d ksx -U ksx_loader -f etl/checks/impix/sc06_03_claim_lot_trace.sql | tee trace.txt
@@ -148,7 +154,7 @@ jobs:
           docker run -d --name fuseki --network host -v $PWD/infra/docker-compose/fuseki/config.ttl:/fuseki/config.ttl:ro ksx/fuseki:ci --config=/fuseki/config.ttl
           docker run -d --name ontop --network host -v $PWD/ontologies:/opt/onto:ro \
             -e ONTOP_ONTOLOGY_FILE=/opt/onto/ontop/ksx.ttl -e ONTOP_MAPPING_FILE=/opt/onto/ontop/ksx.obda \
-            -e ONTOP_DB_URL=jdbc:postgresql://localhost:5432/ksx -e ONTOP_DB_USER=ksx_reader -e ONTOP_DB_PASSWORD=ci-reader2 \
+            -e ONTOP_DB_URL=jdbc:postgresql://localhost:5432/ksx -e ONTOP_DB_USER=ksx_batch -e ONTOP_DB_PASSWORD=ci-batch \
             -e ONTOP_DB_DRIVER=org.postgresql.Driver -e ONTOP_LAZY_INIT=false ksx/ontop:ci
           for i in $(seq 1 60); do curl -fsS 'http://localhost:3030/ksx/query?query=ASK%7B%7D' >/dev/null 2>&1 && break; sleep 3; done
           for i in $(seq 1 60); do curl -fsS 'http://localhost:8080/sparql?query=ASK%7B%3Fs%20%3Fp%20%3Fo%7D' >/dev/null 2>&1 && break; sleep 3; done

@@ -1,7 +1,7 @@
 """S6 검증(구현안내서 9장): 적합성 셰이프(S4 생성물) + 품질 셰이프(저작)로 물질화 그래프를 검증한다.
 
   validate          데이터 그래프 전체(공장·기업 공통 + 어휘)를 Fuseki SHACL 서비스로 한 번에 검증
-                    → audit.shacl_result 적재 → 위반(sh:Violation) 대상에 graph/quality 의 ksxq:violates 표식
+                    → audit.shacl_result 적재 → 위반(sh:Violation) 대상에 graph/quality/{범위}(대상의 데이터 그래프 범위, S9 D-5)의 ksxq:violates 표식
                     → mapping/<기업>/S6_검증결과.md (사업장·명사·차원별 집계)
   validate --seed   계획 파일의 의도적 위반(seeds)을 시험 그래프에 넣고 검증 → 전건 검출 확인
                     → 위반 표식을 단 뒤 추론 규칙(R-010)에서 빠지는지 확인 → 시험 그래프 삭제
@@ -201,16 +201,43 @@ def collect(cfg: Config, results: list[dict], qmeta: dict) -> list[dict]:
     return rows
 
 
-def markers(cfg: Config, rows: list[dict], graph: str):
-    """위반(Violation) 대상에 ksxq:violates 표식 — 그래프 단위 교체. S7 규칙은 FILTER NOT EXISTS로 제외한다."""
+def markers_to(cfg: Config, rows: list[dict], graph: str) -> int:
+    """시험용: 위반 표식을 그래프 하나에(의도적 위반 시험 그래프)."""
     lines = sorted({f"<{r['focus']}> <{QNS}violates> <{r['shape'] if r['shape'].startswith('http') else QNS + 'conformance'}> ."
                     for r in rows if r["severity"] == "Violation" and r["focus"] and not r["focus"].startswith("_:")})
-    path = os.path.join(cfg.out, "quality_markers.nt")
+    path = os.path.join(cfg.out, "quality_markers_test.nt")
     os.makedirs(cfg.out, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + ("\n" if lines else ""))
     put_graph(cfg.gsp, graph, path, "application/n-triples")
     return len(lines)
+
+
+def markers(cfg: Config, rows: list[dict]) -> dict[str, int]:
+    """위반(Violation) 대상에 ksxq:violates 표식 — 대상이 속한 데이터 그래프의 범위별로 graph/quality/{범위}에
+    통째 교체(S9 D-5 공장 단위 격리). 이전 표식 그래프(옛 graph/quality 포함)는 지운다. S7 규칙은 FILTER NOT EXISTS로 제외한다."""
+    by: dict[str, set] = {}
+    for r in rows:
+        if r["severity"] == "Violation" and r["focus"] and not r["focus"].startswith("_:"):
+            key = cfg.data_key(r["graph"]) or cfg.ent
+            shape = r["shape"] if r["shape"].startswith("http") else QNS + "conformance"
+            by.setdefault(key, set()).add(f"<{r['focus']}> <{QNS}violates> <{shape}> .")
+    old = [b["g"] for b in sparql(cfg.query, "SELECT DISTINCT ?g WHERE { GRAPH ?g { } }")
+           if cfg.is_quality(b["g"]) or b["g"] == cfg.graph("quality")]
+    keep = {cfg.quality_graph(k) for k in by}
+    for g in old:
+        if g not in keep:
+            update(cfg.update, f"DROP SILENT GRAPH <{g}>")
+    os.makedirs(cfg.out, exist_ok=True)
+    out = {}
+    for key, lines in sorted(by.items()):
+        path = os.path.join(cfg.out, f"quality_markers__{key.replace('/', '_')}.nt")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("\n".join(sorted(lines)) + "\n")
+        g = cfg.quality_graph(key)
+        put_graph(cfg.gsp, g, path, "application/n-triples")
+        out[g] = len(lines)
+    return out
 
 
 def validate(cfg: Config, out=print) -> bool:
@@ -224,8 +251,10 @@ def validate(cfg: Config, out=print) -> bool:
         conforms, results, used = run_shacl(cfg, shapes)
         rows = [r for r in collect(cfg, results, qmeta) if not r["graph"].startswith(cfg.graph("test"))]
         store(cfg, rid, "data", rows)
-        n = markers(cfg, rows, cfg.graph("quality"))
-        out(f"  검증 대상: 합집합 그래프({used}) · 결과 {len(rows):,}건 · 위반 표식 {n:,}개 → {cfg.graph('quality')}")
+        mk = markers(cfg, rows)
+        n = sum(mk.values())
+        out(f"  검증 대상: 합집합 그래프({used}) · 결과 {len(rows):,}건 · 위반 표식 {n:,}개 → "
+            + (" · ".join(f"{g[len(cfg.graph('quality/')):]} {c:,}" for g, c in mk.items()) or "없음"))
         excl = exclusion_check(cfg, [r["focus"] for r in rows if r["severity"] == "Violation"])
         report(cfg, rows, rid, n, excl)
         detail = {"results": len(rows), "markers": n, "exclusion": excl}
@@ -341,7 +370,7 @@ def seed_test(cfg: Config, out=print) -> bool:
         for c in checks:
             out(f"  {'OK ' if c['detected'] else '실패'} {c['id']} [{c['dimension'] or '대조군'}] {c['desc']} → {c['result']}")
         # 추론 제외: 시험 개체 중 위반에 표식을 달고 R-010을 돌린다
-        markers(cfg, rows, g_mark)
+        markers_to(cfg, rows, g_mark)
         q, var = rule_where(cfg, (cfg.raw.get("validate") or {}).get("exclusion_rule", "R-010_affected_sales_order.rq"))
         got = {b[var] for b in sparql_union(cfg, q)} & set(ids)
         viol = {r["focus"] for r in rows if r["severity"] == "Violation"}

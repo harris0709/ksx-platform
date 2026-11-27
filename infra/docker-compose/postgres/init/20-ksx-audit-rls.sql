@@ -28,19 +28,6 @@ GRANT USAGE ON SCHEMA audit TO ksx_reader;
 GRANT SELECT ON audit.healthcheck TO ksx_reader;
 SET ROLE ksx_owner;
 
--- S3에서 표준 테이블 생성 후 호출:  SELECT ksx.enable_site_rls('ksx."Lot"');
---   세션 변수 app.enterprise_id / app.site_id 가 없으면 0행(안전 기본값)
-CREATE FUNCTION ksx.enable_site_rls(tbl regclass) RETURNS void
-LANGUAGE plpgsql AS $$
-BEGIN
-  EXECUTE format('ALTER TABLE %s ENABLE ROW LEVEL SECURITY', tbl);
-  EXECUTE format('DROP POLICY IF EXISTS site_isolation ON %s', tbl);
-  EXECUTE format($p$CREATE POLICY site_isolation ON %s
-                    USING ("EnterpriseID" = current_setting('app.enterprise_id', true)
-                       AND "SiteID"       = current_setting('app.site_id', true))
-                    WITH CHECK ("EnterpriseID" = current_setting('app.enterprise_id', true)
-                       AND "SiteID"       = current_setting('app.site_id', true))$p$, tbl);
-END $$;
-COMMENT ON FUNCTION ksx.enable_site_rls(regclass) IS '사업장 격리 RLS 정책 부여 (안내서 15장)';
+-- 원장 범위 격리(RLS)는 표준 테이블을 만든 뒤 ksxload ddl이 적용한다(tools/ksxload/ksxload/rls.py, S9 D-5 공장 단위):
+--   세션 변수 app.enterprise_id · app.site_id · app.plant_ids 가 없으면 0행(안전 기본값)
 RESET ROLE;
-REVOKE ALL ON FUNCTION ksx.enable_site_rls(regclass) FROM PUBLIC;

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # KS X 9101 제조 온톨로지 플랫폼 저장소 뼈대 생성 (구현 안내서 2.3 구조)
 set -euo pipefail
-R=${1:-ksx-platform}; ENT=${2:-acme}
+R=${1:-ksx-platform}; ENT=${2:?기업 코드(소문자, 예: impix)를 두 번째 인자로 주세요}
 mkdir -p "$R" && cd "$R"
 d() { mkdir -p "$1"; [ -e "$1/.gitkeep" ] || touch "$1/.gitkeep"; }
 for x in standards extensions/_template extensions/$ENT mapping/_template mapping/$ENT \

@@ -78,7 +78,7 @@ PostgreSQL은 첫 기동 때 `infra/postgres/init.sql`과 `ontologies/ddl/ksx.sq
 ### 4) 추론 규칙 실행 (Fuseki에 데이터가 적재된 뒤)
 
 ```bash
-python services/rule-runner/runner.py --fuseki http://localhost:3030/ksx --ent ACME --site HQ
+python services/rule-runner/runner.py --fuseki http://localhost:3030/ksx --ent IMPIX --site HQ
 ```
 
 ### 5) 웹 콘솔 배포(Vercel)
@@ -91,6 +91,6 @@ python services/rule-runner/runner.py --fuseki http://localhost:3030/ksx --ent A
 ## IRI 규칙
 
 - 개체: `https://data.impix.co.kr/{EnterpriseID}/{Class}/{UK 값...}` — UK(회사+표준 식별 속성)만 쓰며 사업장·공장은 Named Graph로 구분합니다.
-- 라인 구조체: `…/{Noun}/{헤더 키}/line/{라인 키}` (예: `ACME/BOM/BOM-A100_2/line/10`)
+- 라인 구조체: `…/{Noun}/{헤더 키}/line/{라인 키}` (예: `IMPIX/BOM/BOM-A100_2/line/10`)
 - 코드: `https://data.impix.co.kr/codelist/{그룹}/{코드}`, 단위: `…/uom/{단위코드}`
 - 네임스페이스 호스트는 `ksxgen.yaml`에서 바꿉니다(의사결정 D8).

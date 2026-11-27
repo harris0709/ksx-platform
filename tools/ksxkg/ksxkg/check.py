@@ -29,7 +29,7 @@ def expected(cfg: Config, materialized=True):
     for t in tm:
         if not t.classes:
             continue
-        for r in rows(cfg.reader, f"select kg_graph g, count(*) n from ({t.sql}) x group by 1"):
+        for r in rows(cfg.batch, f"select kg_graph g, count(*) n from ({t.sql}) x group by 1"):
             for c in t.classes:
                 exp[(r["g"], c)] += r["n"]
     return exp, classes
@@ -66,7 +66,7 @@ def check(cfg: Config, out=print, report=True) -> bool:
              "ksx:plantID ?plant } GROUP BY ?site ?plant")
         v = sorted((r["site"], r["plant"], _n(r["n"])) for r in sparql(cfg.ontop, q))
         s = sorted((r["SiteID"], r["PlantID"], r["n"]) for r in rows(
-            cfg.reader, 'select "SiteID", "PlantID", count(*) n from ksx."Lot" group by 1, 2'))
+            cfg.batch, 'select "SiteID", "PlantID", count(*) n from ksx."Lot" group by 1, 2'))
         add("가상화", "사업장별 로트 수 질의(SPARQL) = SQL", str(s), str(v), v == s)
     except SparqlError as e:
         add("가상화", "Ontop 엔드포인트", "응답", "실패", False, str(e)[:200])
@@ -118,7 +118,7 @@ def check(cfg: Config, out=print, report=True) -> bool:
     n = _n(sparql(cfg.query, "SELECT (COUNT(*) AS ?n) WHERE { ?s ?p ?o }")[0]["n"])
     add("분리", "기본 그래프 트리플(그래프 지정 없는 질의에 보이는 데이터)", 0, n, n == 0, "unionDefaultGraph false")
     plants = sorted(f"{pre}/{r['SiteID']}/{r['PlantID']}" for r in rows(
-        cfg.reader, f"select \"SiteID\", \"PlantID\" from ksx.\"Plant\" where \"EnterpriseID\" = '{cfg.ent}'"))
+        cfg.batch, f"select \"SiteID\", \"PlantID\" from ksx.\"Plant\" where \"EnterpriseID\" = '{cfg.ent}'"))
     graphs = sorted(g for g in act_t)
     extra = [g for g in graphs if g != pre and g not in plants]
     add("분리", "데이터 그래프 ⊆ 원장 사업장 + 기업 공통", ", ".join(x.split("/graph/")[-1] for x in plants + [pre]),
