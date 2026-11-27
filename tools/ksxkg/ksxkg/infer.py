@@ -157,7 +157,7 @@ def run_rules(cfg: Config, rid: str, out=print) -> list[dict]:
 def cfg_key(cfg: Config, g: str) -> str:
     """추론 그래프 IRI → 범위 키(표시용)."""
     k = g[len(cfg.inferred_prefix):]
-    return k.rsplit("/", 1)[0]
+    return k.rsplit("/", 1)[0] if "/" in k else "기업 공통"
 
 
 # ------------------------------------------------------------------ 평가
