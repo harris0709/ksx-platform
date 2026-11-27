@@ -57,7 +57,7 @@ def test_e2e_minimal():
     b.g += data
     p = runner.load_params(os.path.join(ROOT, "ontologies/rules"))
     p["today"] = "2026-10-20"
-    rows = {r["rule"]: r["triples"] for r in runner.run(b, os.path.join(ROOT, "ontologies/rules"), "ACME", "HQ", p, log=io.StringIO())}
+    rows = {r["rule"]: r["triples"] for r in runner.run(b, os.path.join(ROOT, "ontologies/rules"), "IMPIX", "HQ", p, log=io.StringIO())}
     assert rows["R-001"] == 1 and rows["R-003"] >= 1 and rows["R-010"] == 2 and rows["R-100"] >= 1, rows
 
 

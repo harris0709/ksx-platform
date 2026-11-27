@@ -83,7 +83,7 @@ def morph_kgc(cfg: Config, nq: str, out=print):
                 "na_values=,None,NULL,null,NaN,nan,<NA>,NaT\n"
                 "[ksx]\n"
                 f"mappings={','.join(maps)}\n"
-                f"db_url={cfg.reader.url()}\n")
+                f"db_url={cfg.batch.url()}\n")
     out(f"  Morph-KGC: 물질화 매핑 {len(maps)}개 실행 …"
         + (f" (물질화 필터: {', '.join(f'{k} — {v}' for k, v in cfg.filters.items())})" if cfg.filters else ""))
     p = subprocess.run([sys.executable, "-m", "morph_kgc", ini], capture_output=True, text=True)

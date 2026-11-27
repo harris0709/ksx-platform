@@ -1,7 +1,9 @@
 """S7 규칙 추론(구현안내서 10장).
 
   infer          규칙(ontologies/rules/*.rq, A-* → R-* 파일명 순)을 합집합 그래프에 CONSTRUCT로 실행하고
-                 결과를 graph/inferred/{기업}/{사업장}/{규칙 ID}에 통째로 교체(PUT) — 다시 실행해도 결과가 같다.
+                 결과를 주어의 범위별로 나눠 graph/inferred/{범위}/{규칙 ID}에 통째로 교체(PUT) — 다시 실행해도 결과가 같다.
+                 범위 = 주어가 속한 데이터 그래프 키({기업} | {기업}/{사업장}/{사업장} | {기업}/{사업장}/{공장}) — S9 D-5
+                 공장 단위 격리. 추론이 만든 새 노드는 연결된 노드의 가장 좁은 범위를 따른다(scope.py).
                  실행 전 이 기업의 추론 그래프를 모두 지워 이전 결과가 섞이지 않게 한다(앞 규칙 결과는 뒤 규칙이 쓴다).
                  규칙마다 ID·버전(파일 해시)·입력 그래프·결과 트리플·소요 시간을 audit.rule_run에 남긴다.
   infer --eval   계획의 정답 사례(S1 업무 질의서 답·원천 판정)와 추론 결과를 비교해 정밀도·재현율을 낸다.
@@ -19,6 +21,7 @@ import time
 
 from .base import Config, psql, put_graph, sparql, sparql_raw, update
 from .materialize import end_run, start_run
+from .scope import home_keys, split
 
 AUDIT_SQL = """
 create table if not exists audit.rule_run (
@@ -96,8 +99,8 @@ def rule_files(cfg: Config, s: dict) -> list[str]:
     return sorted(glob.glob(os.path.join(cfg.repo, s["rules"], "*.rq")))
 
 
-def inferred_graph(cfg: Config, site: str, rid: str) -> str:
-    return cfg.graph(f"inferred/{cfg.ent}/{site}/{rid}")
+def inferred_graph(cfg: Config, key: str, rid: str) -> str:
+    return cfg.inferred_graph(key, rid)
 
 
 def graphs(cfg: Config) -> list[str]:
@@ -108,11 +111,12 @@ def graphs(cfg: Config) -> list[str]:
 def run_rules(cfg: Config, rid: str, out=print) -> list[dict]:
     s = settings(cfg)
     params = load_params(os.path.join(cfg.repo, s["rules"]), s.get("today"))
-    pre = cfg.graph(f"inferred/{cfg.ent}/")
+    pre = cfg.inferred_prefix
     old = [g for g in graphs(cfg) if g.startswith(pre)]
     for g in old:                                   # 이전 추론 결과를 지운다 — 규칙은 원본 + 앞 규칙 결과만 본다
         update(cfg.update, f"DROP SILENT GRAPH <{g}>")
     inputs = [g for g in graphs(cfg) if not g.startswith(pre)]
+    home = home_keys(cfg)                           # 노드 → 데이터 그래프 범위(추론 결과를 범위별로 나눈다)
     os.makedirs(os.path.join(cfg.out, "inferred"), exist_ok=True)
     rows = []
     for f in rule_files(cfg, s):
@@ -123,25 +127,37 @@ def run_rules(cfg: Config, rid: str, out=print) -> list[dict]:
         used = {k: params[k] for k in re.findall(r"\$\{(\w+)\}", text)}
         t0 = time.time()
         nt = sparql_raw(cfg.query, q, params=UNION)
-        path = os.path.join(cfg.out, "inferred", f"{rule}.nt")
-        with open(path, "w", encoding="utf-8", newline="\n") as fh:
-            fh.write(nt)
-        g = inferred_graph(cfg, s["site"], rule)
-        put_graph(cfg.gsp, g, path, "application/n-triples")
-        n = sum(1 for line in nt.splitlines() if line.strip())
+        parts, st = split(cfg, nt, home, s["site"])
+        by_graph = {}
+        for key, lines in sorted(parts.items()):
+            g = inferred_graph(cfg, key, rule)
+            path = os.path.join(cfg.out, "inferred", f"{rule}__{key.replace('/', '_')}.nt")
+            with open(path, "w", encoding="utf-8", newline="\n") as fh:
+                fh.write("\n".join(lines) + "\n")
+            put_graph(cfg.gsp, g, path, "application/n-triples")
+            by_graph[g] = len(lines)
+        n = sum(by_graph.values())
         sec = round(time.time() - t0, 2)
         row = {"rule": rule, "file": name, "version": hashlib.sha1(text.encode("utf-8")).hexdigest()[:12],
-               "graph": g, "triples": n, "seconds": sec, "params": used}
+               "graphs": by_graph, "triples": n, "seconds": sec, "params": used, "scope": st}
         rows.append(row)
-        out(f"  {rule:7} {n:>8,} 트리플  {sec:>6.2f}초  ({name})")
+        spread = " · ".join(f"{cfg_key(cfg, g)} {c:,}" for g, c in by_graph.items()) or "결과 없음"
+        out(f"  {rule:7} {n:>8,} 트리플  {sec:>6.2f}초  ({name}) → {spread}"
+            + (f"  [공장 혼합 {st['mixed']} · 미결 {st['unresolved']} · 공장 넘는 관계 {st['cross']}]" if any(st.values()) else ""))
     vals = ", ".join(
-        f"('{rid}', '{r['rule']}', '{r['file']}', '{r['version']}', '{r['graph']}', "
-        f"'{json.dumps(inputs)}'::jsonb, '{json.dumps(r['params'], ensure_ascii=False)}'::jsonb, {r['triples']}, {r['seconds']})"
-        for r in rows)
+        f"('{rid}', '{r['rule']}', '{r['file']}', '{r['version']}', '{g}', "
+        f"'{json.dumps(inputs)}'::jsonb, '{json.dumps(r['params'], ensure_ascii=False)}'::jsonb, {c}, {r['seconds']})"
+        for r in rows for g, c in (r["graphs"].items() or [(cfg.inferred_graph(cfg.ent, r['rule']), 0)]))
     if vals:
         psql(cfg.owner, "insert into audit.rule_run(run_id, rule_id, rule_file, version, graph, inputs, params, triples, seconds) "
                         f"values {vals}")
     return rows
+
+
+def cfg_key(cfg: Config, g: str) -> str:
+    """추론 그래프 IRI → 범위 키(표시용)."""
+    k = g[len(cfg.inferred_prefix):]
+    return k.rsplit("/", 1)[0] if "/" in k else "기업 공통"
 
 
 # ------------------------------------------------------------------ 평가
@@ -221,12 +237,16 @@ def report(cfg: Config, rid: str, s: dict, rows: list[dict], total, ev: dict):
     th = ev["thresholds"]
     md = [f"# S7 규칙 추론 결과 ({cfg.ent}) — ksxkg infer", "",
           f"- 실행: `{rid}` · 기준일 {s.get('today', '오늘')} · 사업장 {s['site']}",
-          f"- 결과 그래프: `{cfg.graph('inferred/' + cfg.ent + '/' + s['site'])}/{{규칙 ID}}` (규칙별 통째 교체)",
+          f"- 결과 그래프: `{cfg.inferred_prefix}{{범위}}/{{규칙 ID}}` — 범위 = 주어가 속한 데이터 그래프(기업 공통·사업장 공통·공장, S9 D-5). 규칙·범위별 통째 교체",
           ""]
     if rows:
-        md += ["## 규칙 실행 (audit.rule_run)", "", "| 규칙 | 파일 | 버전 | 결과 트리플 | 소요(초) | 파라미터 |", "|---|---|---|---:|---:|---|"]
-        md += [f"| {r['rule']} | `{r['file']}` | `{r['version']}` | {r['triples']:,} | {r['seconds']} | "
+        md += ["## 규칙 실행 (audit.rule_run)", "", "| 규칙 | 파일 | 버전 | 결과 트리플 | 범위별 | 소요(초) | 파라미터 |", "|---|---|---|---:|---|---:|---|"]
+        md += [f"| {r['rule']} | `{r['file']}` | `{r['version']}` | {r['triples']:,} | "
+               f"{' · '.join(f'{cfg_key(cfg, g)} {c:,}' for g, c in r['graphs'].items()) or '—'} | {r['seconds']} | "
                f"{', '.join(f'{k}={v}' for k, v in r['params'].items()) or '—'} |" for r in rows]
+        sc = {k: sum(r["scope"][k] for r in rows) for k in ("mixed", "unresolved", "cross")}
+        md += ["", f"범위 나누기: 새 노드 중 공장이 섞인 것 {sc['mixed']} · 범위를 못 정해 사업장 공통으로 둔 것 {sc['unresolved']} · "
+                   f"공장을 넘는 관계(주어·목적어 공장이 다름) {sc['cross']}"]
         md += ["", f"합계 {sum(r['triples'] for r in rows):,} 트리플 · **{total}초** (배치 목표 {s['batch_target_seconds']}초 이내 → "
                    f"{'충족' if total <= s['batch_target_seconds'] else '미충족'})", ""]
     t = ev["total"]

@@ -2,7 +2,7 @@
 
 운영(Fuseki):
   python services/rule-runner/runner.py --fuseki http://localhost:3030/ksx \
-      --ent ACME --site HQ --rules ontologies/rules
+      --ent IMPIX --site HQ --rules ontologies/rules
   - 데이터셋은 unionDefaultGraph=true로 구성(infra/docker/fuseki/config.ttl) → 기본 그래프 = 모든 Named Graph 합집합
   - 결과는 graph:inferred/{Ent}/{Site}/{RuleID}에 PUT(통째 교체) → 재실행해도 결과가 같다
 
@@ -105,7 +105,7 @@ def main(argv=None) -> int:
     g.add_argument("--fuseki", help="Fuseki 데이터셋 URL (예: http://localhost:3030/ksx)")
     g.add_argument("--local", nargs="+", help="시험용 RDF 파일들")
     ap.add_argument("--rules", default="ontologies/rules")
-    ap.add_argument("--ent", default="ACME")
+    ap.add_argument("--ent", required=True, help="기업 코드(예: IMPIX)")
     ap.add_argument("--site", default="HQ")
     ap.add_argument("--today", help="기준일(YYYY-MM-DD). 기본: 오늘")
     a = ap.parse_args(argv)

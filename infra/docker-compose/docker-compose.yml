@@ -52,6 +52,7 @@ services:
       KSX_OWNER_PASSWORD: ${KSX_OWNER_PASSWORD}
       KSX_LOADER_PASSWORD: ${KSX_LOADER_PASSWORD}
       KSX_READER_PASSWORD: ${KSX_READER_PASSWORD}
+      KSX_BATCH_PASSWORD: ${KSX_BATCH_PASSWORD:-}
       KSX_BOD_PASSWORD: ${KSX_BOD_PASSWORD}
       KSX_AUDIT_PASSWORD: ${KSX_AUDIT_PASSWORD}
       AIRFLOW_DB_PASSWORD: ${AIRFLOW_DB_PASSWORD}
@@ -188,8 +189,8 @@ services:
       ONTOP_ONTOLOGY_FILE: ${ONTOP_ONTOLOGY_FILE}
       ONTOP_MAPPING_FILE: ${ONTOP_MAPPING_FILE}
       ONTOP_DB_URL: jdbc:postgresql://postgres:5432/ksx
-      ONTOP_DB_USER: ksx_reader
-      ONTOP_DB_PASSWORD: ${KSX_READER_PASSWORD}
+      ONTOP_DB_USER: ksx_batch              # 배치 읽기(S5 가상화 검사) — 원장 RLS(S9 D-5)를 넘어 전 범위를 본다. 외부 공개 금지
+      ONTOP_DB_PASSWORD: ${KSX_BATCH_PASSWORD}
       ONTOP_DB_DRIVER: org.postgresql.Driver
       ONTOP_LAZY_INIT: "false"
     volumes:
@@ -361,6 +362,7 @@ services:
       KSX_DB_NAME: ksx
       KSX_OWNER_PASSWORD: ${KSX_OWNER_PASSWORD}
       KSX_LOADER_PASSWORD: ${KSX_LOADER_PASSWORD}
+      KSX_BATCH_PASSWORD: ${KSX_BATCH_PASSWORD}       # ddl이 배치 읽기 계정 ksx_batch를 만들 때(S9 D-5)
       POSTGRES_SUPERUSER_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
     volumes:
       - ../..:/repo
@@ -387,6 +389,7 @@ services:
       KSX_DB_PORT: "5432"
       KSX_DB_NAME: ksx
       KSX_READER_PASSWORD: ${KSX_READER_PASSWORD}
+      KSX_BATCH_PASSWORD: ${KSX_BATCH_PASSWORD}       # 물질화·검사(전 범위 읽기, S9 D-5)
       KSX_OWNER_PASSWORD: ${KSX_OWNER_PASSWORD}
       FUSEKI_URL: http://fuseki:3030/ksx
       ONTOP_URL: http://ontop:8080/sparql

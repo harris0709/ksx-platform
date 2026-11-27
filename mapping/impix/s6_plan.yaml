@@ -6,7 +6,7 @@ base: mapping/impix/s5_plan.yaml     # 원장·Fuseki·Ontop 접속, 기업, 그
 validate:
   # 품질 셰이프(저작) — 적합성 셰이프(ontologies/shapes/*.ttl, S4 생성물)와 함께 실행
   quality: [ontologies/quality/*.ttl]
-  # 위반 표식(graph/quality)이 추론에서 빠지는지 확인할 규칙 — 데이터가 있는 업무 규칙(R-001 로트 계보는 IMPIX에 모로트 참조 0건)
+  # 위반 표식(graph/quality/{범위})이 추론에서 빠지는지 확인할 규칙 — 데이터가 있는 업무 규칙(R-001 로트 계보는 IMPIX에 모로트 참조 0건)
   exclusion_rule: R-010_affected_sales_order.rq
   # 품질 셰이프 매개변수 — 셰이프의 {{이름}} 자리에 채운다(기업 운영 방식은 셰이프가 아니라 계획에 근거와 함께)
   params:

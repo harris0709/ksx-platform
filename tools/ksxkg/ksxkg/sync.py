@@ -118,29 +118,45 @@ def gkey(g: str) -> str:
 
 # ------------------------------------------------------------------ (1) 내보내기 — Fuseki → 노드·관계
 def graph_filter(cfg: Config, var="?g") -> str:
-    pre, inf = cfg.data_graph_prefix, cfg.graph(f"inferred/{cfg.ent}/")
+    pre, inf = cfg.data_graph_prefix, cfg.inferred_prefix
     return f'({var} = <{pre}> || STRSTARTS(STR({var}), "{pre}/") || STRSTARTS(STR({var}), "{inf}"))'
 
 
+def quality_filter(cfg: Config, var="?g") -> str:
+    q = cfg.quality_prefix
+    return f'({var} = <{q}> || STRSTARTS(STR({var}), "{q}/"))'
+
+
 def kind_of(cfg: Config, g: str) -> str:
-    if g == cfg.graph("quality"):
+    if cfg.is_quality(g):
         return "quality"
-    if g.startswith(cfg.graph(f"inferred/{cfg.ent}/")):
+    if g.startswith(cfg.inferred_prefix):
         return "inferred"
     return "data"
 
 
+def key_scope(parts: list[str]) -> dict:
+    """데이터 그래프 키 조각 → 기업·사업장·공장. 사업장 공통({사업장}/{사업장})은 공장 없이 사업장까지."""
+    d = {"ent": parts[0]}
+    if len(parts) > 1:
+        d["site"] = parts[1]
+    if len(parts) > 2 and parts[2] != parts[1]:
+        d["plant"] = parts[2]
+    return d
+
+
 def scope(cfg: Config, g: str) -> dict:
-    """그래프 이름 → 기업·사업장·공장(데이터) / 기업·사업장·규칙 ID(추론)."""
+    """그래프 이름 → 범위. 데이터 {기업}[/{사업장}/{공장}], 추론 inferred/{범위}/{규칙 ID}(S9 D-5),
+    위반 표식 quality/{범위}. 옛 추론 이름 inferred/{기업}/{사업장}/{규칙 ID}도 읽는다."""
     k = gkey(g).split("/")
     if k[0] == "inferred":
-        return {"ent": k[1], "site": k[2], "ruleId": k[3]} if len(k) >= 4 else {"ent": k[1]}
-    d = {"ent": k[0]}
-    if len(k) > 1:
-        d["site"] = k[1]
-    if len(k) > 2:
-        d["plant"] = k[2]
-    return d
+        rest, rule = k[1:-1], k[-1]
+        if len(rest) == 2:                       # 옛 이름(사업장 단위)
+            return {"ent": rest[0], "site": rest[1], "ruleId": rule}
+        return {**key_scope(rest), "ruleId": rule} if rest else {"ruleId": rule}
+    if k[0] == "quality":
+        return key_scope(k[1:]) if len(k) > 1 else {}
+    return key_scope(k)
 
 
 def value(b: dict):
@@ -162,7 +178,7 @@ def value(b: dict):
 def fetch(cfg: Config) -> list[tuple]:
     """데이터·추론·위반 표식 그래프의 모든 트리플(그래프 포함)."""
     q = (f"SELECT ?g ?s ?p ?o WHERE {{ GRAPH ?g {{ ?s ?p ?o }} "
-         f"FILTER({graph_filter(cfg)} || ?g = <{cfg.graph('quality')}>) }}")
+         f"FILTER({graph_filter(cfg)} || {quality_filter(cfg)}) }}")
     data = urllib.parse.urlencode({"query": q}).encode()
     req = urllib.request.Request(cfg.query, data=data, method="POST", headers={
         "Accept": "application/sparql-results+json", "Content-Type": "application/x-www-form-urlencoded"})

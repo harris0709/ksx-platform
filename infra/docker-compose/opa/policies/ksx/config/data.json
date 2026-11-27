@@ -1,4 +1,6 @@
 {
-  "graph_base": "https://data.acme.example/graph/",
+  "graph_base": {
+    "IMPIX": "https://data.impix.co.kr/graph/"
+  },
   "auditor_role": "auditor"
 }

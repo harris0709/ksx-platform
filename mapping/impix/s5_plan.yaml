@@ -9,7 +9,8 @@ ledger:                        # 표준 원장(S3)
   host: "${KSX_DB_HOST:-localhost}"
   port: "${KSX_DB_PORT:-5432}"
   dbname: "${KSX_DB_NAME:-ksx}"
-  reader: { user: ksx_reader, password: "${KSX_READER_PASSWORD}" }   # 물질화·검사(읽기 전용)
+  reader: { user: ksx_reader, password: "${KSX_READER_PASSWORD}" }   # 조회 계정(RLS — 세션 범위의 행만, S8 조회 계정 점검·S9 MCP)
+  batch:  { user: ksx_batch,  password: "${KSX_BATCH_PASSWORD}" }    # 물질화·검사(전 범위 읽기, BYPASSRLS·읽기 전용, S9 D-5)
   owner:  { user: ksx_owner,  password: "${KSX_OWNER_PASSWORD}" }    # 감사 기록(audit.run·kg_load)
 
 fuseki: "${FUSEKI_URL:-http://localhost:3030/ksx}"       # 물질화 그래프(데이터셋 /ksx)

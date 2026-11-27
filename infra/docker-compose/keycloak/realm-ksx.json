@@ -447,7 +447,7 @@
       "lastName": "개발",
       "attributes": {
         "enterpriseId": [
-          "ACME"
+          "IMPIX"
         ],
         "siteId": [
           "HQ"
@@ -476,7 +476,7 @@
       "lastName": "엔지니어",
       "attributes": {
         "enterpriseId": [
-          "ACME"
+          "IMPIX"
         ],
         "siteId": [
           "HQ"
@@ -505,7 +505,7 @@
       "lastName": "엔지니어",
       "attributes": {
         "enterpriseId": [
-          "ACME"
+          "IMPIX"
         ],
         "siteId": [
           "HQ"
@@ -535,13 +535,71 @@
       "lastName": "검수자",
       "attributes": {
         "enterpriseId": [
-          "ACME"
+          "IMPIX"
         ],
         "siteId": [
           "HQ"
         ],
         "plantId": [
           "P1"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KSX_DEV_USER_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "customer-reviewer"
+      ]
+    },
+    {
+      "username": "dev-p1",
+      "enabled": true,
+      "email": "dev-p1@ksx.local",
+      "emailVerified": true,
+      "firstName": "1공장",
+      "lastName": "현업",
+      "attributes": {
+        "enterpriseId": [
+          "IMPIX"
+        ],
+        "siteId": [
+          "HQ"
+        ],
+        "plantId": [
+          "P1"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KSX_DEV_USER_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "customer-reviewer"
+      ]
+    },
+    {
+      "username": "dev-p2",
+      "enabled": true,
+      "email": "dev-p2@ksx.local",
+      "emailVerified": true,
+      "firstName": "2공장",
+      "lastName": "현업",
+      "attributes": {
+        "enterpriseId": [
+          "IMPIX"
+        ],
+        "siteId": [
+          "HQ"
+        ],
+        "plantId": [
+          "P2"
         ]
       },
       "credentials": [
@@ -564,7 +622,7 @@
       "lastName": "담당",
       "attributes": {
         "enterpriseId": [
-          "ACME"
+          "IMPIX"
         ],
         "siteId": [
           "HQ"
@@ -590,7 +648,7 @@
       "serviceAccountClientId": "ksx-mcp",
       "attributes": {
         "enterpriseId": [
-          "ACME"
+          "IMPIX"
         ],
         "siteId": [
           "HQ"
@@ -609,7 +667,7 @@
       "serviceAccountClientId": "ksx-bod-gateway",
       "attributes": {
         "enterpriseId": [
-          "ACME"
+          "IMPIX"
         ],
         "siteId": [
           "HQ"
